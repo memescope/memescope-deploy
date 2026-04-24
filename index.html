@@ -9293,142 +9293,42 @@ function closeTokenPage() {
   _tpToken = null;
 }
 
-// Client-side bar cache — no TTL, historical OHLCV data doesn't change.
-// subscribeBars handles real-time updates. Cache clears on page reload naturally.
-var _barCache = {};
-
 function initTokenPageChart(t) {
-  if (!window.TradingView || !t || !t.ca) return;
+  if (!t || !t.ca) return;
   var container = document.getElementById('tpChartContainer');
   if (!container) return;
+
+  // Clean up previous chart
+  if (_tpWidget) { try { _tpWidget.remove(); } catch(e) {} _tpWidget = null; }
+  if (_tpPollTimer) { clearInterval(_tpPollTimer); _tpPollTimer = null; }
   container.innerHTML = '';
 
   var chain = (t.net || 'solana').toLowerCase();
-  var pairTokenMap = { solana:'SOL', eth:'WETH', base:'WETH', bsc:'BNB', sui:'SUI', tron:'TRX' };
+  // Map chain names to DexScreener chain slugs
+  var dexChainMap = { solana:'solana', eth:'ethereum', base:'base', bsc:'bsc', sui:'sui', tron:'tron' };
+  var dexChain = dexChainMap[chain] || chain;
 
-  // Custom datafeed
-  var datafeed = {
-    onReady: function(cb) { setTimeout(function() { cb({ supported_resolutions:['1','5','15','30','60','240','1D'], supports_time:true }); }, 0); },
-    searchSymbols: function(q,e,st,cb) { cb([]); },
-    resolveSymbol: function(name, onRes, onErr) {
-      setTimeout(function() {
-        var p = t.price || 0.00001;
-        var ps = 100;
-        if (p < 1) ps = 10000;
-        if (p < 0.01) ps = 1000000;
-        if (p < 0.0001) ps = 100000000;
-        if (p < 0.000001) ps = 10000000000;
-        onRes({
-          name: t.sym + '/' + (pairTokenMap[chain] || 'SOL'),
-          description: t.name || t.sym,
-          type:'crypto', session:'24x7', exchange:'MEMESCOPE',
-          timezone:'Etc/UTC', format:'price',
-          pricescale:ps, minmov:1, has_intraday:true,
-          supported_resolutions:['1','5','15','30','60','240'],
-          volume_precision:2, data_status:'streaming',
-        });
-      }, 0);
-    },
-    getBars: function(sym, res, params, onRes, onErr) {
-      var called = false;
-      function respond(bars, meta) { if (called) return; called = true; onRes(bars, meta); }
+  // Use DexScreener embed — reliable, full TradingView chart, real-time data, zero custom code
+  var iframe = document.createElement('iframe');
+  iframe.src = 'https://dexscreener.com/' + dexChain + '/' + t.ca + '?embed=1&theme=dark&trades=0&info=0';
+  iframe.style.cssText = 'width:100%;height:100%;border:none;border-radius:8px;';
+  iframe.allow = 'clipboard-write';
+  iframe.loading = 'lazy';
+  container.appendChild(iframe);
 
-      // TradingView calls getBars multiple times:
-      //   firstDataRequest=true  → initial chart load, we return all our bars
-      //   firstDataRequest=false → asking for older history (scrolling left), we don't have any
-      if (!params.firstDataRequest) {
-        respond([], { noData: true });
-        return;
-      }
-
-      // Return cached bars if we already fetched for this token+resolution
-      var cacheKey = t.ca + '_' + res;
-      if (_barCache[cacheKey] && _barCache[cacheKey].length > 0) {
-        respond(_barCache[cacheKey], { noData: false });
-        return;
-      }
-
-      var apiUrl = 'https://memescope-scraper.memescope-io.workers.dev/ohlcv?chain=' + encodeURIComponent(chain) + '&address=' + encodeURIComponent(t.ca) + '&resolution=' + encodeURIComponent(res) + (t.pairAddress ? '&pool=' + encodeURIComponent(t.pairAddress) : '');
-
-      // Resolution in ms for snapping timestamps to exact boundaries
-      var resMs = 60000;
-      var resNum = parseInt(res);
-      if (!isNaN(resNum)) { resMs = resNum * 60000; }
-      else if (res === '1D') { resMs = 86400000; }
-
-      function normalizeBars(raw) {
-        if (!raw || !raw.length) return [];
-        var seen = {};
-        var out = [];
-        for (var i = 0; i < raw.length; i++) {
-          var b = raw[i];
-          var tm = b.time || b.t || 0;
-          if (tm && tm < 1e12) tm = tm * 1000;
-          tm = Math.floor(tm / resMs) * resMs; // snap to boundary
-          if (!tm || seen[tm]) continue;
-          seen[tm] = true;
-          out.push({ time: tm, open: +(b.open || b.o || 0), high: +(b.high || b.h || 0), low: +(b.low || b.l || 0), close: +(b.close || b.c || 0), volume: +(b.volume || b.v || 0) });
-        }
-        out.sort(function(a, b) { return a.time - b.time; });
-        return out;
-      }
-
-      fetch(apiUrl).then(function(r) { return r.ok ? r.json() : {bars:[]}; }).then(function(d) {
-        var bars = normalizeBars((d && d.bars) || []);
-        // Cache permanently for this session — historical data doesn't change
-        if (bars.length > 0) _barCache[cacheKey] = bars;
-        // Give TradingView ALL bars, no filtering — it handles display range itself
-        respond(bars, { noData: bars.length === 0 });
-      }).catch(function(err) {
-        respond([], { noData: true });
-      });
-    },
-    subscribeBars: function(sym, res, onTick, guid) {
-      var iv = setInterval(async function() {
-        try {
-          var r = await fetch('https://api.dexscreener.com/latest/dex/tokens/' + t.ca);
-          var d = await r.json();
-          if (!d.pairs || !d.pairs.length) return;
-          var pair = d.pairs.reduce(function(b,p) { return (p.liquidity&&p.liquidity.usd||0) > (b.liquidity&&b.liquidity.usd||0) ? p : b; }, d.pairs[0]);
-          var price = parseFloat(pair.priceUsd);
-          if (!price) return;
-          onTick({ time: Math.floor(Date.now()/60000)*60000, open:price, high:price, low:price, close:price, volume:0 });
-          var pFmt = function(p) { if(p>=1) return '$'+p.toFixed(2); if(p>=0.01) return '$'+p.toFixed(4); if(p>=0.0001) return '$'+p.toFixed(6); return '$'+p.toExponential(2); };
-          document.getElementById('tpRPriceBig').textContent = pFmt(price);
-        } catch(e) {}
-      }, 10000);
-      window._tpSubIntervals = window._tpSubIntervals || {};
-      window._tpSubIntervals[guid] = iv;
-    },
-    unsubscribeBars: function(guid) {
-      if (window._tpSubIntervals && window._tpSubIntervals[guid]) { clearInterval(window._tpSubIntervals[guid]); delete window._tpSubIntervals[guid]; }
-    },
-  };
-
-  if (_tpWidget) { try { _tpWidget.remove(); } catch(e) {} _tpWidget = null; }
-  container.innerHTML = '';
-  _tpWidget = new TradingView.widget({
-      container: 'tpChartContainer',
-      locale:'en', library_path:'/charting_library/',
-      datafeed: datafeed,
-      symbol: t.sym + '/' + (pairTokenMap[chain] || 'SOL'),
-      interval:'1', fullscreen:false, autosize:true, theme:'dark',
-      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-      loading_screen: { backgroundColor:'#18171A', foregroundColor:'#4A9EFF' },
-      overrides: {
-        'paneProperties.background':'#18171A', 'paneProperties.backgroundType':'solid',
-        'paneProperties.vertGridProperties.color':'rgba(255,255,255,0.03)',
-        'paneProperties.horzGridProperties.color':'rgba(255,255,255,0.03)',
-        'scalesProperties.backgroundColor':'#18171A', 'scalesProperties.textColor':'#6B7685',
-        'scalesProperties.lineColor':'rgba(255,255,255,0.08)',
-        'mainSeriesProperties.candleStyle.upColor':'#22C55E', 'mainSeriesProperties.candleStyle.downColor':'#EF4444',
-        'mainSeriesProperties.candleStyle.borderUpColor':'#22C55E', 'mainSeriesProperties.candleStyle.borderDownColor':'#EF4444',
-        'mainSeriesProperties.candleStyle.wickUpColor':'rgba(34,197,94,0.5)', 'mainSeriesProperties.candleStyle.wickDownColor':'rgba(239,68,68,0.5)',
-      },
-      studies_overrides: { 'volume.volume.color.0':'rgba(239,68,68,0.25)', 'volume.volume.color.1':'rgba(34,197,94,0.25)' },
-      disabled_features: ['header_symbol_search','symbol_search_hot_key','header_compare','display_market_status','go_to_date','timeframes_toolbar'],
-      enabled_features: ['side_toolbar_in_fullscreen_mode','header_in_fullscreen_mode','create_volume_indicator_by_default'],
-    });
+  // Keep price sidebar updated via DexScreener API
+  _tpPollTimer = setInterval(async function() {
+    try {
+      var r = await fetch('https://api.dexscreener.com/latest/dex/tokens/' + t.ca);
+      var d = await r.json();
+      if (!d.pairs || !d.pairs.length) return;
+      var pair = d.pairs.reduce(function(b,p) { return (p.liquidity&&p.liquidity.usd||0) > (b.liquidity&&b.liquidity.usd||0) ? p : b; }, d.pairs[0]);
+      var price = parseFloat(pair.priceUsd);
+      if (!price) return;
+      var pFmt = function(p) { if(p>=1) return '$'+p.toFixed(2); if(p>=0.01) return '$'+p.toFixed(4); if(p>=0.0001) return '$'+p.toFixed(6); return '$'+p.toExponential(2); };
+      document.getElementById('tpRPriceBig').textContent = pFmt(price);
+    } catch(e) {}
+  }, 10000);
 }
 
 // Pool lookup and OHLCV fetching now handled server-side via /api/ohlcv
