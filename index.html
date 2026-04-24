@@ -9342,10 +9342,12 @@ function initTokenPageChart(t) {
       }, 0);
     },
     getBars: function(sym, res, params, onRes, onErr) {
+      var called = false;
+      function respond(bars, meta) { if (called) return; called = true; onRes(bars, meta); }
       var cacheKey = t.ca + '_' + res;
       var cached = getCachedBars(cacheKey);
       if (cached && cached.length > 0) {
-        onRes(cached, { noData: false });
+        respond(cached, { noData: false });
         return;
       }
       var apiUrl = 'https://memescope-scraper.memescope-io.workers.dev/ohlcv?chain=' + encodeURIComponent(chain) + '&address=' + encodeURIComponent(t.ca) + '&resolution=' + encodeURIComponent(res) + (t.pairAddress ? '&pool=' + encodeURIComponent(t.pairAddress) : '');
@@ -9357,22 +9359,13 @@ function initTokenPageChart(t) {
           return { time: tm, open: b.open || b.o || 0, high: b.high || b.h || 0, low: b.low || b.l || 0, close: b.close || b.c || 0, volume: b.volume || b.v || 0 };
         });
       }
-      function tryFetch(attempt) {
-        fetch(apiUrl).then(function(r) { return r.ok ? r.json() : {bars:[]}; }).then(function(d) {
-          var bars = normalizeBars((d && d.bars) || []);
-          if (bars.length > 0) {
-            setCachedBars(cacheKey, bars);
-            onRes(bars, { noData: false });
-          } else if (attempt >= 3) {
-            onRes([], { noData: true });
-          } else {
-            setTimeout(function() { tryFetch(attempt + 1); }, 2000);
-          }
-        }).catch(function() {
-          if (attempt >= 3) { onRes([], {noData:true}); } else { setTimeout(function() { tryFetch(attempt + 1); }, 2000); }
-        });
-      }
-      tryFetch(1);
+      fetch(apiUrl).then(function(r) { return r.ok ? r.json() : {bars:[]}; }).then(function(d) {
+        var bars = normalizeBars((d && d.bars) || []);
+        if (bars.length > 0) setCachedBars(cacheKey, bars);
+        respond(bars, { noData: bars.length === 0 });
+      }).catch(function() {
+        respond([], { noData: true });
+      });
     },
     subscribeBars: function(sym, res, onTick, guid) {
       var iv = setInterval(async function() {
