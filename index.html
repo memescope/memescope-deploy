@@ -9336,7 +9336,7 @@ function initTokenPageChart(t) {
           type:'crypto', session:'24x7', exchange:'memescope.io',
           listed_exchange:'memescope.io', timezone:'Etc/UTC', format:'price',
           pricescale:ps, minmov:1, has_intraday:true, has_daily:true,
-          has_empty_bars:false, has_no_volume:false,
+          has_empty_bars:false,
           supported_resolutions:['1','5','15','30','60','240','1D'],
           volume_precision:2, data_status:'streaming',
         });
@@ -9356,7 +9356,7 @@ function initTokenPageChart(t) {
         if (!raw || !raw.length) return [];
         return raw.map(function(b) {
           var tm = b.time || b.t || 0;
-          if (tm > 1e12) tm = Math.floor(tm / 1000); // ms → seconds (TradingView expects seconds)
+          if (tm && tm < 1e12) tm = tm * 1000; // seconds → ms (TradingView expects milliseconds)
           return { time: tm, open: b.open || b.o || 0, high: b.high || b.h || 0, low: b.low || b.l || 0, close: b.close || b.c || 0, volume: b.volume || b.v || 0 };
         });
       }
@@ -9364,9 +9364,10 @@ function initTokenPageChart(t) {
         var bars = normalizeBars((d && d.bars) || []);
         if (bars.length > 0) setCachedBars(cacheKey, bars);
         // Only return the last countBack bars ending at or before params.to
-        var to = params.to || Infinity;
+        // params.from/to are in seconds, bars are in milliseconds
+        var toMs = (params.to || Infinity) * 1000;
         var cb = params.countBack || 300;
-        bars = bars.filter(function(b) { return b.time <= to; });
+        bars = bars.filter(function(b) { return b.time <= toMs; });
         bars = bars.slice(-cb);
         respond(bars, { noData: bars.length === 0 });
       }).catch(function(err) {
@@ -9382,7 +9383,7 @@ function initTokenPageChart(t) {
           var pair = d.pairs.reduce(function(b,p) { return (p.liquidity&&p.liquidity.usd||0) > (b.liquidity&&b.liquidity.usd||0) ? p : b; }, d.pairs[0]);
           var price = parseFloat(pair.priceUsd);
           if (!price) return;
-          onTick({ time: Math.floor(Date.now()/60000)*60, open:price, high:price, low:price, close:price, volume:0 });
+          onTick({ time: Math.floor(Date.now()/60000)*60000, open:price, high:price, low:price, close:price, volume:0 });
           var pFmt = function(p) { if(p>=1) return '$'+p.toFixed(2); if(p>=0.01) return '$'+p.toFixed(4); if(p>=0.0001) return '$'+p.toFixed(6); return '$'+p.toExponential(2); };
           document.getElementById('tpRPriceBig').textContent = pFmt(price);
         } catch(e) {}
