@@ -9300,9 +9300,6 @@ function initTokenPageChart(t) {
   container.innerHTML = '';
 
   var chain = (t.net || 'solana').toLowerCase();
-  // Map internal chain names to GeckoTerminal network IDs
-  var geckoChainMap = { solana:'solana', eth:'eth', base:'base', bsc:'bsc', sui:'sui-network', tron:'tron' };
-  var geckoChain = geckoChainMap[chain] || chain;
   var pairTokenMap = { solana:'SOL', eth:'WETH', base:'WETH', bsc:'BNB', sui:'SUI', tron:'TRX' };
 
   // Custom datafeed
@@ -9331,23 +9328,11 @@ function initTokenPageChart(t) {
     },
     getBars: async function(sym, res, params, onRes, onErr) {
       try {
-        var pool = await tpFindPool(geckoChain, t.ca);
-        if (!pool) { onRes([], {noData:true}); return; }
-        var g = tpResToGecko(res);
-        // Try primary resolution first
-        var bars = await tpFetchOHLCV(geckoChain, pool, g.agg, g.mult);
-        // If no data, try falling back to a smaller aggregation
-        if (!bars.length && g.agg === 'minute' && g.mult > 1) {
-          bars = await tpFetchOHLCV(geckoChain, pool, 'minute', 1);
-          if (bars.length) {
-            // Re-aggregate into the requested resolution
-            bars = tpReaggregate(bars, g.mult);
-          }
-        }
-        // Last resort: try hour if minute returned nothing
-        if (!bars.length && g.agg === 'minute') {
-          bars = await tpFetchOHLCV(geckoChain, pool, 'hour', 1);
-        }
+        var url = 'https://memescope-api.vercel.app/api/ohlcv?chain=' + encodeURIComponent(chain) + '&address=' + encodeURIComponent(t.ca) + '&resolution=' + encodeURIComponent(res);
+        var r = await fetch(url);
+        if (!r.ok) { onRes([], {noData:true}); return; }
+        var d = await r.json();
+        var bars = d.bars || [];
         onRes(bars, { noData: bars.length === 0 });
       } catch(e) { console.log('getBars error:', e); onRes([], {noData:true}); }
     },
@@ -9397,90 +9382,7 @@ function initTokenPageChart(t) {
   });
 }
 
-// Fetch OHLCV data from GeckoTerminal with retry
-async function tpFetchOHLCV(geckoChain, pool, agg, mult) {
-  var url = 'https://api.geckoterminal.com/api/v2/networks/' + geckoChain + '/pools/' + pool + '/ohlcv/' + agg + '?aggregate=' + mult + '&limit=1000&currency=usd';
-  for (var attempt = 0; attempt < 2; attempt++) {
-    try {
-      var r = await fetch(url, { headers:{'Accept':'application/json'} });
-      if (r.status === 429) { await new Promise(function(ok) { setTimeout(ok, 1500); }); continue; }
-      if (!r.ok) return [];
-      var d = await r.json();
-      var list = d.data && d.data.attributes && d.data.attributes.ohlcv_list;
-      if (!list || !list.length) return [];
-      return list.map(function(c) { return { time:c[0]*1000, open:+c[1], high:+c[2], low:+c[3], close:+c[4], volume:+c[5] }; }).sort(function(a,b) { return a.time - b.time; });
-    } catch(e) { if (attempt === 0) { await new Promise(function(ok) { setTimeout(ok, 1000); }); } }
-  }
-  return [];
-}
-
-// Re-aggregate 1m bars into larger candles
-function tpReaggregate(bars, mult) {
-  if (!bars.length || mult <= 1) return bars;
-  var intervalMs = mult * 60 * 1000;
-  var result = [];
-  var bucket = null;
-  for (var i = 0; i < bars.length; i++) {
-    var b = bars[i];
-    var bucketTime = Math.floor(b.time / intervalMs) * intervalMs;
-    if (!bucket || bucket.time !== bucketTime) {
-      if (bucket) result.push(bucket);
-      bucket = { time: bucketTime, open: b.open, high: b.high, low: b.low, close: b.close, volume: b.volume };
-    } else {
-      bucket.high = Math.max(bucket.high, b.high);
-      bucket.low = Math.min(bucket.low, b.low);
-      bucket.close = b.close;
-      bucket.volume += b.volume;
-    }
-  }
-  if (bucket) result.push(bucket);
-  return result;
-}
-
-async function tpFindPool(geckoChain, addr) {
-  if (_tpPoolCache[addr]) return _tpPoolCache[addr];
-  // Try 1: GeckoTerminal pool lookup
-  for (var attempt = 0; attempt < 2; attempt++) {
-    try {
-      var r = await fetch('https://api.geckoterminal.com/api/v2/networks/' + geckoChain + '/tokens/' + addr + '/pools?page=1', { headers:{'Accept':'application/json'} });
-      if (r.status === 429) { await new Promise(function(ok) { setTimeout(ok, 1500); }); continue; }
-      if (!r.ok) break;
-      var d = await r.json();
-      if (!d.data || !d.data.length) break;
-      var poolId = d.data[0].attributes && d.data[0].attributes.address;
-      if (!poolId) { var p = d.data[0].id.split('_'); poolId = p.length > 1 ? p.slice(1).join('_') : d.data[0].id; }
-      _tpPoolCache[addr] = poolId;
-      return poolId;
-    } catch(e) { if (attempt === 0) { await new Promise(function(ok) { setTimeout(ok, 1000); }); } }
-  }
-  // Try 2: DexScreener fallback — get pair address from DexScreener
-  try {
-    var dr = await fetch('https://api.dexscreener.com/latest/dex/tokens/' + addr);
-    if (dr.ok) {
-      var dd = await dr.json();
-      if (dd.pairs && dd.pairs.length) {
-        // Pick the pair with the highest liquidity
-        var best = dd.pairs.reduce(function(b,p) { return (p.liquidity&&p.liquidity.usd||0) > (b.liquidity&&b.liquidity.usd||0) ? p : b; }, dd.pairs[0]);
-        if (best.pairAddress) {
-          _tpPoolCache[addr] = best.pairAddress;
-          return best.pairAddress;
-        }
-      }
-    }
-  } catch(e) {}
-  return null;
-}
-
-function tpResToGecko(res) {
-  var r = String(res);
-  if (r==='1') return {agg:'minute',mult:1};
-  if (r==='5') return {agg:'minute',mult:5};
-  if (r==='15') return {agg:'minute',mult:15};
-  if (r==='30') return {agg:'minute',mult:30};
-  if (r==='60') return {agg:'hour',mult:1};
-  if (r==='240') return {agg:'hour',mult:4};
-  return {agg:'day',mult:1};
-}
+// Pool lookup and OHLCV fetching now handled server-side via /api/ohlcv
 
 function tpSwitchTab(el, tab) {
   document.querySelectorAll('.tp-tab').forEach(function(t) { t.classList.remove('active'); });
