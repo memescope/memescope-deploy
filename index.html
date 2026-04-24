@@ -9439,19 +9439,35 @@ function tpReaggregate(bars, mult) {
 
 async function tpFindPool(geckoChain, addr) {
   if (_tpPoolCache[addr]) return _tpPoolCache[addr];
+  // Try 1: GeckoTerminal pool lookup
   for (var attempt = 0; attempt < 2; attempt++) {
     try {
       var r = await fetch('https://api.geckoterminal.com/api/v2/networks/' + geckoChain + '/tokens/' + addr + '/pools?page=1', { headers:{'Accept':'application/json'} });
       if (r.status === 429) { await new Promise(function(ok) { setTimeout(ok, 1500); }); continue; }
-      if (!r.ok) return null;
+      if (!r.ok) break;
       var d = await r.json();
-      if (!d.data || !d.data.length) return null;
+      if (!d.data || !d.data.length) break;
       var poolId = d.data[0].attributes && d.data[0].attributes.address;
       if (!poolId) { var p = d.data[0].id.split('_'); poolId = p.length > 1 ? p.slice(1).join('_') : d.data[0].id; }
       _tpPoolCache[addr] = poolId;
       return poolId;
     } catch(e) { if (attempt === 0) { await new Promise(function(ok) { setTimeout(ok, 1000); }); } }
   }
+  // Try 2: DexScreener fallback — get pair address from DexScreener
+  try {
+    var dr = await fetch('https://api.dexscreener.com/latest/dex/tokens/' + addr);
+    if (dr.ok) {
+      var dd = await dr.json();
+      if (dd.pairs && dd.pairs.length) {
+        // Pick the pair with the highest liquidity
+        var best = dd.pairs.reduce(function(b,p) { return (p.liquidity&&p.liquidity.usd||0) > (b.liquidity&&b.liquidity.usd||0) ? p : b; }, dd.pairs[0]);
+        if (best.pairAddress) {
+          _tpPoolCache[addr] = best.pairAddress;
+          return best.pairAddress;
+        }
+      }
+    }
+  } catch(e) {}
   return null;
 }
 
