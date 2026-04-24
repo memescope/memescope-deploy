@@ -9255,11 +9255,10 @@ function openTokenPage(t) {
   tgEl.style.display = t.telegram ? '' : 'none';
   tgEl.href = t.telegram || '#';
 
-  // Pre-fetch chart data, then init chart
+  // Start pre-fetching chart data in background, init chart immediately
   var chartChain = (t.net || 'solana').toLowerCase();
-  prefetchChartData(chartChain, t.ca).then(function() {
-    initTokenPageChart(t);
-  });
+  prefetchChartData(chartChain, t.ca);
+  setTimeout(function() { initTokenPageChart(t); }, 300);
 
   // Load demo txns for now
   loadTokenPageTxns(t);
