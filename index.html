@@ -396,13 +396,11 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 10px 16px;
+    padding: 10px 24px;
     border-bottom: none;
-    background: #1A1A22;
+    background: #14141A;
     flex-wrap: wrap;
     transition: transform 0.3s ease, opacity 0.3s ease;
-    margin: 4px 8px 0 8px;
-    border-radius: 10px;
   }
   .filter-bar.hidden-scroll {
     transform: translateY(-100%);
@@ -580,12 +578,9 @@
 
   /* TABLE */
   .table-container {
-    background: #17171E;
+    background: var(--bg-primary);
     flex: 1;
     padding: 0;
-    margin: 4px 8px 8px 8px;
-    border-radius: 10px;
-    overflow: hidden;
   }
 
   table {
@@ -598,7 +593,7 @@
   thead th {
     position: sticky;
     top: 52px;
-    background: #1C1C24;
+    background: #1E1E23;
     padding: 12px 14px;
     text-align: right;
     font-family: 'Inter', sans-serif;
@@ -608,7 +603,7 @@
     text-transform: uppercase;
     letter-spacing: 0.8px;
     color: var(--text-primary);
-    border-bottom: 1px solid rgba(255,255,255,0.06);
+    border-bottom: 1px solid var(--border);
     white-space: nowrap;
     z-index: 18;
     -webkit-font-smoothing: antialiased;
@@ -655,8 +650,8 @@
     white-space: nowrap;
     font-family: 'Inter', sans-serif; font-variant-numeric: tabular-nums;
     color: #f9f9fb;
-    border-right: 1px solid rgba(255,255,255,0.04);
-    border-bottom: 1px solid rgba(255,255,255,0.04);
+    border-right: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
   }
   tbody td:last-child { border-right: none; }
 
@@ -4332,12 +4327,10 @@
       gap: 8px !important;
       overflow-x: auto !important;
       flex-wrap: nowrap !important;
-      background: #1A1A22 !important;
+      background: #14141A !important;
       align-items: center !important;
       -webkit-overflow-scrolling: touch;
-      border-bottom: none !important;
-      margin: 4px 6px 0 6px !important;
-      border-radius: 10px !important;
+      border-bottom: 1px solid var(--border) !important;
     }
     .filter-bar::-webkit-scrollbar { display: none; }
     /* Fade edge hint — shows there's more to scroll */
@@ -4447,9 +4440,7 @@
     .table-container {
       overflow-x: auto !important;
       -webkit-overflow-scrolling: touch;
-      width: auto !important;
-      margin: 4px 6px 6px 6px !important;
-      border-radius: 10px !important;
+      width: 100% !important;
     }
     table { 
       width: auto !important;
