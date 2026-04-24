@@ -9340,29 +9340,35 @@ function initTokenPageChart(t) {
       }, 0);
     },
     getBars: function(sym, res, params, onRes, onErr) {
+      console.log('[CHART] getBars called — firstDataRequest:', params.firstDataRequest, 'from:', params.from, 'to:', params.to, 'countBack:', params.countBack);
+
       // Not first request = scrolling for older history we don't have
       if (params.firstDataRequest === false) {
+        console.log('[CHART] → not first request, returning noData');
         onRes([], { noData: true });
         return;
       }
 
       var cacheKey = t.ca + '_' + res;
       if (_barCache[cacheKey]) {
+        console.log('[CHART] → returning cached bars:', _barCache[cacheKey].length);
         onRes(_barCache[cacheKey], { noData: _barCache[cacheKey].length === 0 });
         return;
       }
 
       var apiUrl = 'https://memescope-scraper.memescope-io.workers.dev/ohlcv?chain=' + encodeURIComponent(chain) + '&address=' + encodeURIComponent(t.ca) + '&resolution=' + encodeURIComponent(res) + (t.pairAddress ? '&pool=' + encodeURIComponent(t.pairAddress) : '');
+      console.log('[CHART] → fetching:', apiUrl);
 
       var resMin = parseInt(res);
       var resMs = (!isNaN(resMin) ? resMin : 1) * 60000;
       if (res === '1D') resMs = 86400000;
 
       fetch(apiUrl).then(function(r) {
-        if (!r.ok) throw new Error('fetch failed');
+        if (!r.ok) throw new Error('fetch failed ' + r.status);
         return r.json();
       }).then(function(d) {
         var raw = (d && d.bars) || [];
+        console.log('[CHART] → API returned', raw.length, 'raw bars, pool:', d.pool, 'noData:', d.noData);
         var seen = {};
         var bars = [];
         for (var i = 0; i < raw.length; i++) {
@@ -9378,8 +9384,10 @@ function initTokenPageChart(t) {
         }
         bars.sort(function(a, b) { return a.time - b.time; });
         _barCache[cacheKey] = bars;
+        console.log('[CHART] → sending', bars.length, 'bars to TradingView. First:', bars[0], 'Last:', bars[bars.length-1]);
         onRes(bars, { noData: bars.length === 0 });
-      }).catch(function() {
+      }).catch(function(err) {
+        console.error('[CHART] → fetch error:', err);
         onRes([], { noData: true });
       });
     },
