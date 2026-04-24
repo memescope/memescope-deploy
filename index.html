@@ -9361,9 +9361,11 @@ function initTokenPageChart(t) {
       }
       fetch(apiUrl).then(function(r) { return r.ok ? r.json() : {bars:[]}; }).then(function(d) {
         var bars = normalizeBars((d && d.bars) || []);
+        console.log('OHLCV getBars:', bars.length, 'bars, first:', bars[0], 'last:', bars[bars.length-1], 'params:', params);
         if (bars.length > 0) setCachedBars(cacheKey, bars);
         respond(bars, { noData: bars.length === 0 });
-      }).catch(function() {
+      }).catch(function(err) {
+        console.log('OHLCV getBars error:', err);
         respond([], { noData: true });
       });
     },
