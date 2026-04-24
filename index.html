@@ -9255,12 +9255,8 @@ function openTokenPage(t) {
   tgEl.style.display = t.telegram ? '' : 'none';
   tgEl.href = t.telegram || '#';
 
-  // Pre-fetch 1m chart data immediately (single request to avoid rate limits)
-  var chartChain = (t.net || 'solana').toLowerCase();
-  var preloadUrl = 'https://memescope-scraper.memescope-io.workers.dev/ohlcv?chain=' + encodeURIComponent(chartChain) + '&address=' + encodeURIComponent(t.ca) + '&resolution=1';
-  window._ohlcvPreload = { '1': fetch(preloadUrl).then(function(r) { return r.ok ? r.json() : {bars:[]}; }).catch(function() { return {bars:[]}; }) };
-  // Init chart after short delay
-  setTimeout(function() { initTokenPageChart(t); }, 200);
+  // Init chart immediately — Cloudflare Worker has no cold starts
+  initTokenPageChart(t);
 
   // Load demo txns for now
   loadTokenPageTxns(t);
@@ -9332,33 +9328,19 @@ function initTokenPageChart(t) {
     },
     getBars: function(sym, res, params, onRes, onErr) {
       var apiUrl = 'https://memescope-scraper.memescope-io.workers.dev/ohlcv?chain=' + encodeURIComponent(chain) + '&address=' + encodeURIComponent(t.ca) + '&resolution=' + encodeURIComponent(res);
-      // Use preloaded data if available
-      var preloaded = window._ohlcvPreload && window._ohlcvPreload[res];
-      var dataPromise = preloaded || fetch(apiUrl).then(function(r) { return r.ok ? r.json() : {bars:[]}; }).catch(function() { return {bars:[]}; });
-      dataPromise.then(function(d) {
-        var bars = (d && d.bars) || [];
-        if (bars.length > 0) {
-          onRes(bars, { noData: false });
-        } else {
-          // Retry up to 2 more times with increasing delay
-          function retry(attempt) {
-            var delayMs = attempt === 1 ? 1000 : 2000;
-            setTimeout(function() {
-              fetch(apiUrl).then(function(r) { return r.ok ? r.json() : {bars:[]}; }).then(function(d2) {
-                var bars2 = (d2 && d2.bars) || [];
-                if (bars2.length > 0 || attempt >= 2) {
-                  onRes(bars2, { noData: bars2.length === 0 });
-                } else {
-                  retry(attempt + 1);
-                }
-              }).catch(function() {
-                if (attempt >= 2) { onRes([], {noData:true}); } else { retry(attempt + 1); }
-              });
-            }, delayMs);
+      function tryFetch(attempt) {
+        fetch(apiUrl).then(function(r) { return r.ok ? r.json() : {bars:[]}; }).then(function(d) {
+          var bars = (d && d.bars) || [];
+          if (bars.length > 0 || attempt >= 3) {
+            onRes(bars, { noData: bars.length === 0 });
+          } else {
+            setTimeout(function() { tryFetch(attempt + 1); }, 500);
           }
-          retry(1);
-        }
-      });
+        }).catch(function() {
+          if (attempt >= 3) { onRes([], {noData:true}); } else { setTimeout(function() { tryFetch(attempt + 1); }, 500); }
+        });
+      }
+      tryFetch(1);
     },
     subscribeBars: function(sym, res, onTick, guid) {
       var iv = setInterval(async function() {
