@@ -9255,10 +9255,8 @@ function openTokenPage(t) {
   tgEl.style.display = t.telegram ? '' : 'none';
   tgEl.href = t.telegram || '#';
 
-  // Start pre-fetching chart data in background, init chart immediately
-  var chartChain = (t.net || 'solana').toLowerCase();
-  prefetchChartData(chartChain, t.ca);
-  setTimeout(function() { initTokenPageChart(t); }, 300);
+  // Init chart
+  setTimeout(function() { initTokenPageChart(t); }, 100);
 
   // Load demo txns for now
   loadTokenPageTxns(t);
@@ -9293,23 +9291,6 @@ function closeTokenPage() {
     try { history.replaceState({}, '', '/'); } catch(e) {}
   }
   _tpToken = null;
-}
-
-// Pre-fetch cache for chart data
-var _tpBarCache = {};
-
-async function prefetchChartData(chain, ca) {
-  var resolutions = ['1', '5', '15', '60'];
-  // Fetch 1m and 5m in parallel (most commonly used)
-  var promises = ['1', '5'].map(function(res) {
-    var url = 'https://memescope-api.vercel.app/api/ohlcv?chain=' + encodeURIComponent(chain) + '&address=' + encodeURIComponent(ca) + '&resolution=' + res;
-    return fetch(url).then(function(r) { return r.json(); }).then(function(d) {
-      _tpBarCache[chain + ':' + ca + ':' + res] = d.bars || [];
-    }).catch(function() {
-      _tpBarCache[chain + ':' + ca + ':' + res] = [];
-    });
-  });
-  await Promise.all(promises);
 }
 
 function initTokenPageChart(t) {
@@ -9347,19 +9328,11 @@ function initTokenPageChart(t) {
     },
     getBars: async function(sym, res, params, onRes, onErr) {
       try {
-        var cacheKey = chain + ':' + t.ca + ':' + res;
-        // Check pre-fetch cache first
-        if (_tpBarCache[cacheKey] && _tpBarCache[cacheKey].length > 0) {
-          var cached = _tpBarCache[cacheKey];
-          onRes(cached, { noData: false });
-          return;
-        }
         var url = 'https://memescope-api.vercel.app/api/ohlcv?chain=' + encodeURIComponent(chain) + '&address=' + encodeURIComponent(t.ca) + '&resolution=' + encodeURIComponent(res);
         var r = await fetch(url);
         if (!r.ok) { onRes([], {noData:true}); return; }
         var d = await r.json();
         var bars = d.bars || [];
-        _tpBarCache[cacheKey] = bars;
         onRes(bars, { noData: bars.length === 0 });
       } catch(e) { console.log('getBars error:', e); onRes([], {noData:true}); }
     },
@@ -9390,7 +9363,7 @@ function initTokenPageChart(t) {
     locale:'en', library_path:'/charting_library/',
     datafeed: datafeed,
     symbol: t.sym + '/' + (pairTokenMap[chain] || 'SOL'),
-    interval:'5', fullscreen:false, autosize:true, theme:'dark',
+    interval:'1', fullscreen:false, autosize:true, theme:'dark',
     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     loading_screen: { backgroundColor:'#18171A', foregroundColor:'#4A9EFF' },
     overrides: {
