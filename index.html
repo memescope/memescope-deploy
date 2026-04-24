@@ -9343,13 +9343,13 @@ function initTokenPageChart(t) {
         if (bars.length > 0) {
           onRes(bars, { noData: false });
         } else {
-          // First attempt empty — retry after 2s (server may have cached by now)
+          // First attempt empty — retry after 1s (server may have cached by now)
           setTimeout(function() {
             fetch(apiUrl).then(function(r) { return r.ok ? r.json() : {bars:[]}; }).then(function(d2) {
               var bars2 = (d2 && d2.bars) || [];
               onRes(bars2, { noData: bars2.length === 0 });
             }).catch(function() { onRes([], {noData:true}); });
-          }, 2000);
+          }, 1000);
         }
       });
     },
