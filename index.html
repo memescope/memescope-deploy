@@ -9327,7 +9327,7 @@ function initTokenPageChart(t) {
       }, 0);
     },
     getBars: function(sym, res, params, onRes, onErr) {
-      var apiUrl = 'https://memescope-scraper.memescope-io.workers.dev/ohlcv?chain=' + encodeURIComponent(chain) + '&address=' + encodeURIComponent(t.ca) + '&resolution=' + encodeURIComponent(res);
+      var apiUrl = 'https://memescope-scraper.memescope-io.workers.dev/ohlcv?chain=' + encodeURIComponent(chain) + '&address=' + encodeURIComponent(t.ca) + '&resolution=' + encodeURIComponent(res) + (t.pairAddress ? '&pool=' + encodeURIComponent(t.pairAddress) : '');
       function tryFetch(attempt) {
         fetch(apiUrl).then(function(r) { return r.ok ? r.json() : {bars:[]}; }).then(function(d) {
           var bars = (d && d.bars) || [];
@@ -9369,7 +9369,7 @@ function initTokenPageChart(t) {
     locale:'en', library_path:'/charting_library/',
     datafeed: datafeed,
     symbol: t.sym + '/' + (pairTokenMap[chain] || 'SOL'),
-    interval:'5', fullscreen:false, autosize:true, theme:'dark',
+    interval:'1', fullscreen:false, autosize:true, theme:'dark',
     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     loading_screen: { backgroundColor:'#18171A', foregroundColor:'#4A9EFF' },
     overrides: {
