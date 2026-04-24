@@ -4796,6 +4796,10 @@
     transition: background 0.15s, color 0.15s;
     overflow: hidden;
   }
+  .ms-nav-link.active {
+    color: #00e5ff;
+    background: rgba(0, 229, 255, 0.08);
+  }
   .ms-nav-link > svg {
     grid-column: 1;
     justify-self: center;
@@ -5891,6 +5895,20 @@ function setCategory(el, cat) {
   currentPage = 1;
   document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active-pill'));
   el.classList.add('active-pill');
+  // Clear sidebar active state (e.g. Updated link)
+  document.querySelectorAll('.ms-nav-link').forEach(l => l.classList.remove('active'));
+  loadData();
+  if(typeof init === 'function') init();
+}
+
+function showRecentUpdates() {
+  currentCategory = 'updated';
+  currentPage = 1;
+  // Clear filter pill active states and highlight the sidebar link
+  document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active-pill'));
+  document.querySelectorAll('.ms-nav-link').forEach(l => l.classList.remove('active'));
+  var updLink = document.querySelector('.ms-recent-updates-link');
+  if (updLink) updLink.classList.add('active');
   loadData();
   if(typeof init === 'function') init();
 }
@@ -6676,6 +6694,7 @@ function getFilteredTokens() {
     case 'gainers': tokens = tokens.filter(t => t[tf] > 0); tokens.sort((a,b) => b[tf] - a[tf]); break;
     case 'losers': tokens = tokens.filter(t => t[tf] < 0); tokens.sort((a,b) => a[tf] - b[tf]); break;
     case 'new': tokens = tokens.filter(t => ageToHours(t.age) <= 1); tokens.sort((a,b) => ageToHours(a.age) - ageToHours(b.age)); break;
+    case 'updated': tokens = tokens.filter(t => t.hasProfile); tokens.sort((a,b) => (b.mcap || 0) - (a.mcap || 0)); break;
   }
   if (currentSort.col) {
     const col = currentSort.col;
