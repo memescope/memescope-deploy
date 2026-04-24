@@ -9343,13 +9343,23 @@ function initTokenPageChart(t) {
         if (bars.length > 0) {
           onRes(bars, { noData: false });
         } else {
-          // First attempt empty — retry after 1s (server may have cached by now)
-          setTimeout(function() {
-            fetch(apiUrl).then(function(r) { return r.ok ? r.json() : {bars:[]}; }).then(function(d2) {
-              var bars2 = (d2 && d2.bars) || [];
-              onRes(bars2, { noData: bars2.length === 0 });
-            }).catch(function() { onRes([], {noData:true}); });
-          }, 1000);
+          // Retry up to 2 more times with increasing delay
+          function retry(attempt) {
+            var delayMs = attempt === 1 ? 1000 : 2000;
+            setTimeout(function() {
+              fetch(apiUrl).then(function(r) { return r.ok ? r.json() : {bars:[]}; }).then(function(d2) {
+                var bars2 = (d2 && d2.bars) || [];
+                if (bars2.length > 0 || attempt >= 2) {
+                  onRes(bars2, { noData: bars2.length === 0 });
+                } else {
+                  retry(attempt + 1);
+                }
+              }).catch(function() {
+                if (attempt >= 2) { onRes([], {noData:true}); } else { retry(attempt + 1); }
+              });
+            }, delayMs);
+          }
+          retry(1);
         }
       });
     },
