@@ -9355,7 +9355,7 @@ function initTokenPageChart(t) {
         if (!raw || !raw.length) return [];
         return raw.map(function(b) {
           var tm = b.time || b.t || 0;
-          if (tm && tm < 1e12) tm = tm * 1000;
+          if (tm > 1e12) tm = Math.floor(tm / 1000); // ms → seconds (TradingView expects seconds)
           return { time: tm, open: b.open || b.o || 0, high: b.high || b.h || 0, low: b.low || b.l || 0, close: b.close || b.c || 0, volume: b.volume || b.v || 0 };
         });
       }
@@ -9378,7 +9378,7 @@ function initTokenPageChart(t) {
           var pair = d.pairs.reduce(function(b,p) { return (p.liquidity&&p.liquidity.usd||0) > (b.liquidity&&b.liquidity.usd||0) ? p : b; }, d.pairs[0]);
           var price = parseFloat(pair.priceUsd);
           if (!price) return;
-          onTick({ time: Math.floor(Date.now()/60000)*60000, open:price, high:price, low:price, close:price, volume:0 });
+          onTick({ time: Math.floor(Date.now()/60000)*60, open:price, high:price, low:price, close:price, volume:0 });
           var pFmt = function(p) { if(p>=1) return '$'+p.toFixed(2); if(p>=0.01) return '$'+p.toFixed(4); if(p>=0.0001) return '$'+p.toFixed(6); return '$'+p.toExponential(2); };
           document.getElementById('tpRPriceBig').textContent = pFmt(price);
         } catch(e) {}
