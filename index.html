@@ -9298,7 +9298,7 @@ var _barCache = {};
 function getCachedBars(key) {
   var entry = _barCache[key];
   if (!entry) return null;
-  if (Date.now() - entry.ts > 60000) { delete _barCache[key]; return null; } // 60s TTL
+  if (Date.now() - entry.ts > 300000) { delete _barCache[key]; return null; } // 5min TTL
   return entry.bars;
 }
 function setCachedBars(key, bars) {
@@ -9346,9 +9346,8 @@ function initTokenPageChart(t) {
       var cacheKey = t.ca + '_' + res;
       var cached = getCachedBars(cacheKey);
       if (cached && cached.length > 0) {
-        var fromMs = (params.from || 0) * 1000;
         var toMs2 = (params.to || Infinity) * 1000;
-        var fb = cached.filter(function(b) { return b.time >= fromMs && b.time <= toMs2; });
+        var fb = cached.filter(function(b) { return b.time <= toMs2; });
         var cnt = params.countBack || 300;
         if (fb.length > cnt) fb = fb.slice(-cnt);
         respond(fb, { noData: fb.length === 0 });
@@ -9381,9 +9380,8 @@ function initTokenPageChart(t) {
       fetch(apiUrl).then(function(r) { return r.ok ? r.json() : {bars:[]}; }).then(function(d) {
         var bars = normalizeBars((d && d.bars) || []);
         if (bars.length > 0) setCachedBars(cacheKey, bars);
-        var fromMs = (params.from || 0) * 1000;
         var toMs = (params.to || Infinity) * 1000;
-        bars = bars.filter(function(b) { return b.time >= fromMs && b.time <= toMs; });
+        bars = bars.filter(function(b) { return b.time <= toMs; });
         var count = params.countBack || 300;
         if (bars.length > count) bars = bars.slice(-count);
         respond(bars, { noData: bars.length === 0 });
