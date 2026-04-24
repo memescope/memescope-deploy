@@ -9293,6 +9293,21 @@ function closeTokenPage() {
   _tpToken = null;
 }
 
+// Client-side bar cache to avoid re-fetching and hitting rate limits
+var _barCache = {};
+function getCachedBars(key) {
+  var entry = _barCache[key];
+  if (!entry) return null;
+  if (Date.now() - entry.ts > 60000) { delete _barCache[key]; return null; } // 60s TTL
+  return entry.bars;
+}
+function setCachedBars(key, bars) {
+  _barCache[key] = { bars: bars, ts: Date.now() };
+  // Keep cache small — max 20 entries
+  var keys = Object.keys(_barCache);
+  if (keys.length > 20) delete _barCache[keys[0]];
+}
+
 function initTokenPageChart(t) {
   if (!window.TradingView || !t || !t.ca) return;
   var container = document.getElementById('tpChartContainer');
@@ -9327,25 +9342,34 @@ function initTokenPageChart(t) {
       }, 0);
     },
     getBars: function(sym, res, params, onRes, onErr) {
+      var cacheKey = t.ca + '_' + res;
+      var cached = getCachedBars(cacheKey);
+      if (cached && cached.length > 0) {
+        onRes(cached, { noData: false });
+        return;
+      }
       var apiUrl = 'https://memescope-scraper.memescope-io.workers.dev/ohlcv?chain=' + encodeURIComponent(chain) + '&address=' + encodeURIComponent(t.ca) + '&resolution=' + encodeURIComponent(res) + (t.pairAddress ? '&pool=' + encodeURIComponent(t.pairAddress) : '');
       function normalizeBars(raw) {
         if (!raw || !raw.length) return [];
         return raw.map(function(b) {
           var tm = b.time || b.t || 0;
-          if (tm && tm < 1e12) tm = tm * 1000; // seconds → ms
+          if (tm && tm < 1e12) tm = tm * 1000;
           return { time: tm, open: b.open || b.o || 0, high: b.high || b.h || 0, low: b.low || b.l || 0, close: b.close || b.c || 0, volume: b.volume || b.v || 0 };
         });
       }
       function tryFetch(attempt) {
         fetch(apiUrl).then(function(r) { return r.ok ? r.json() : {bars:[]}; }).then(function(d) {
           var bars = normalizeBars((d && d.bars) || []);
-          if (bars.length > 0 || attempt >= 5) {
-            onRes(bars, { noData: bars.length === 0 });
+          if (bars.length > 0) {
+            setCachedBars(cacheKey, bars);
+            onRes(bars, { noData: false });
+          } else if (attempt >= 3) {
+            onRes([], { noData: true });
           } else {
-            setTimeout(function() { tryFetch(attempt + 1); }, 1500);
+            setTimeout(function() { tryFetch(attempt + 1); }, 2000);
           }
         }).catch(function() {
-          if (attempt >= 5) { onRes([], {noData:true}); } else { setTimeout(function() { tryFetch(attempt + 1); }, 1500); }
+          if (attempt >= 3) { onRes([], {noData:true}); } else { setTimeout(function() { tryFetch(attempt + 1); }, 2000); }
         });
       }
       tryFetch(1);
