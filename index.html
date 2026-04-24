@@ -9255,8 +9255,15 @@ function openTokenPage(t) {
   tgEl.style.display = t.telegram ? '' : 'none';
   tgEl.href = t.telegram || '#';
 
-  // Init chart
-  setTimeout(function() { initTokenPageChart(t); }, 100);
+  // Start fetching chart data immediately (before TradingView initializes)
+  var chartChain = (t.net || 'solana').toLowerCase();
+  window._ohlcvPreload = {};
+  ['1', '5', '15', '60'].forEach(function(res) {
+    var url = 'https://memescope-api.vercel.app/api/ohlcv?chain=' + encodeURIComponent(chartChain) + '&address=' + encodeURIComponent(t.ca) + '&resolution=' + res;
+    window._ohlcvPreload[res] = fetch(url).then(function(r) { return r.ok ? r.json() : {bars:[]}; }).catch(function() { return {bars:[]}; });
+  });
+  // Init chart after short delay
+  setTimeout(function() { initTokenPageChart(t); }, 200);
 
   // Load demo txns for now
   loadTokenPageTxns(t);
@@ -9328,26 +9335,23 @@ function initTokenPageChart(t) {
     },
     getBars: function(sym, res, params, onRes, onErr) {
       var apiUrl = 'https://memescope-api.vercel.app/api/ohlcv?chain=' + encodeURIComponent(chain) + '&address=' + encodeURIComponent(t.ca) + '&resolution=' + encodeURIComponent(res);
-      function tryFetch(attempt) {
-        fetch(apiUrl).then(function(r) {
-          if (!r.ok) throw new Error('not ok');
-          return r.json();
-        }).then(function(d) {
-          var bars = (d && d.bars) || [];
-          if (bars.length === 0 && attempt < 2) {
-            setTimeout(function() { tryFetch(attempt + 1); }, 1500);
-          } else {
-            onRes(bars, { noData: bars.length === 0 });
-          }
-        }).catch(function(e) {
-          if (attempt < 2) {
-            setTimeout(function() { tryFetch(attempt + 1); }, 1500);
-          } else {
-            onRes([], {noData:true});
-          }
-        });
-      }
-      tryFetch(0);
+      // Use preloaded data if available
+      var preloaded = window._ohlcvPreload && window._ohlcvPreload[res];
+      var dataPromise = preloaded || fetch(apiUrl).then(function(r) { return r.ok ? r.json() : {bars:[]}; }).catch(function() { return {bars:[]}; });
+      dataPromise.then(function(d) {
+        var bars = (d && d.bars) || [];
+        if (bars.length > 0) {
+          onRes(bars, { noData: false });
+        } else {
+          // First attempt empty — retry after 2s (server may have cached by now)
+          setTimeout(function() {
+            fetch(apiUrl).then(function(r) { return r.ok ? r.json() : {bars:[]}; }).then(function(d2) {
+              var bars2 = (d2 && d2.bars) || [];
+              onRes(bars2, { noData: bars2.length === 0 });
+            }).catch(function() { onRes([], {noData:true}); });
+          }, 2000);
+        }
+      });
     },
     subscribeBars: function(sym, res, onTick, guid) {
       var iv = setInterval(async function() {
