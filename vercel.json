@@ -1,5 +1,5 @@
 {
   "rewrites": [
-    { "source": "/((?!img/).*)", "destination": "/index.html" }
+    { "source": "/((?!img/|charting_library/).*)", "destination": "/index.html" }
   ]
 }
