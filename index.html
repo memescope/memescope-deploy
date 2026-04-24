@@ -9326,15 +9326,19 @@ function initTokenPageChart(t) {
         });
       }, 0);
     },
-    getBars: async function(sym, res, params, onRes, onErr) {
-      try {
-        var url = 'https://memescope-api.vercel.app/api/ohlcv?chain=' + encodeURIComponent(chain) + '&address=' + encodeURIComponent(t.ca) + '&resolution=' + encodeURIComponent(res);
-        var r = await fetch(url);
+    getBars: function(sym, res, params, onRes, onErr) {
+      var apiUrl = 'https://memescope-api.vercel.app/api/ohlcv?chain=' + encodeURIComponent(chain) + '&address=' + encodeURIComponent(t.ca) + '&resolution=' + encodeURIComponent(res);
+      fetch(apiUrl).then(function(r) {
         if (!r.ok) { onRes([], {noData:true}); return; }
-        var d = await r.json();
+        return r.json();
+      }).then(function(d) {
+        if (!d) return;
         var bars = d.bars || [];
         onRes(bars, { noData: bars.length === 0 });
-      } catch(e) { console.log('getBars error:', e); onRes([], {noData:true}); }
+      }).catch(function(e) {
+        console.log('getBars error:', e);
+        onRes([], {noData:true});
+      });
     },
     subscribeBars: function(sym, res, onTick, guid) {
       var iv = setInterval(async function() {
