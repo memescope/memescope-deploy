@@ -9331,13 +9331,13 @@ function initTokenPageChart(t) {
       function tryFetch(attempt) {
         fetch(apiUrl).then(function(r) { return r.ok ? r.json() : {bars:[]}; }).then(function(d) {
           var bars = (d && d.bars) || [];
-          if (bars.length > 0 || attempt >= 3) {
+          if (bars.length > 0 || attempt >= 5) {
             onRes(bars, { noData: bars.length === 0 });
           } else {
-            setTimeout(function() { tryFetch(attempt + 1); }, 500);
+            setTimeout(function() { tryFetch(attempt + 1); }, 1500);
           }
         }).catch(function() {
-          if (attempt >= 3) { onRes([], {noData:true}); } else { setTimeout(function() { tryFetch(attempt + 1); }, 500); }
+          if (attempt >= 5) { onRes([], {noData:true}); } else { setTimeout(function() { tryFetch(attempt + 1); }, 1500); }
         });
       }
       tryFetch(1);
