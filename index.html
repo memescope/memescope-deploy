@@ -9453,6 +9453,13 @@ function initTokenPageChart(t) {
     disabled_features: ['header_symbol_search','symbol_search_hot_key','header_compare','display_market_status','go_to_date','timeframes_toolbar'],
     enabled_features: ['side_toolbar_in_fullscreen_mode','header_in_fullscreen_mode','create_volume_indicator_by_default'],
   });
+
+  // Auto-fit chart to show all candles once widget is ready
+  _tpWidget.onChartReady(function() {
+    try {
+      _tpWidget.activeChart().executeActionById('timeScaleReset');
+    } catch(e) {}
+  });
 }
 
 // Pool lookup and OHLCV fetching now handled server-side via /api/ohlcv
