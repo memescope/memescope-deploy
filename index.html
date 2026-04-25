@@ -8379,6 +8379,32 @@ function openTokenModal(idx) {
   if(tokens[idx]) openBubbleModal(tokens[idx]);
 }
 
+// DexScreener-style price: $0.0₄5890
+function dexPriceFmt(p) {
+  if (!p || p <= 0) return '$0.00';
+  if (p >= 1) return '$' + p.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+  if (p >= 0.01) return '$' + p.toFixed(4);
+  // Count leading zeros after "0."
+  var s = p.toFixed(20);
+  var dot = s.indexOf('.');
+  var zeros = 0;
+  for (var i = dot + 1; i < s.length; i++) {
+    if (s[i] === '0') zeros++;
+    else break;
+  }
+  if (zeros < 4) return '$' + p.toFixed(zeros + 4);
+  // Get 4 significant digits after the zeros
+  var sigDigits = s.substring(dot + 1 + zeros, dot + 1 + zeros + 4);
+  // Remove trailing zeros from sig digits
+  sigDigits = sigDigits.replace(/0+$/, '') || '0';
+  var sub = String(zeros);
+  var subHtml = '';
+  for (var j = 0; j < sub.length; j++) {
+    subHtml += '<sub style="font-size:0.55em;vertical-align:baseline;opacity:0.5">' + sub[j] + '</sub>';
+  }
+  return '$0.0' + subHtml + sigDigits;
+}
+
 function openBubbleModal(t) {
   if (!t) return;
   try {
@@ -8416,14 +8442,10 @@ function openBubbleModal(t) {
   var ageBadge = document.getElementById("bmAgeBadge");
   if (ageBadge) ageBadge.textContent = fmtAge(t.age) || '';
 
-  // Price
-  var priceFmt = function(p) {
-    if (p >= 1) return "$" + p.toFixed(2);
-    if (p >= 0.01) return "$" + p.toFixed(4);
-    if (p >= 0.0001) return "$" + p.toFixed(6);
-    return "$" + p.toExponential(2);
-  };
-  document.getElementById("bmPriceBig").textContent = priceFmt(t.price);
+  // Price — DexScreener subscript format
+  var _bmPriceEl = document.getElementById("bmPriceBig");
+  _bmPriceEl.innerHTML = dexPriceFmt(t.price);
+  _bmPriceEl.setAttribute('data-price', t.price);
 
   // Contract Address — just store on the element for copyCA()
   var caEl = document.getElementById("bmCA");
@@ -8578,7 +8600,7 @@ function updateConverter(direction) {
   } else {
     var amount = parseFloat(document.getElementById("bmConvAmount").value) || 0;
     var usd = amount * t.price;
-    document.getElementById("bmConvUsd").value = usd > 0 ? (usd >= 0.01 ? usd.toFixed(2) : usd.toExponential(2)) : '';
+    document.getElementById("bmConvUsd").value = usd > 0 ? (usd >= 1 ? usd.toFixed(2) : usd >= 0.01 ? usd.toFixed(4) : usd.toFixed(8)) : '';
   }
 }
 
@@ -8798,11 +8820,11 @@ function _initModalChart(t) {
           var barTime = Math.floor(Date.now() / resMs) * resMs;
           onTick({ time: barTime, open: price, high: price, low: price, close: price, volume: 0 });
           // Update modal price display
-          var pFmt2 = function(p) { if(p>=1) return '$'+p.toFixed(2); if(p>=0.01) return '$'+p.toFixed(4); if(p>=0.0001) return '$'+p.toFixed(6); return '$'+p.toExponential(2); };
           var priceEl = document.getElementById('bmPriceBig');
           if (priceEl) {
-            var prevPrice = parseFloat(priceEl.textContent.replace(/[^0-9.e\-]/g,'')) || 0;
-            priceEl.textContent = pFmt2(price);
+            var prevPrice = parseFloat(priceEl.getAttribute('data-price')) || 0;
+            priceEl.setAttribute('data-price', price);
+            priceEl.innerHTML = dexPriceFmt(price);
             // Header glow
             var hdr = document.querySelector('.bm-header');
             if (hdr && prevPrice && price !== prevPrice) {
