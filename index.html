@@ -9602,10 +9602,19 @@ function _fetchAndRenderTxns(t) {
       var tx = trades[i];
       var isBuy = tx.type === 'buy';
       var color = isBuy ? 'var(--green)' : 'var(--red)';
-      // Time ago
-      var txTime = tx.time ? new Date(tx.time).getTime() : 0;
-      var ago = txTime ? Math.floor((now - txTime) / 1000) : 0;
-      var agoStr = ago < 60 ? ago + 's ago' : ago < 3600 ? Math.floor(ago / 60) + 'm ago' : Math.floor(ago / 3600) + 'h ago';
+      // Date & time
+      var txDate = tx.time ? new Date(tx.time) : null;
+      var dateStr = '';
+      if (txDate) {
+        var mm = txDate.getMonth() + 1;
+        var dd = txDate.getDate();
+        var hh = txDate.getHours();
+        var mi = txDate.getMinutes();
+        var ss = txDate.getSeconds();
+        var ampm = hh >= 12 ? 'PM' : 'AM';
+        var h12 = hh % 12 || 12;
+        dateStr = mm + '/' + dd + ' ' + h12 + ':' + (mi < 10 ? '0' : '') + mi + ':' + (ss < 10 ? '0' : '') + ss + ' ' + ampm;
+      }
       // Price
       var price = tx.volumeUsd && tx.amountBase ? (tx.volumeUsd / tx.amountBase) : 0;
       var pFmt = price >= 1 ? '$' + price.toFixed(2) : price >= 0.01 ? '$' + price.toFixed(4) : price >= 0.0001 ? '$' + price.toFixed(6) : '$' + price.toFixed(8);
@@ -9623,7 +9632,7 @@ function _fetchAndRenderTxns(t) {
       var makerLink = maker ? makerBase + maker : '#';
 
       html += '<tr>' +
-        '<td>' + agoStr + '</td>' +
+        '<td style="font-size:11px;white-space:nowrap">' + dateStr + '</td>' +
         '<td style="color:' + color + '">' + (isBuy ? 'Buy' : 'Sell') + '</td>' +
         '<td style="color:' + color + '">' + pFmt + '</td>' +
         '<td style="color:' + color + '">' + amtStr + '</td>' +
