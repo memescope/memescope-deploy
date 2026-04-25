@@ -9329,6 +9329,37 @@ function initTokenPageChart(t) {
 
   var chain = (t.net || 'solana').toLowerCase();
   var pairTokenMap = { solana:'SOL', eth:'WETH', base:'WETH', bsc:'BNB', sui:'SUI', tron:'TRX' };
+  var geckoChainMap = { solana:'solana', eth:'eth', base:'base', bsc:'bsc', sui:'sui-network', tron:'tron' };
+  var dexChainMap2 = { solana:'solana', eth:'ethereum', base:'base', bsc:'bsc', sui:'sui', tron:'tron' };
+  var geckoNet = geckoChainMap[chain] || chain;
+  var dexNet = dexChainMap2[chain] || chain;
+
+  // Discover pool from browser — DexScreener first, GeckoTerminal fallback, in parallel
+  function _discoverPool(cb) {
+    if (t._discoveredPool) { cb(t._discoveredPool); return; }
+    if (t.pairAddress) { t._discoveredPool = t.pairAddress; cb(t.pairAddress); return; }
+    var done = false;
+    // DexScreener
+    fetch('https://api.dexscreener.com/latest/dex/tokens/' + t.ca).then(function(r){return r.json()}).then(function(d){
+      if (done) return;
+      if (d && d.pairs && d.pairs.length) {
+        var cp = d.pairs.filter(function(p){return p.chainId === dexNet});
+        var best = (cp.length ? cp : d.pairs).reduce(function(b,p){return (p.liquidity&&p.liquidity.usd||0)>(b.liquidity&&b.liquidity.usd||0)?p:b},(cp.length?cp:d.pairs)[0]);
+        if (best.pairAddress) { done = true; t._discoveredPool = best.pairAddress; cb(best.pairAddress); }
+      }
+    }).catch(function(){});
+    // GeckoTerminal fallback
+    fetch('https://api.geckoterminal.com/api/v2/networks/'+geckoNet+'/tokens/'+t.ca+'/pools?page=1',{headers:{'Accept':'application/json'}}).then(function(r){return r.json()}).then(function(d){
+      if (done) return;
+      if (d && d.data && d.data.length) {
+        var poolId = d.data[0].attributes && d.data[0].attributes.address;
+        if (!poolId) { var pts = d.data[0].id.split('_'); poolId = pts.length > 1 ? pts.slice(1).join('_') : d.data[0].id; }
+        if (poolId) { done = true; t._discoveredPool = poolId; cb(poolId); }
+      }
+    }).catch(function(){});
+    // Timeout after 8s
+    setTimeout(function(){ if (!done) { done = true; cb(null); } }, 8000);
+  }
 
   var datafeed = {
     onReady: function(cb) {
@@ -9363,65 +9394,38 @@ function initTokenPageChart(t) {
       }, 0);
     },
     getBars: function(sym, res, params, onRes, onErr) {
-      // Not first request = scrolling for older history we don't have
-      if (params.firstDataRequest === false) {
-        onRes([], { noData: true });
-        return;
-      }
+      if (params.firstDataRequest === false) { onRes([], { noData: true }); return; }
 
       var cacheKey = t.ca + '_' + res;
-      if (_barCache[cacheKey]) {
-        onRes(_barCache[cacheKey], { noData: _barCache[cacheKey].length === 0 });
-        return;
-      }
+      if (_barCache[cacheKey]) { onRes(_barCache[cacheKey], { noData: _barCache[cacheKey].length === 0 }); return; }
 
-      var apiUrl = 'https://memescope-scraper.memescope-io.workers.dev/ohlcv?chain=' + encodeURIComponent(chain) + '&address=' + encodeURIComponent(t.ca) + '&resolution=' + encodeURIComponent(res) + (t.pairAddress ? '&pool=' + encodeURIComponent(t.pairAddress) : '');
-
+      var resMap = {'1':{agg:'minute',mult:1},'5':{agg:'minute',mult:5},'15':{agg:'minute',mult:15},'30':{agg:'minute',mult:30},'60':{agg:'hour',mult:1},'240':{agg:'hour',mult:4},'1D':{agg:'day',mult:1}};
+      var rc = resMap[res] || resMap['1'];
       var resMin = parseInt(res);
       var resMs = (!isNaN(resMin) ? resMin : 1) * 60000;
       if (res === '1D') resMs = 86400000;
 
-      var _retries = 0;
-      function _fetchBars() {
-        fetch(apiUrl).then(function(r) {
-          if (!r.ok) throw new Error('fetch failed ' + r.status);
-          return r.json();
-        }).then(function(d) {
-          var raw = (d && d.bars) || [];
+      _discoverPool(function(pool) {
+        if (!pool) { onRes([], { noData: true }); return; }
+        var url = 'https://api.geckoterminal.com/api/v2/networks/'+geckoNet+'/pools/'+pool+'/ohlcv/'+rc.agg+'?aggregate='+rc.mult+'&limit=300&currency=usd';
+        fetch(url,{headers:{'Accept':'application/json'}}).then(function(r){return r.json()}).then(function(d){
+          var list = d && d.data && d.data.attributes && d.data.attributes.ohlcv_list;
+          if (!list || !list.length) { onRes([], { noData: true }); return; }
           var seen = {};
           var bars = [];
-          for (var i = 0; i < raw.length; i++) {
-            var b = raw[i];
-            var tm = b.time || b.t || 0;
-            if (tm && tm < 1e12) tm = tm * 1000;
+          for (var i = 0; i < list.length; i++) {
+            var c = list[i];
+            var tm = c[0] * 1000;
             tm = Math.floor(tm / resMs) * resMs;
-            if (!tm || tm <= 0 || seen[tm]) continue;
+            if (!tm || seen[tm]) continue;
             seen[tm] = true;
-            var o = +(b.open || b.o || 0), h = +(b.high || b.h || 0), l = +(b.low || b.l || 0), c = +(b.close || b.c || 0);
-            if (!o && !h && !l && !c) continue;
-            bars.push({ time: tm, open: o, high: h, low: l, close: c, volume: +(b.volume || b.v || 0) });
+            bars.push({ time: tm, open: +c[1], high: +c[2], low: +c[3], close: +c[4], volume: +c[5] });
           }
-          bars.sort(function(a, b) { return a.time - b.time; });
-          // If no bars and we haven't retried yet, retry after 3s (pool discovery may need time)
-          if (bars.length === 0 && _retries < 2) {
-            _retries++;
-            setTimeout(_fetchBars, 3000);
-            return;
-          }
+          bars.sort(function(a,b){ return a.time - b.time; });
           _barCache[cacheKey] = bars;
-          // Store discovered pool so trades can skip pool lookup
-          if (d.pool && t) t._discoveredPool = d.pool;
           onRes(bars, { noData: bars.length === 0 });
-        }).catch(function(err) {
-          if (_retries < 2) {
-            _retries++;
-            setTimeout(_fetchBars, 3000);
-            return;
-          }
-          onRes([], { noData: true });
-        });
-      }
-      _fetchBars();
+        }).catch(function(){ onRes([], { noData: true }); });
+      });
     },
     subscribeBars: function(sym, res, onTick, guid) {
       var resMin = parseInt(res);
@@ -9588,7 +9592,10 @@ function _fetchAndRenderTxns(t) {
   var body = document.getElementById('tpTxnBody');
   if (!body) return;
   var chain = (t.net || 'solana').toLowerCase();
-  var apiUrl = 'https://memescope-scraper.memescope-io.workers.dev/trades?chain=' + encodeURIComponent(chain) + '&address=' + encodeURIComponent(t.ca) + (t._discoveredPool ? '&pool=' + encodeURIComponent(t._discoveredPool) : '');
+  var geckoChainMap2 = { solana:'solana', eth:'eth', base:'base', bsc:'bsc', sui:'sui-network', tron:'tron' };
+  var dexChainMap3 = { solana:'solana', eth:'ethereum', base:'base', bsc:'bsc', sui:'sui', tron:'tron' };
+  var gNet = geckoChainMap2[chain] || chain;
+  var dNet = dexChainMap3[chain] || chain;
 
   var explorerMap = {
     solana: 'https://solscan.io/tx/',
@@ -9609,61 +9616,65 @@ function _fetchAndRenderTxns(t) {
   var explorerBase = explorerMap[chain] || explorerMap.solana;
   var makerBase = makerExplorerMap[chain] || makerExplorerMap.solana;
 
-  fetch(apiUrl).then(function(r) { return r.json(); }).then(function(d) {
-    var trades = (d && d.trades) || [];
-    if (!trades.length) {
-      body.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-tertiary);padding:20px">No trades found</td></tr>';
-      return;
-    }
-    var html = '';
-    var now = Date.now();
-    for (var i = 0; i < trades.length; i++) {
-      var tx = trades[i];
-      var isBuy = tx.type === 'buy';
-      var color = isBuy ? 'var(--green)' : 'var(--red)';
-      // Date & time
-      var txDate = tx.time ? new Date(tx.time) : null;
-      var dateStr = '';
-      if (txDate) {
-        var mm = txDate.getMonth() + 1;
-        var dd = txDate.getDate();
-        var hh = txDate.getHours();
-        var mi = txDate.getMinutes();
-        var ss = txDate.getSeconds();
-        var ampm = hh >= 12 ? 'PM' : 'AM';
-        var h12 = hh % 12 || 12;
-        dateStr = mm + '/' + dd + ' ' + h12 + ':' + (mi < 10 ? '0' : '') + mi + ':' + (ss < 10 ? '0' : '') + ss + ' ' + ampm;
+  // Discover pool then fetch trades directly from GeckoTerminal
+  function _doFetch(pool) {
+    if (!pool) { body.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-tertiary);padding:20px">No pool found</td></tr>'; return; }
+    var url = 'https://api.geckoterminal.com/api/v2/networks/'+gNet+'/pools/'+pool+'/trades?trade_volume_in_usd_greater_than=0';
+    fetch(url,{headers:{'Accept':'application/json'}}).then(function(r){return r.json()}).then(function(d){
+      var raw = (d && d.data) || [];
+      if (!raw.length) { body.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-tertiary);padding:20px">No trades found</td></tr>'; return; }
+      var html = '';
+      for (var i = 0; i < raw.length; i++) {
+        var a = raw[i].attributes || {};
+        var isBuy = a.kind === 'buy';
+        var color = isBuy ? 'var(--green)' : 'var(--red)';
+        var txDate = a.block_timestamp ? new Date(a.block_timestamp) : null;
+        var dateStr = '';
+        if (txDate) {
+          var mm = txDate.getMonth() + 1, dd = txDate.getDate(), hh = txDate.getHours(), mi = txDate.getMinutes(), ss = txDate.getSeconds();
+          var ampm = hh >= 12 ? 'PM' : 'AM', h12 = hh % 12 || 12;
+          dateStr = mm + '/' + dd + ' ' + h12 + ':' + (mi < 10 ? '0' : '') + mi + ':' + (ss < 10 ? '0' : '') + ss + ' ' + ampm;
+        }
+        var volUsd = parseFloat(a.volume_in_usd || 0);
+        var amtBase = parseFloat(a.from_token_amount || 0);
+        var price = volUsd && amtBase ? volUsd / amtBase : 0;
+        var pFmt = price >= 1 ? '$' + price.toFixed(2) : price >= 0.01 ? '$' + price.toFixed(4) : price >= 0.0001 ? '$' + price.toFixed(6) : '$' + price.toFixed(8);
+        var amtStr = amtBase >= 1e6 ? (amtBase / 1e6).toFixed(1) + 'M' : amtBase >= 1e3 ? Math.floor(amtBase).toLocaleString() : amtBase.toFixed(1);
+        var totalStr = volUsd >= 1000 ? '$' + (volUsd / 1000).toFixed(1) + 'K' : '$' + volUsd.toFixed(2);
+        var maker = a.tx_from_address || '';
+        var makerShort = maker.length > 8 ? maker.slice(0, 4) + '...' + maker.slice(-3) : maker;
+        var txLink = a.tx_hash ? explorerBase + a.tx_hash : '#';
+        var makerLink = maker ? makerBase + maker : '#';
+        html += '<tr><td>' + dateStr + '</td><td style="color:' + color + '">' + (isBuy ? 'Buy' : 'Sell') + '</td><td style="color:' + color + '">' + pFmt + '</td><td style="color:' + color + '">' + amtStr + '</td><td style="color:' + color + '">' + totalStr + '</td><td style="color:var(--text-tertiary)"><a href="' + makerLink + '" target="_blank" style="color:inherit;text-decoration:none">' + makerShort + '</a></td><td><a class="tp-txn-link" href="' + txLink + '" target="_blank"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a></td></tr>';
       }
-      // Price
-      var price = tx.volumeUsd && tx.amountBase ? (tx.volumeUsd / tx.amountBase) : 0;
-      var pFmt = price >= 1 ? '$' + price.toFixed(2) : price >= 0.01 ? '$' + price.toFixed(4) : price >= 0.0001 ? '$' + price.toFixed(6) : '$' + price.toFixed(8);
-      // Amount
-      var amt = tx.amountBase || 0;
-      var amtStr = amt >= 1e6 ? (amt / 1e6).toFixed(1) + 'M' : amt >= 1e3 ? Math.floor(amt).toLocaleString() : amt.toFixed(1);
-      // Total
-      var total = tx.volumeUsd || 0;
-      var totalStr = total >= 1000 ? '$' + (total / 1000).toFixed(1) + 'K' : '$' + total.toFixed(2);
-      // Maker
-      var maker = tx.maker || '';
-      var makerShort = maker.length > 8 ? maker.slice(0, 4) + '...' + maker.slice(-3) : maker;
-      // Tx link
-      var txLink = tx.txHash ? explorerBase + tx.txHash : '#';
-      var makerLink = maker ? makerBase + maker : '#';
+      body.innerHTML = html;
+    }).catch(function(){
+      body.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-tertiary);padding:20px">Failed to load trades</td></tr>';
+    });
+  }
 
-      html += '<tr>' +
-        '<td>' + dateStr + '</td>' +
-        '<td style="color:' + color + '">' + (isBuy ? 'Buy' : 'Sell') + '</td>' +
-        '<td style="color:' + color + '">' + pFmt + '</td>' +
-        '<td style="color:' + color + '">' + amtStr + '</td>' +
-        '<td style="color:' + color + '">' + totalStr + '</td>' +
-        '<td style="color:var(--text-tertiary)"><a href="' + makerLink + '" target="_blank" style="color:inherit;text-decoration:none">' + makerShort + '</a></td>' +
-        '<td><a class="tp-txn-link" href="' + txLink + '" target="_blank"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a></td>' +
-        '</tr>';
-    }
-    body.innerHTML = html;
-  }).catch(function() {
-    body.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-tertiary);padding:20px">Failed to load trades</td></tr>';
-  });
+  // Use cached pool or discover
+  if (t._discoveredPool) {
+    _doFetch(t._discoveredPool);
+  } else {
+    // Quick pool discovery from DexScreener
+    fetch('https://api.dexscreener.com/latest/dex/tokens/' + t.ca).then(function(r){return r.json()}).then(function(d){
+      if (d && d.pairs && d.pairs.length) {
+        var cp = d.pairs.filter(function(p){return p.chainId === dNet});
+        var best = (cp.length ? cp : d.pairs).reduce(function(b,p){return (p.liquidity&&p.liquidity.usd||0)>(b.liquidity&&b.liquidity.usd||0)?p:b},(cp.length?cp:d.pairs)[0]);
+        if (best.pairAddress) { t._discoveredPool = best.pairAddress; _doFetch(best.pairAddress); return; }
+      }
+      // Fallback: GeckoTerminal pool discovery
+      fetch('https://api.geckoterminal.com/api/v2/networks/'+gNet+'/tokens/'+t.ca+'/pools?page=1',{headers:{'Accept':'application/json'}}).then(function(r2){return r2.json()}).then(function(d2){
+        if (d2 && d2.data && d2.data.length) {
+          var poolId = d2.data[0].attributes && d2.data[0].attributes.address;
+          if (!poolId) { var pts = d2.data[0].id.split('_'); poolId = pts.length > 1 ? pts.slice(1).join('_') : d2.data[0].id; }
+          if (poolId) { t._discoveredPool = poolId; _doFetch(poolId); return; }
+        }
+        body.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-tertiary);padding:20px">No pool found</td></tr>';
+      }).catch(function(){ body.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-tertiary);padding:20px">Failed to load trades</td></tr>'; });
+    }).catch(function(){ body.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-tertiary);padding:20px">Failed to load trades</td></tr>'; });
+  }
 }
 
 // Bottom panel resize — drag handle to resize chart, bottom fills remaining
