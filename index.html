@@ -2954,6 +2954,28 @@
     padding-right: 12px;
     flex-shrink: 0;
   }
+  .bm-header-links {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    margin-left: 8px;
+  }
+  .bm-hdr-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px; height: 26px;
+    border-radius: 6px;
+    color: var(--text-tertiary);
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.12s;
+  }
+  .bm-hdr-link:hover {
+    color: var(--text-primary);
+    background: rgba(255,255,255,0.06);
+  }
+  .bm-hdr-link img, .bm-hdr-link svg { flex-shrink: 0; }
   .bm-close {
     background: none; border: none;
     color: var(--text-tertiary); cursor: pointer;
@@ -3032,45 +3054,6 @@
     font-variant-numeric: tabular-nums;
   }
 
-  /* CA row */
-  .bm-ca-row {
-    padding: 8px 18px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    flex-wrap: wrap;
-    border-bottom: 1px solid rgba(255,255,255,0.04);
-  }
-  .bm-ca-label {
-    font-size: 10px; font-weight: 600;
-    color: var(--text-tertiary);
-    text-transform: uppercase;
-    letter-spacing: 0.3px;
-  }
-  .bm-ca-value {
-    font-size: 12px; font-weight: 500;
-    color: var(--text-secondary);
-    font-variant-numeric: tabular-nums;
-    cursor: pointer;
-  }
-  .bm-ca-value:hover { color: var(--text-primary); }
-  .bm-ca-divider {
-    width: 1px; height: 12px;
-    background: rgba(255,255,255,0.06);
-  }
-  .bm-ca-link {
-    color: var(--text-tertiary);
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    font-size: 11px;
-    padding: 3px 6px;
-    border-radius: 4px;
-    transition: all 0.12s;
-  }
-  .bm-ca-link:hover { color: var(--text-primary); background: rgba(255,255,255,0.04); }
-  .bm-ca-link img, .bm-ca-link svg { flex-shrink: 0; }
 
   /* Converter */
   .bm-converter {
@@ -4512,9 +4495,8 @@
     .bm-tf { padding: 6px 0 !important; }
     .bm-tf-label { font-size: 9px !important; }
     .bm-tf-val { font-size: 11px !important; }
-    .bm-ca-row { padding: 6px 12px !important; gap: 3px !important; }
-    .bm-ca-value { font-size: 11px !important; }
-    .bm-ca-link { font-size: 9px !important; padding: 2px 4px !important; }
+    .bm-header-links { gap: 0 !important; margin-left: 4px !important; }
+    .bm-hdr-link { width: 24px !important; height: 24px !important; }
     .bm-converter { padding: 8px 12px 12px !important; }
 
     /* === BOOST MODAL === */
@@ -8377,18 +8359,9 @@ function openBubbleModal(t) {
   };
   document.getElementById("bmPriceBig").textContent = priceFmt(t.price);
 
-  // Contract Address
+  // Contract Address — just store on the element for copyCA()
   var caEl = document.getElementById("bmCA");
-  var copyIcon = ' <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-left:4px;vertical-align:-1px;opacity:0.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>';
-  if (t.ca && t.ca.length > 8) {
-    caEl.innerHTML = t.ca.slice(0, 4) + "..." + t.ca.slice(-4) + copyIcon;
-    caEl.title = t.ca;
-  } else if (t.ca) {
-    caEl.innerHTML = t.ca + copyIcon;
-    caEl.title = t.ca;
-  } else {
-    caEl.innerHTML = "—";
-  }
+  if (caEl) caEl.title = t.ca ? ('Copy CA: ' + t.ca.slice(0,4) + '...' + t.ca.slice(-4)) : 'No CA';
 
   // Stats
   var fmt = function(n) {
@@ -8499,11 +8472,12 @@ function copyCA() {
   if(!t || !t.ca) return;
   navigator.clipboard.writeText(t.ca).then(function() {
     var el = document.getElementById("bmCA");
-    var original = el.innerHTML;
-    el.innerHTML = '<span style="color:var(--green)">Copied!</span>';
+    el.style.color = 'var(--green)';
+    el.title = 'Copied!';
     setTimeout(function() {
-      el.innerHTML = (t.ca.slice(0, 4) + "..." + t.ca.slice(-4)) + ' <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-left:4px;vertical-align:-1px;opacity:0.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>';
-    }, 1500);
+      el.style.color = '';
+      el.title = 'Copy CA';
+    }, 1200);
   });
 }
 
@@ -9888,6 +9862,11 @@ setTimeout(startRefreshProgress, 100);
           </div>
           <span class="bm-fullname" id="bmFullname"></span>
         </div>
+        <div class="bm-header-links">
+          <a class="bm-hdr-link" id="bmLinkSolscan" href="#" target="_blank" title="Explorer"><img id="bmSolscanIcon" src="" width="14" height="14" style="border-radius:50%"></a>
+          <a class="bm-hdr-link" id="bmLinkX" href="#" target="_blank" title="Twitter/X"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
+          <span class="bm-hdr-link" id="bmCA" onclick="copyCA()" title="Copy CA"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg></span>
+        </div>
       </div>
       <span class="bm-price-big" id="bmPriceBig"></span>
       <button class="bm-close" onclick="history.back()">
@@ -9930,21 +9909,6 @@ setTimeout(startRefreshProgress, 100);
         <div class="bm-tf"><span class="bm-tf-label">24H</span><span class="bm-tf-val" id="bmTf24h"></span></div>
       </div>
 
-      <!-- CA + Links -->
-      <div class="bm-ca-row">
-        <span class="bm-ca-label">CA</span>
-        <span class="bm-ca-value" id="bmCA" onclick="copyCA()" style="cursor:pointer" title="Click to copy">—
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-left:4px;vertical-align:-1px;opacity:0.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
-        </span>
-        <span class="bm-ca-divider"></span>
-        <a class="bm-ca-link" id="bmLinkSolscan" href="#" target="_blank" title="Explorer"><img id="bmSolscanIcon" src="" width="15" height="15" style="border-radius:50%"><span id="bmSolscanName"></span></a>
-        <span class="bm-ca-divider"></span>
-        <a class="bm-ca-link" id="bmLinkWeb" href="#" target="_blank" title="Website"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;opacity:0.85"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></a>
-        <a class="bm-ca-link" id="bmLinkX" href="#" target="_blank" title="Twitter"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:-2px;opacity:0.85"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
-        <a class="bm-ca-link" id="bmSearchLink" href="#" target="_blank" title="Search on X"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px;opacity:0.85"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></a>
-        <span class="bm-ca-divider"></span>
-        <a class="bm-ca-link" href="#" onclick="event.preventDefault();showEmbedCode()" title="Share / Embed"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;opacity:0.85"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg></a>
-      </div>
 
       <!-- Converter -->
       <div class="bm-converter">
