@@ -9468,25 +9468,39 @@ function initTokenPageChart(t) {
     enabled_features: ['side_toolbar_in_fullscreen_mode','header_in_fullscreen_mode','create_volume_indicator_by_default'],
   });
 
-  // TradingView's onChartReady fires before the iframe's internal chartWidget
-  // is initialized (~1.8s delay). Poll until chartWidget exists, then force
-  // canvas sizing and auto-fit all bars.
+  // TradingView's internal chartWidget initializes late and doesn't reliably
+  // paint candles on first render. Poll and call resize+paint repeatedly
+  // until bar data is loaded and candles are rendered.
   if (window._tpChartPoll) clearInterval(window._tpChartPoll);
+  var _didTimeReset = false;
+  var _cacheKey = t.ca + '_1';
   window._tpChartPoll = setInterval(function() {
     try {
       var iframe = container.querySelector('iframe');
-      if (iframe && iframe.contentWindow && iframe.contentWindow.chartWidget) {
-        clearInterval(window._tpChartPoll);
-        window._tpChartPoll = null;
-        iframe.contentWindow.chartWidget.resize();
-        iframe.contentWindow.chartWidget.paint();
-        // Also auto-fit time range to show all loaded bars
-        if (_tpWidget && _tpWidget.activeChart) {
+      if (!iframe || !iframe.contentWindow || !iframe.contentWindow.chartWidget) return;
+      var cw = iframe.contentWindow.chartWidget;
+      cw.resize();
+      cw.paint();
+      // Once bar data is cached, do a final timeScaleReset and stop
+      if (_barCache[_cacheKey] && _barCache[_cacheKey].length > 0) {
+        if (!_didTimeReset && _tpWidget && _tpWidget.activeChart) {
           try { _tpWidget.activeChart().executeActionById('timeScaleReset'); } catch(e) {}
+          _didTimeReset = true;
         }
+        // Give 2 more paints after data is loaded to be safe, then stop
+        setTimeout(function() {
+          try {
+            if (iframe.contentWindow && iframe.contentWindow.chartWidget) {
+              iframe.contentWindow.chartWidget.resize();
+              iframe.contentWindow.chartWidget.paint();
+            }
+          } catch(e) {}
+          clearInterval(window._tpChartPoll);
+          window._tpChartPoll = null;
+        }, 500);
       }
     } catch(e) { clearInterval(window._tpChartPoll); window._tpChartPoll = null; }
-  }, 150);
+  }, 200);
   // Safety: stop polling after 15 seconds
   setTimeout(function() { if (window._tpChartPoll) { clearInterval(window._tpChartPoll); window._tpChartPoll = null; } }, 15000);
 }
