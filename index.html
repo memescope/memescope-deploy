@@ -4860,106 +4860,138 @@
     opacity: 0;
   }
 
-  /* SIDEBAR WATCHLIST — DexScreener style at bottom */
-  .ms-sidebar-watchlist {
-    border-top: 1px solid rgba(220,220,220,0.08);
-    flex-shrink: 0;
-    max-height: 280px;
-    overflow: hidden;
+  /* WATCHLIST MODAL */
+  .wl-modal-overlay {
     display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 3000;
+  }
+  .wl-modal-overlay.open { display: block; }
+  .wl-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 560px;
+    max-height: 70vh;
+    background: var(--bg-primary);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
     flex-direction: column;
+    z-index: 3001;
+    animation: wlIn 0.18s ease-out;
   }
-  .ms-sidebar-watchlist.has-items { display: flex; }
-  .ms-sidebar-wl-header {
+  @keyframes wlIn {
+    from { opacity: 0; transform: translate(-50%, -50%) scale(0.96); }
+    to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  }
+  .wl-modal-header {
     display: flex;
     align-items: center;
-    gap: 6px;
-    height: 32px;
-    padding: 0 14px;
-    color: var(--text-secondary);
-    font-size: 11px;
+    gap: 10px;
+    padding: 16px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .wl-modal-header svg { flex-shrink: 0; color: var(--text-secondary); }
+  .wl-modal-title {
+    font-size: 15px;
     font-weight: 700;
-    letter-spacing: 0.5px;
-    user-select: none;
-    opacity: 0;
-    transition: opacity 0.15s ease 0.05s;
+    color: var(--text-primary);
   }
-  .ms-sidebar-wl-header svg { flex-shrink: 0; }
-  .ms-sidebar:hover .ms-sidebar-wl-header { opacity: 1; }
-  .ms-sidebar-wl-title-col { flex: 1; }
-  .ms-sidebar-wl-count {
-    font-size: 10px;
-    color: var(--text-tertiary);
+  .wl-modal-count {
+    font-size: 13px;
     font-weight: 400;
+    color: var(--text-tertiary);
   }
-  .ms-sidebar-wl-items {
-    overflow-y: auto;
-    padding: 0 0 4px;
-    max-height: 240px;
-  }
-  .ms-sidebar-wl-token {
+  .wl-modal-close {
+    margin-left: auto;
+    background: none;
+    border: none;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 6px;
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 6px 14px;
-    cursor: pointer;
-    text-decoration: none;
-    color: var(--text-primary);
-    transition: background 0.15s;
-    opacity: 0;
-    transition: opacity 0.15s ease 0.05s, background 0.15s;
+    justify-content: center;
+    transition: all 0.12s;
   }
-  .ms-sidebar:hover .ms-sidebar-wl-token { opacity: 1; }
-  .ms-sidebar-wl-token:hover { background: rgba(74,158,255,0.08); }
-  .ms-sidebar-wl-token-img {
-    width: 20px;
-    height: 20px;
+  .wl-modal-close:hover { color: var(--text-primary); background: rgba(255,255,255,0.08); }
+  .wl-modal-cols {
+    display: grid;
+    grid-template-columns: 1fr 80px 60px 60px 60px 60px;
+    padding: 10px 20px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .wl-modal-cols span:not(:first-child) { text-align: right; }
+  .wl-modal-body {
+    overflow-y: auto;
+    flex: 1;
+  }
+  .wl-modal-row {
+    display: grid;
+    grid-template-columns: 1fr 80px 60px 60px 60px 60px;
+    align-items: center;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: background 0.12s;
+  }
+  .wl-modal-row:hover { background: rgba(255,255,255,0.03); }
+  .wl-modal-row + .wl-modal-row { border-top: 1px solid rgba(255,255,255,0.03); }
+  .wl-modal-token {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+  }
+  .wl-modal-token-img {
+    width: 28px;
+    height: 28px;
     border-radius: 50%;
     object-fit: cover;
     flex-shrink: 0;
   }
-  .ms-sidebar-wl-info {
-    flex: 1;
-    min-width: 0;
+  .wl-modal-token-sym {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    white-space: nowrap;
+  }
+  .wl-modal-token-star {
+    color: #FFC107;
+    font-size: 12px;
+    margin-left: 2px;
+    cursor: pointer;
+  }
+  .wl-modal-val {
+    text-align: right;
+    font-size: 12px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-secondary);
+  }
+  .wl-modal-val.up { color: var(--green); }
+  .wl-modal-val.down { color: var(--red); }
+  .wl-modal-empty {
     display: flex;
     flex-direction: column;
-    gap: 1px;
-  }
-  .ms-sidebar-wl-top {
-    display: flex;
     align-items: center;
-    gap: 8px;
-  }
-  .ms-sidebar-wl-sym {
-    font-weight: 600;
-    font-size: 12px;
-    white-space: nowrap;
-  }
-  .ms-sidebar-wl-price {
-    font-size: 11px;
-    color: var(--text-secondary);
-    font-variant-numeric: tabular-nums;
-    white-space: nowrap;
-    margin-left: auto;
-  }
-  .ms-sidebar-wl-bottom {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .ms-sidebar-wl-pct {
-    font-size: 10px;
-    font-weight: 600;
-    font-variant-numeric: tabular-nums;
-    white-space: nowrap;
-  }
-  .ms-sidebar-wl-pct-label {
-    font-size: 9px;
+    justify-content: center;
+    padding: 48px 20px;
     color: var(--text-tertiary);
-    font-weight: 400;
+    font-size: 13px;
+    gap: 12px;
   }
-  .ms-sidebar-wl-pct.up { color: var(--green); }
-  .ms-sidebar-wl-pct.down { color: var(--red); }
+  .wl-modal-empty svg { opacity: 0.3; }
 
   .ms-utility {
     border-top: 1px solid rgba(220,220,220,0.08);
@@ -5220,7 +5252,7 @@
       <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M21 7H5a1 1 0 0 1 0-2h14a1 1 0 0 0 1-1 1 1 0 0 0-1-1H5a3 3 0 0 0-3 3v14a3 3 0 0 0 3 3h16a1 1 0 0 0 1-1V8a1 1 0 0 0-1-1zm-2 8a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/></svg>
       <span class="ms-nav-text">Connect</span>
     </a>
-    <a class="ms-nav-link ms-watchlist-nav" href="#" onclick="event.preventDefault();" title="Watchlist" id="navWatchlistLink">
+    <a class="ms-nav-link ms-watchlist-nav" href="#" onclick="event.preventDefault();openWatchlistModal();" title="Watchlist" id="navWatchlistLink">
       <svg id="navWatchlistStar" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
       <span class="ms-nav-text">Watchlist</span>
     </a>
@@ -5288,15 +5320,30 @@
     </div>
   </div>
 
-  <!-- SIDEBAR WATCHLIST — pinned to bottom -->
-  <div class="ms-sidebar-watchlist" id="msSidebarWatchlist">
-    <div class="ms-sidebar-wl-header">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-      <span class="ms-sidebar-wl-title-col">WATCHLIST</span>
-    </div>
-    <div class="ms-sidebar-wl-items" id="msSidebarWlItems"></div>
-  </div>
 </aside>
+
+<!-- WATCHLIST MODAL -->
+<div class="wl-modal-overlay" id="wlOverlay" onclick="closeWatchlistModal()">
+  <div class="wl-modal" onclick="event.stopPropagation()">
+    <div class="wl-modal-header">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      <span class="wl-modal-title">Watchlist</span>
+      <span class="wl-modal-count" id="wlCount">0/20</span>
+      <button class="wl-modal-close" onclick="closeWatchlistModal()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="wl-modal-cols">
+      <span>Token</span>
+      <span>Volume</span>
+      <span>5M</span>
+      <span>1H</span>
+      <span>6H</span>
+      <span>24H</span>
+    </div>
+    <div class="wl-modal-body" id="wlBody"></div>
+  </div>
+</div>
 
 <!-- MOBILE MENU (display:none when closed - completely out of layout) -->
 <div class="ms-mobile-overlay" id="msMobileOverlay" onclick="closeMsMenu()"></div>
@@ -6485,11 +6532,15 @@ function toggleWatchlist(sym, btnEl) {
   if (alertsVisible) renderAlerts();
 }
 
-function renderWatchlist() {
-  var container = document.getElementById('msSidebarWatchlist');
-  var items = document.getElementById('msSidebarWlItems');
-  if (!container || !items) return;
+function openWatchlistModal() {
+  renderWatchlist();
+  document.getElementById('wlOverlay').classList.add('open');
+}
+function closeWatchlistModal() {
+  document.getElementById('wlOverlay').classList.remove('open');
+}
 
+function renderWatchlist() {
   // Toggle nav star: filled when has items, outline when empty
   var navStar = document.getElementById('navWatchlistStar');
   if (navStar) {
@@ -6502,45 +6553,48 @@ function renderWatchlist() {
     }
   }
 
+  var countEl = document.getElementById('wlCount');
+  if (countEl) countEl.textContent = watchlist.length + '/20';
+
+  var body = document.getElementById('wlBody');
+  if (!body) return;
+
   if (watchlist.length === 0) {
-    container.classList.remove('has-items');
-    items.innerHTML = '';
+    body.innerHTML = '<div class="wl-modal-empty">' +
+      '<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>' +
+      '<span>NO DATA</span></div>';
     return;
   }
 
-  container.classList.add('has-items');
+  var pctFmt = function(v) {
+    v = v || 0;
+    return (v >= 0 ? '+' : '') + v.toFixed(1) + '%';
+  };
+  var pctCls = function(v) { return (v || 0) >= 0 ? 'up' : 'down'; };
+
   var html = '';
   watchlist.forEach(function(sym) {
     var token = LIVE_TOKENS.find(function(t) { return t.sym === sym; });
     if (!token) return;
-    var p1h = token.p1h || 0;
-    var p24h = token.p24h || 0;
-    var p1hCls = p1h >= 0 ? 'up' : 'down';
-    var p24hCls = p24h >= 0 ? 'up' : 'down';
-    var p1hStr = (p1h >= 0 ? '+' : '') + p1h.toFixed(1) + '%';
-    var p24hStr = (p24h >= 0 ? '+' : '') + p24h.toFixed(1) + '%';
-    var priceStr = typeof dexPriceFmt === 'function' ? dexPriceFmt(token.price) : fmtPrice(token.price);
     var imgSrc = token.img || '';
     var letter = sym.charAt(0).toUpperCase();
     var avatarHtml = imgSrc
-      ? '<img class="ms-sidebar-wl-token-img" src="' + imgSrc + '" onerror="this.style.display=\'none\'">'
-      : '<div class="ms-sidebar-wl-token-img" style="background:#333;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff">' + letter + '</div>';
+      ? '<img class="wl-modal-token-img" src="' + imgSrc + '" onerror="this.style.display=\'none\'">'
+      : '<div class="wl-modal-token-img" style="background:#333;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff">' + letter + '</div>';
 
-    html += '<div class="ms-sidebar-wl-token" onclick="openBubbleModal(LIVE_TOKENS.find(function(t){return t.sym===\'' + sym + '\'}))">' +
-      avatarHtml +
-      '<div class="ms-sidebar-wl-info">' +
-        '<div class="ms-sidebar-wl-top">' +
-          '<span class="ms-sidebar-wl-sym">' + sym + '</span>' +
-          '<span class="ms-sidebar-wl-price">' + priceStr + '</span>' +
-        '</div>' +
-        '<div class="ms-sidebar-wl-bottom">' +
-          '<span class="ms-sidebar-wl-pct-label">1H:</span><span class="ms-sidebar-wl-pct ' + p1hCls + '">' + p1hStr + '</span>' +
-          '<span class="ms-sidebar-wl-pct-label">24H:</span><span class="ms-sidebar-wl-pct ' + p24hCls + '">' + p24hStr + '</span>' +
-        '</div>' +
+    html += '<div class="wl-modal-row" onclick="closeWatchlistModal();openBubbleModal(LIVE_TOKENS.find(function(t){return t.sym===\'' + sym + '\'}))">' +
+      '<div class="wl-modal-token">' + avatarHtml +
+        '<span class="wl-modal-token-sym">' + sym + '</span>' +
+        '<span class="wl-modal-token-star" onclick="event.stopPropagation();toggleWatchlist(\'' + sym + '\')">★</span>' +
       '</div>' +
+      '<span class="wl-modal-val">' + fmt(token.vol || 0) + '</span>' +
+      '<span class="wl-modal-val ' + pctCls(token.p5m) + '">' + pctFmt(token.p5m) + '</span>' +
+      '<span class="wl-modal-val ' + pctCls(token.p1h) + '">' + pctFmt(token.p1h) + '</span>' +
+      '<span class="wl-modal-val ' + pctCls(token.p6h) + '">' + pctFmt(token.p6h) + '</span>' +
+      '<span class="wl-modal-val ' + pctCls(token.p24h) + '">' + pctFmt(token.p24h) + '</span>' +
     '</div>';
   });
-  items.innerHTML = html;
+  body.innerHTML = html;
 }
 
 // ---- ALERTS ----
@@ -10527,7 +10581,7 @@ function handleHeaderWalletClick() {
 
 // Close wallet modal on ESC
 document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape') closeWalletModal();
+  if (e.key === 'Escape') { closeWalletModal(); closeWatchlistModal(); }
 });
 
 // Auto-reconnect wallet on page load (only if user was connected before)
