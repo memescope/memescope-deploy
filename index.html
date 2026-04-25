@@ -5220,8 +5220,8 @@
       <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M21 7H5a1 1 0 0 1 0-2h14a1 1 0 0 0 1-1 1 1 0 0 0-1-1H5a3 3 0 0 0-3 3v14a3 3 0 0 0 3 3h16a1 1 0 0 0 1-1V8a1 1 0 0 0-1-1zm-2 8a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/></svg>
       <span class="ms-nav-text">Connect</span>
     </a>
-    <a class="ms-nav-link ms-watchlist-nav" href="#" onclick="event.preventDefault();" title="Watchlist">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+    <a class="ms-nav-link ms-watchlist-nav" href="#" onclick="event.preventDefault();" title="Watchlist" id="navWatchlistLink">
+      <svg id="navWatchlistStar" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
       <span class="ms-nav-text">Watchlist</span>
     </a>
     <a class="ms-nav-link ms-recent-updates-link" href="#" onclick="event.preventDefault(); if(typeof showRecentUpdates==='function') showRecentUpdates();" title="Updated">
@@ -5268,15 +5268,6 @@
 
   <div class="ms-spacer"></div>
 
-  <!-- SIDEBAR WATCHLIST (only visible when tokens are starred) -->
-  <div class="ms-sidebar-watchlist" id="msSidebarWatchlist">
-    <div class="ms-sidebar-wl-header">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-      <span class="ms-sidebar-wl-title-col">WATCHLIST</span>
-    </div>
-    <div class="ms-sidebar-wl-items" id="msSidebarWlItems"></div>
-  </div>
-
   <div class="ms-utility">
     <div class="ms-utility-collapsed">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#A7B4C6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
@@ -5295,6 +5286,15 @@
       </button>
       <input type="range" id="msBrightnessSlider" class="ms-brightness-slider" min="60" max="140" value="100" oninput="setBrightness(this.value)">
     </div>
+  </div>
+
+  <!-- SIDEBAR WATCHLIST — pinned to bottom -->
+  <div class="ms-sidebar-watchlist" id="msSidebarWatchlist">
+    <div class="ms-sidebar-wl-header">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      <span class="ms-sidebar-wl-title-col">WATCHLIST</span>
+    </div>
+    <div class="ms-sidebar-wl-items" id="msSidebarWlItems"></div>
   </div>
 </aside>
 
@@ -6489,6 +6489,18 @@ function renderWatchlist() {
   var container = document.getElementById('msSidebarWatchlist');
   var items = document.getElementById('msSidebarWlItems');
   if (!container || !items) return;
+
+  // Toggle nav star: filled when has items, outline when empty
+  var navStar = document.getElementById('navWatchlistStar');
+  if (navStar) {
+    if (watchlist.length > 0) {
+      navStar.setAttribute('fill', '#FFC107');
+      navStar.setAttribute('stroke', '#FFC107');
+    } else {
+      navStar.setAttribute('fill', 'none');
+      navStar.setAttribute('stroke', 'currentColor');
+    }
+  }
 
   if (watchlist.length === 0) {
     container.classList.remove('has-items');
