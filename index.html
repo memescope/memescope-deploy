@@ -10322,6 +10322,7 @@ async function connectWallet(walletId) {
       if (typeof updateBoostWalletUI === 'function') updateBoostWalletUI();
     }
 
+    localStorage.setItem('wcWallet', walletId);
     updateHeaderWallet();
     closeWalletModal();
   } catch(e) {
@@ -10337,6 +10338,7 @@ function disconnectWallet() {
     if (wallet) wallet.disconnect();
   }
 
+  localStorage.removeItem('wcWallet');
   _wcState.connected = false;
   _wcState.address = null;
   _wcState.walletType = null;
@@ -10381,10 +10383,12 @@ document.addEventListener('keydown', function(e) {
   if (e.key === 'Escape') closeWalletModal();
 });
 
-// Auto-reconnect wallet on page load (silent, no popup)
+// Auto-reconnect wallet on page load (only if user was connected before)
 (function autoReconnectWallet() {
-  // Try Phantom first (most common)
-  if (window.phantom && window.phantom.solana && window.phantom.solana.isPhantom) {
+  var savedWallet = localStorage.getItem('wcWallet');
+  if (!savedWallet) return; // User disconnected or never connected — don't auto-reconnect
+
+  if (savedWallet === 'phantom' && window.phantom && window.phantom.solana && window.phantom.solana.isPhantom) {
     window.phantom.solana.connect({ onlyIfTrusted: true }).then(function(resp) {
       _wcState.connected = true;
       _wcState.address = resp.publicKey.toString();
@@ -10396,10 +10400,9 @@ document.addEventListener('keydown', function(e) {
         if (typeof updateBoostWalletUI === 'function') updateBoostWalletUI();
       }
       updateHeaderWallet();
-    }).catch(function() {});
+    }).catch(function() { localStorage.removeItem('wcWallet'); });
   }
-  // Try MetaMask / EVM wallets
-  else if (window.ethereum && window.ethereum.isMetaMask) {
+  else if (savedWallet === 'metamask' && window.ethereum && window.ethereum.isMetaMask) {
     window.ethereum.request({ method: 'eth_accounts' }).then(function(accounts) {
       if (accounts && accounts.length > 0) {
         _wcState.connected = true;
@@ -10407,8 +10410,8 @@ document.addEventListener('keydown', function(e) {
         _wcState.walletType = 'metamask';
         _wcState.chainType = 'evm';
         updateHeaderWallet();
-      }
-    }).catch(function() {});
+      } else { localStorage.removeItem('wcWallet'); }
+    }).catch(function() { localStorage.removeItem('wcWallet'); });
   }
 })();
 </script>
