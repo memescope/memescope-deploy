@@ -9394,11 +9394,10 @@ function initTokenPageChart(t) {
       }, 0);
     },
     getBars: function(sym, res, params, onRes, onErr) {
-      console.log('[getBars] called res='+res+' firstDataRequest='+params.firstDataRequest);
-      if (params.firstDataRequest === false) { console.log('[getBars] skipping non-first request'); onRes([], { noData: true }); return; }
+      if (params.firstDataRequest === false) { onRes([], { noData: true }); return; }
 
       var cacheKey = t.ca + '_' + res;
-      if (_barCache[cacheKey]) { console.log('[getBars] cache hit, bars='+_barCache[cacheKey].length); onRes(_barCache[cacheKey], { noData: _barCache[cacheKey].length === 0 }); return; }
+      if (_barCache[cacheKey]) { onRes(_barCache[cacheKey], { noData: _barCache[cacheKey].length === 0 }); return; }
 
       var resMap = {'1':{agg:'minute',mult:1},'5':{agg:'minute',mult:5},'15':{agg:'minute',mult:15},'30':{agg:'minute',mult:30},'60':{agg:'hour',mult:1},'240':{agg:'hour',mult:4},'1D':{agg:'day',mult:1}};
       var rc = resMap[res] || resMap['1'];
@@ -9406,15 +9405,11 @@ function initTokenPageChart(t) {
       var resMs = (!isNaN(resMin) ? resMin : 1) * 60000;
       if (res === '1D') resMs = 86400000;
 
-      console.log('[getBars] discovering pool...');
       _discoverPool(function(pool) {
-        console.log('[getBars] pool discovered: '+pool);
         if (!pool) { onRes([], { noData: true }); return; }
         var url = 'https://api.geckoterminal.com/api/v2/networks/'+geckoNet+'/pools/'+pool+'/ohlcv/'+rc.agg+'?aggregate='+rc.mult+'&limit=300&currency=usd';
-        console.log('[getBars] fetching OHLCV...');
-        fetch(url,{headers:{'Accept':'application/json'}}).then(function(r){console.log('[getBars] response status='+r.status); return r.json();}).then(function(d){
+        fetch(url,{headers:{'Accept':'application/json'}}).then(function(r){return r.json();}).then(function(d){
           var list = d && d.data && d.data.attributes && d.data.attributes.ohlcv_list;
-          console.log('[getBars] ohlcv_list length='+(list ? list.length : 'null'));
           if (!list || !list.length) { onRes([], { noData: true }); return; }
           var seen = {};
           var bars = [];
@@ -9428,9 +9423,8 @@ function initTokenPageChart(t) {
           }
           bars.sort(function(a,b){ return a.time - b.time; });
           _barCache[cacheKey] = bars;
-          console.log('[getBars] SUCCESS bars='+bars.length);
           onRes(bars, { noData: bars.length === 0 });
-        }).catch(function(e){ console.log('[getBars] FETCH ERROR: '+e.message); onRes([], { noData: true }); });
+        }).catch(function(){ onRes([], { noData: true }); });
       });
     },
     subscribeBars: function(sym, res, onTick, guid) {

@@ -1,1 +1,3 @@
+/img/* /img/:splat 200
+/charting_library/* /charting_library/:splat 200
 /* /index.html 200
