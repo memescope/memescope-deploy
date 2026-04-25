@@ -5617,12 +5617,12 @@ if(window._embedMode) {
           <div class="tp-tab-body">
             <div class="tp-tab-pane" id="tpPaneTxns">
               <div class="tp-txn-header-row">
-                <table class="tp-txn-tbl"><colgroup><col style="width:12%"><col style="width:8%"><col style="width:18%"><col style="width:18%"><col style="width:14%"><col style="width:18%"><col style="width:12%"></colgroup><thead><tr>
+                <table class="tp-txn-tbl"><colgroup><col style="width:18%"><col style="width:8%"><col style="width:18%"><col style="width:16%"><col style="width:14%"><col style="width:20%"><col style="width:6%"></colgroup><thead><tr>
                   <th>Date</th><th>Type</th><th>Price (USD)</th><th>Amount</th><th>Total</th><th>Maker</th><th>Txn</th>
                 </tr></thead></table>
               </div>
               <div class="tp-txn-scroll" id="tpTxnScroll">
-                <table class="tp-txn-tbl"><colgroup><col style="width:12%"><col style="width:8%"><col style="width:18%"><col style="width:18%"><col style="width:14%"><col style="width:18%"><col style="width:12%"></colgroup>
+                <table class="tp-txn-tbl"><colgroup><col style="width:18%"><col style="width:8%"><col style="width:18%"><col style="width:16%"><col style="width:14%"><col style="width:20%"><col style="width:6%"></colgroup>
                   <tbody id="tpTxnBody"></tbody>
                 </table>
               </div>
@@ -9632,12 +9632,12 @@ function _fetchAndRenderTxns(t) {
       var makerLink = maker ? makerBase + maker : '#';
 
       html += '<tr>' +
-        '<td style="font-size:11px;white-space:nowrap">' + dateStr + '</td>' +
+        '<td>' + dateStr + '</td>' +
         '<td style="color:' + color + '">' + (isBuy ? 'Buy' : 'Sell') + '</td>' +
         '<td style="color:' + color + '">' + pFmt + '</td>' +
         '<td style="color:' + color + '">' + amtStr + '</td>' +
         '<td style="color:' + color + '">' + totalStr + '</td>' +
-        '<td style="color:var(--text-tertiary);font-size:12px"><a href="' + makerLink + '" target="_blank" style="color:inherit;text-decoration:none">' + makerShort + '</a></td>' +
+        '<td style="color:var(--text-tertiary)"><a href="' + makerLink + '" target="_blank" style="color:inherit;text-decoration:none">' + makerShort + '</a></td>' +
         '<td><a class="tp-txn-link" href="' + txLink + '" target="_blank"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a></td>' +
         '</tr>';
     }
@@ -10780,9 +10780,9 @@ setInterval(fetchActiveBoosts, 60000);
   .tp-txn-tbl { width:100%; border-collapse:collapse; min-width:700px; table-layout:fixed; }
   .tp-txn-tbl th {
     background:#222229;
-    padding:10px 14px; font-size:12px; font-weight:600;
-    color:var(--text-primary); text-transform:uppercase;
-    letter-spacing:0.8px; text-align:right;
+    padding:6px 8px; font-size:11px; font-weight:600;
+    color:var(--text-secondary); text-transform:uppercase;
+    letter-spacing:0.6px; text-align:right;
     font-family:'Inter',sans-serif;
     -webkit-font-smoothing:antialiased;
     border-bottom:1px solid var(--border);
@@ -10791,15 +10791,15 @@ setInterval(fetchActiveBoosts, 60000);
   .tp-txn-tbl th:first-child { text-align:left; }
   .tp-txn-tbl th:nth-child(2) { text-align:center; }
   .tp-txn-tbl th:last-child { text-align:center; }
-  .tp-txn-tbl tr { height:42px; }
+  .tp-txn-tbl tr { height:30px; }
   .tp-txn-tbl td {
-    padding:2px 14px; border-bottom:1px solid var(--border);
+    padding:2px 8px; border-bottom:1px solid var(--border);
     border-right:1px solid var(--border);
     font-family:'Inter',sans-serif; font-variant-numeric:tabular-nums;
-    font-size:14px; font-weight:400; color:#f9f9fb;
+    font-size:12px; font-weight:400; color:#f9f9fb;
     white-space:nowrap; text-align:right;
   }
-  .tp-txn-tbl td:first-child { text-align:left; color:var(--text-tertiary); }
+  .tp-txn-tbl td:first-child { text-align:left; color:var(--text-tertiary); font-size:12px; }
   .tp-txn-tbl td:nth-child(2) { text-align:center; font-weight:500; }
   .tp-txn-tbl td:last-child { text-align:center; border-right:none; }
   .tp-txn-tbl tr:hover td { background:rgba(145,180,220,0.033); }
