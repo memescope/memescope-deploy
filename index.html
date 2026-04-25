@@ -9281,10 +9281,23 @@ function closeTokenPage() {
   });
   document.body.style.overflow = '';
 
-  // Destroy chart
+  // Destroy chart — kill ALL subscribeBars intervals first to prevent zombie polling
+  if (window._tpSubIntervals) {
+    Object.keys(window._tpSubIntervals).forEach(function(guid) {
+      clearInterval(window._tpSubIntervals[guid]);
+    });
+    window._tpSubIntervals = {};
+  }
   if (_tpWidget) { try { _tpWidget.remove(); } catch(e) {} _tpWidget = null; }
   if (_tpPollTimer) { clearInterval(_tpPollTimer); _tpPollTimer = null; }
   document.getElementById('tpChartContainer').innerHTML = '';
+
+  // Clear bar cache for this token so next open gets fresh data
+  if (_tpToken && _tpToken.ca) {
+    Object.keys(_barCache).forEach(function(k) {
+      if (k.indexOf(_tpToken.ca) === 0) delete _barCache[k];
+    });
+  }
 
   // Reset URL
   if (window.location.pathname !== '/') {
@@ -9300,6 +9313,13 @@ function initTokenPageChart(t) {
   var container = document.getElementById('tpChartContainer');
   if (!container) return;
 
+  // Kill any leftover subscribeBars intervals from previous widget
+  if (window._tpSubIntervals) {
+    Object.keys(window._tpSubIntervals).forEach(function(guid) {
+      clearInterval(window._tpSubIntervals[guid]);
+    });
+    window._tpSubIntervals = {};
+  }
   if (_tpWidget) { try { _tpWidget.remove(); } catch(e) {} _tpWidget = null; }
   if (_tpPollTimer) { clearInterval(_tpPollTimer); _tpPollTimer = null; }
   container.innerHTML = '';
@@ -9340,24 +9360,19 @@ function initTokenPageChart(t) {
       }, 0);
     },
     getBars: function(sym, res, params, onRes, onErr) {
-      console.log('[CHART] getBars called — firstDataRequest:', params.firstDataRequest, 'from:', params.from, 'to:', params.to, 'countBack:', params.countBack);
-
       // Not first request = scrolling for older history we don't have
       if (params.firstDataRequest === false) {
-        console.log('[CHART] → not first request, returning noData');
         onRes([], { noData: true });
         return;
       }
 
       var cacheKey = t.ca + '_' + res;
       if (_barCache[cacheKey]) {
-        console.log('[CHART] → returning cached bars:', _barCache[cacheKey].length);
         onRes(_barCache[cacheKey], { noData: _barCache[cacheKey].length === 0 });
         return;
       }
 
       var apiUrl = 'https://memescope-scraper.memescope-io.workers.dev/ohlcv?chain=' + encodeURIComponent(chain) + '&address=' + encodeURIComponent(t.ca) + '&resolution=' + encodeURIComponent(res) + (t.pairAddress ? '&pool=' + encodeURIComponent(t.pairAddress) : '');
-      console.log('[CHART] → fetching:', apiUrl);
 
       var resMin = parseInt(res);
       var resMs = (!isNaN(resMin) ? resMin : 1) * 60000;
@@ -9368,7 +9383,6 @@ function initTokenPageChart(t) {
         return r.json();
       }).then(function(d) {
         var raw = (d && d.bars) || [];
-        console.log('[CHART] → API returned', raw.length, 'raw bars, pool:', d.pool, 'noData:', d.noData);
         var seen = {};
         var bars = [];
         for (var i = 0; i < raw.length; i++) {
@@ -9384,10 +9398,8 @@ function initTokenPageChart(t) {
         }
         bars.sort(function(a, b) { return a.time - b.time; });
         _barCache[cacheKey] = bars;
-        console.log('[CHART] → sending', bars.length, 'bars to TradingView. First:', bars[0], 'Last:', bars[bars.length-1]);
         onRes(bars, { noData: bars.length === 0 });
       }).catch(function(err) {
-        console.error('[CHART] → fetch error:', err);
         onRes([], { noData: true });
       });
     },
@@ -9747,9 +9759,12 @@ function parseDexPair(p) {
 // Fetch live data on load
 if(LIVE_MODE) fetchLiveTokens();
 
-// Refresh every 60 seconds
+// Refresh every 30 seconds — but skip when token detail page is open
 setInterval(function(){
-  if(LIVE_MODE) fetchLiveTokens();
+  if (!LIVE_MODE) return;
+  var tp = document.getElementById('tokenPage');
+  if (tp && tp.style.display !== 'none') return; // token page open, skip refresh
+  fetchLiveTokens();
 }, 30000);
 
 
