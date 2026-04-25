@@ -3045,13 +3045,22 @@
     color: rgba(255,255,255,0.4);
   }
   .bm-close {
-    background: none; border: none;
-    color: var(--text-tertiary); cursor: pointer;
-    padding: 6px; border-radius: 8px;
-    transition: all 0.12s;
+    background: rgba(255,255,255,0.06);
+    border: none;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
     flex-shrink: 0;
   }
-  .bm-close:hover { color: var(--text-primary); background: rgba(255,255,255,0.06); }
+  .bm-close:hover {
+    color: var(--text-primary);
+    background: rgba(255,255,255,0.12);
+  }
 
   /* ── Horizontal stats bar ── */
   .bm-stats-bar {
@@ -4017,20 +4026,6 @@
   .bm-fullname {
     font-size: 13px;
     color: var(--text-primary);
-  }
-  .bm-close {
-    background: none;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    color: var(--text-primary);
-    cursor: pointer;
-    padding: 6px;
-    transition: all 0.15s;
-  }
-  .bm-close:hover {
-    color: var(--text-primary);
-    border-color: var(--border-strong);
-    background: var(--bg-hover);
   }
   /* price flash animations */
   .bm-price-big.flash-up { animation: priceFlashUp 1s ease-out; }
