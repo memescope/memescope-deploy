@@ -3034,6 +3034,33 @@
     padding-right: 12px;
     flex-shrink: 0;
   }
+  .bm-star {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.06);
+    border: none;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    transition: all 0.15s;
+    margin-left: 6px;
+    flex-shrink: 0;
+    padding: 0;
+  }
+  .bm-star:hover {
+    color: #FFC107;
+    background: rgba(255,193,7,0.12);
+  }
+  .bm-star.active {
+    color: #FFC107;
+    background: rgba(255,193,7,0.12);
+  }
+  .bm-star.active svg {
+    fill: #FFC107;
+    filter: drop-shadow(0 0 4px rgba(255,193,7,0.4));
+  }
   .bm-dots {
     display: inline-flex;
     align-items: center;
@@ -8550,6 +8577,9 @@ function openBubbleModal(t) {
     bmSymEl.parentElement.insertBefore(badge, bmSymEl.nextSibling);
   }
   document.getElementById("bmFullname").textContent = t.name || t.sym;
+  // Set watchlist star state
+  var starBtn = document.getElementById("bmStar");
+  if (starBtn) starBtn.classList.toggle('active', watchlist.includes(t.sym));
   var pairTokenMap = { 'solana':'/SOL','eth':'/WETH','ethereum':'/WETH','base':'/WETH','bsc':'/BNB','sui':'/SUI','tron':'/TRX' };
   document.getElementById("bmChain").textContent = pairTokenMap[(t.net || 'solana').toLowerCase()] || '/SOL';
   var ageBadge = document.getElementById("bmAgeBadge");
@@ -8702,6 +8732,19 @@ function renderBuySell(tf) {
   document.getElementById('bmBsBuyVol').textContent = fmtV(buyVol);
   document.getElementById('bmBsSellVol').textContent = fmtV(sellVol);
   document.getElementById('bmBsVolBar').style.width = volPct + '%';
+}
+
+// ── Modal watchlist star ──
+function toggleModalWatchlist(btnEl) {
+  var t = window._modalToken;
+  if (!t || !t.sym) return;
+  toggleWatchlist(t.sym, null);
+  // Update star state
+  var isActive = watchlist.includes(t.sym);
+  btnEl.classList.toggle('active', isActive);
+  // Pop animation
+  btnEl.style.transform = 'scale(1.3)';
+  setTimeout(function() { btnEl.style.transform = ''; }, 200);
 }
 
 // ── Modal 3-dot dropdown ──
@@ -10196,6 +10239,7 @@ setTimeout(startRefreshProgress, 100);
             <span class="bm-sym" id="bmSym"></span>
             <span class="bm-chain-badge" id="bmChain"></span>
             <span class="bm-age-badge" id="bmAgeBadge" style="display:none"></span>
+            <button class="bm-star" id="bmStar" onclick="event.stopPropagation();toggleModalWatchlist(this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></button>
             <span class="bm-dots" id="bmDots" onclick="event.stopPropagation();toggleModalMenu()"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg></span>
           </div>
           <span class="bm-fullname" id="bmFullname"></span>
