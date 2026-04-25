@@ -8706,7 +8706,7 @@ function _initModalChart(t) {
         if (p < 0.01) ps = 1000000;
         if (p < 0.0001) ps = 100000000;
         if (p < 0.000001) ps = 10000000000;
-        onRes({
+        var symbolInfo = {
           name: t.sym + '/' + (pairTokenMap2[chain] || 'SOL'),
           description: t.name || t.sym,
           type: 'crypto',
@@ -8720,7 +8720,9 @@ function _initModalChart(t) {
           supported_resolutions: ['1','5','15','30','60','240'],
           volume_precision: 2,
           data_status: 'streaming',
-        });
+        };
+        if (t.img) symbolInfo.logo_urls = [t.img];
+        onRes(symbolInfo);
       }, 0);
     },
     getBars: function(sym, res, params, onRes, onErr) {
