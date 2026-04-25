@@ -2735,13 +2735,17 @@
   }
   .wc-overlay.open { display: flex; align-items: center; justify-content: center; }
   .wc-modal {
-    width: 360px;
+    width: 420px;
     background: #1a1a22;
     border: 1px solid var(--border);
     border-radius: 16px;
     box-shadow: 0 32px 80px rgba(0,0,0,0.6);
     animation: wcIn 0.2s ease-out;
     overflow: hidden;
+    transition: width 0.3s ease, height 0.3s ease;
+  }
+  .wc-modal.connecting {
+    width: 420px;
   }
   @keyframes wcIn {
     from { opacity: 0; transform: scale(0.94); }
@@ -2751,10 +2755,10 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 18px 20px 14px;
+    padding: 20px 20px 16px;
   }
   .wc-title {
-    font-size: 16px;
+    font-size: 17px;
     font-weight: 700;
     color: var(--text-primary);
   }
@@ -2770,40 +2774,38 @@
   }
   .wc-close:hover { background: rgba(255,255,255,0.12); color: var(--text-primary); }
   .wc-section {
-    padding: 0 16px 6px;
-    font-size: 11px;
-    font-weight: 600;
-    color: #4A9EFF;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    padding: 4px 20px 8px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #22C55E;
   }
   .wc-list {
-    padding: 0 12px 16px;
+    padding: 0 8px 12px;
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 2px;
   }
   .wc-wallet {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 12px 14px;
+    gap: 14px;
+    padding: 14px 16px;
     border-radius: 12px;
     border: none;
-    background: rgba(255,255,255,0.03);
+    background: none;
     color: var(--text-primary);
     font-family: 'Inter', sans-serif;
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.15s;
     width: 100%;
     text-align: left;
   }
-  .wc-wallet:hover { background: rgba(255,255,255,0.07); }
+  .wc-wallet:hover { background: rgba(255,255,255,0.05); }
   .wc-wallet img {
-    width: 36px; height: 36px;
-    border-radius: 10px;
+    width: 40px; height: 40px;
+    border-radius: 12px;
   }
   .wc-wallet-name { flex: 1; }
   .wc-badge {
@@ -2842,20 +2844,25 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 40px 20px 48px;
-    gap: 16px;
+    padding: 48px 20px 56px;
+    gap: 18px;
+    animation: wcFadeIn 0.3s ease-out;
+  }
+  @keyframes wcFadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
   }
   .wc-connecting-icon {
-    width: 64px; height: 64px;
-    border-radius: 16px;
+    width: 72px; height: 72px;
+    border-radius: 18px;
     animation: wcIconPulse 2s ease-in-out infinite;
   }
   @keyframes wcIconPulse {
     0%, 100% { transform: scale(1); opacity: 1; }
-    50% { transform: scale(1.05); opacity: 0.85; }
+    50% { transform: scale(1.06); opacity: 0.85; }
   }
   .wc-connecting-title {
-    font-size: 16px;
+    font-size: 18px;
     font-weight: 700;
     color: var(--text-primary);
   }
@@ -2865,12 +2872,12 @@
     margin-top: -8px;
   }
   .wc-spinner {
-    width: 24px; height: 24px;
-    border: 2.5px solid rgba(255,255,255,0.08);
-    border-top-color: rgba(255,255,255,0.5);
+    width: 22px; height: 22px;
+    border: 2.5px solid rgba(255,255,255,0.06);
+    border-top-color: rgba(255,255,255,0.4);
     border-radius: 50%;
     animation: wcSpin 0.8s linear infinite;
-    margin-top: 4px;
+    margin-top: 6px;
   }
   @keyframes wcSpin {
     to { transform: rotate(360deg); }
@@ -10230,7 +10237,7 @@ function openWalletModal() {
   var html2 = '';
   if (notInstalled.length > 0) {
     if (installed.length > 0) html2 += '<div class="wc-divider"></div>';
-    html2 += '<div class="wc-section">More Wallets</div><div class="wc-list">';
+    html2 += '<div class="wc-section" style="color:var(--text-tertiary)">More Wallets</div><div class="wc-list">';
     for (var k = 0; k < notInstalled.length; k++) {
       html2 += '<button class="wc-wallet" onclick="connectWallet(\'' + notInstalled[k].id + '\')">' +
         '<img src="' + notInstalled[k].icon + '" alt="' + notInstalled[k].name + '" onerror="this.style.display=\'none\'">' +
