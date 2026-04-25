@@ -9291,6 +9291,7 @@ function closeTokenPage() {
   }
   if (_tpWidget) { try { _tpWidget.remove(); } catch(e) {} _tpWidget = null; }
   if (_tpPollTimer) { clearInterval(_tpPollTimer); _tpPollTimer = null; }
+  if (_tpTxnTimer) { clearInterval(_tpTxnTimer); _tpTxnTimer = null; }
   document.getElementById('tpChartContainer').innerHTML = '';
 
   // Clear bar cache for this token so next open gets fresh data
@@ -9555,29 +9556,86 @@ function tpCalcConv(dir) {
   }
 }
 
+var _tpTxnTimer = null;
+
 function loadTokenPageTxns(t) {
-  // Placeholder demo transactions
+  if (_tpTxnTimer) { clearInterval(_tpTxnTimer); _tpTxnTimer = null; }
+  _fetchAndRenderTxns(t);
+  // Auto-refresh every 10 seconds
+  _tpTxnTimer = setInterval(function() { _fetchAndRenderTxns(t); }, 10000);
+}
+
+function _fetchAndRenderTxns(t) {
   var body = document.getElementById('tpTxnBody');
   if (!body) return;
-  var html = '';
-  for (var i = 0; i < 25; i++) {
-    var isBuy = Math.random() > 0.4;
-    var secs = Math.floor(Math.random() * 300);
-    var price = t.price * (1 + (Math.random() - 0.5) * 0.02);
-    var amount = Math.floor(Math.random() * 5000000 + 1000);
-    var total = (amount * price).toFixed(2);
-    var maker = Math.random().toString(36).substring(2,6) + '...' + Math.random().toString(36).substring(2,5);
-    var txnHash = Math.random().toString(36).substring(2,6) + '...' + Math.random().toString(36).substring(2,5);
-    var valColor = isBuy ? 'var(--green)' : 'var(--red)';
-    html += '<tr><td>' + secs + 's ago</td>' +
-      '<td style="color:' + valColor + '">' + (isBuy ? 'Buy' : 'Sell') + '</td>' +
-      '<td style="color:' + valColor + '">$' + price.toFixed(8) + '</td>' +
-      '<td style="color:' + valColor + '">' + amount.toLocaleString() + '</td>' +
-      '<td style="color:' + valColor + '">$' + total + '</td>' +
-      '<td style="color:var(--text-tertiary);font-size:12px">' + maker + '</td>' +
-      '<td><a class="tp-txn-link" href="#" target="_blank"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a></td></tr>';
-  }
-  body.innerHTML = html;
+  var chain = (t.net || 'solana').toLowerCase();
+  var apiUrl = 'https://memescope-scraper.memescope-io.workers.dev/trades?chain=' + encodeURIComponent(chain) + '&address=' + encodeURIComponent(t.ca);
+
+  var explorerMap = {
+    solana: 'https://solscan.io/tx/',
+    eth: 'https://etherscan.io/tx/',
+    base: 'https://basescan.org/tx/',
+    bsc: 'https://bscscan.com/tx/',
+    sui: 'https://suiscan.xyz/tx/',
+    tron: 'https://tronscan.org/#/transaction/',
+  };
+  var makerExplorerMap = {
+    solana: 'https://solscan.io/account/',
+    eth: 'https://etherscan.io/address/',
+    base: 'https://basescan.org/address/',
+    bsc: 'https://bscscan.com/address/',
+    sui: 'https://suiscan.xyz/account/',
+    tron: 'https://tronscan.org/#/address/',
+  };
+  var explorerBase = explorerMap[chain] || explorerMap.solana;
+  var makerBase = makerExplorerMap[chain] || makerExplorerMap.solana;
+
+  fetch(apiUrl).then(function(r) { return r.json(); }).then(function(d) {
+    var trades = (d && d.trades) || [];
+    if (!trades.length) {
+      body.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-tertiary);padding:20px">No trades found</td></tr>';
+      return;
+    }
+    var html = '';
+    var now = Date.now();
+    for (var i = 0; i < trades.length; i++) {
+      var tx = trades[i];
+      var isBuy = tx.type === 'buy';
+      var color = isBuy ? 'var(--green)' : 'var(--red)';
+      // Time ago
+      var txTime = tx.time ? new Date(tx.time).getTime() : 0;
+      var ago = txTime ? Math.floor((now - txTime) / 1000) : 0;
+      var agoStr = ago < 60 ? ago + 's ago' : ago < 3600 ? Math.floor(ago / 60) + 'm ago' : Math.floor(ago / 3600) + 'h ago';
+      // Price
+      var price = tx.volumeUsd && tx.amountBase ? (tx.volumeUsd / tx.amountBase) : 0;
+      var pFmt = price >= 1 ? '$' + price.toFixed(2) : price >= 0.01 ? '$' + price.toFixed(4) : price >= 0.0001 ? '$' + price.toFixed(6) : '$' + price.toFixed(8);
+      // Amount
+      var amt = tx.amountBase || 0;
+      var amtStr = amt >= 1e6 ? (amt / 1e6).toFixed(1) + 'M' : amt >= 1e3 ? Math.floor(amt).toLocaleString() : amt.toFixed(1);
+      // Total
+      var total = tx.volumeUsd || 0;
+      var totalStr = total >= 1000 ? '$' + (total / 1000).toFixed(1) + 'K' : '$' + total.toFixed(2);
+      // Maker
+      var maker = tx.maker || '';
+      var makerShort = maker.length > 8 ? maker.slice(0, 4) + '...' + maker.slice(-3) : maker;
+      // Tx link
+      var txLink = tx.txHash ? explorerBase + tx.txHash : '#';
+      var makerLink = maker ? makerBase + maker : '#';
+
+      html += '<tr>' +
+        '<td>' + agoStr + '</td>' +
+        '<td style="color:' + color + '">' + (isBuy ? 'Buy' : 'Sell') + '</td>' +
+        '<td style="color:' + color + '">' + pFmt + '</td>' +
+        '<td style="color:' + color + '">' + amtStr + '</td>' +
+        '<td style="color:' + color + '">' + totalStr + '</td>' +
+        '<td style="color:var(--text-tertiary);font-size:12px"><a href="' + makerLink + '" target="_blank" style="color:inherit;text-decoration:none">' + makerShort + '</a></td>' +
+        '<td><a class="tp-txn-link" href="' + txLink + '" target="_blank"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a></td>' +
+        '</tr>';
+    }
+    body.innerHTML = html;
+  }).catch(function() {
+    body.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-tertiary);padding:20px">Failed to load trades</td></tr>';
+  });
 }
 
 // Bottom panel resize — drag handle to resize chart, bottom fills remaining
