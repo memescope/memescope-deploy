@@ -4874,7 +4874,7 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 560px;
+    width: 680px;
     max-height: 70vh;
     background: var(--bg-primary);
     border: 1px solid rgba(255,255,255,0.08);
@@ -6507,15 +6507,18 @@ function addFeedItem(platform, scrollId) {
 
 
 // ========== WATCHLIST ==========
-let watchlist = [];
+let watchlist = JSON.parse(localStorage.getItem('msWatchlist') || '[]');
 let watchlistVisible = false;
+// Update nav star on load
+setTimeout(function() { if (typeof renderWatchlist === 'function') renderWatchlist(); }, 100);
 
 function toggleWatchlistPanel() {}
 
 function toggleWatchlist(sym, btnEl) {
   const idx = watchlist.indexOf(sym);
   if (idx > -1) watchlist.splice(idx, 1);
-  else watchlist.push(sym);
+  else if (watchlist.length < 20) watchlist.push(sym);
+  localStorage.setItem('msWatchlist', JSON.stringify(watchlist));
   // Update star buttons in table
   document.querySelectorAll('.star-btn').forEach(btn => {
     const s = btn.getAttribute('onclick').match(/'([^']+)'/)[1];
@@ -6535,9 +6538,11 @@ function toggleWatchlist(sym, btnEl) {
 function openWatchlistModal() {
   renderWatchlist();
   document.getElementById('wlOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
 }
 function closeWatchlistModal() {
   document.getElementById('wlOverlay').classList.remove('open');
+  document.body.style.overflow = '';
 }
 
 function renderWatchlist() {
