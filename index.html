@@ -10373,6 +10373,37 @@ function handleHeaderWalletClick() {
 document.addEventListener('keydown', function(e) {
   if (e.key === 'Escape') closeWalletModal();
 });
+
+// Auto-reconnect wallet on page load (silent, no popup)
+(function autoReconnectWallet() {
+  // Try Phantom first (most common)
+  if (window.phantom && window.phantom.solana && window.phantom.solana.isPhantom) {
+    window.phantom.solana.connect({ onlyIfTrusted: true }).then(function(resp) {
+      _wcState.connected = true;
+      _wcState.address = resp.publicKey.toString();
+      _wcState.walletType = 'phantom';
+      _wcState.chainType = 'solana';
+      if (typeof boostState !== 'undefined') {
+        boostState.walletConnected = true;
+        boostState.walletAddress = resp.publicKey.toString();
+        if (typeof updateBoostWalletUI === 'function') updateBoostWalletUI();
+      }
+      updateHeaderWallet();
+    }).catch(function() {});
+  }
+  // Try MetaMask / EVM wallets
+  else if (window.ethereum && window.ethereum.isMetaMask) {
+    window.ethereum.request({ method: 'eth_accounts' }).then(function(accounts) {
+      if (accounts && accounts.length > 0) {
+        _wcState.connected = true;
+        _wcState.address = accounts[0];
+        _wcState.walletType = 'metamask';
+        _wcState.chainType = 'evm';
+        updateHeaderWallet();
+      }
+    }).catch(function() {});
+  }
+})();
 </script>
 
 <!-- BOOST SYSTEM SCRIPT -->
