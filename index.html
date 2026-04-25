@@ -10291,9 +10291,11 @@ async function connectWallet(walletId) {
     '</div>';
 
   try {
-    // Small delay so the animation renders before the extension popup steals focus
-    await new Promise(function(r) { setTimeout(r, 100); });
-    var result = await wallet.connect();
+    // Show connecting screen for at least 2s so user can read it
+    var connectPromise = wallet.connect();
+    var delayPromise = new Promise(function(r) { setTimeout(r, 2000); });
+    var result = await connectPromise;
+    await delayPromise;
     _wcState.connected = true;
     _wcState.address = result.address;
     _wcState.walletType = walletId;
