@@ -9408,23 +9408,37 @@ function initTokenPageChart(t) {
       _discoverPool(function(pool) {
         if (!pool) { onRes([], { noData: true }); return; }
         var url = 'https://api.geckoterminal.com/api/v2/networks/'+geckoNet+'/pools/'+pool+'/ohlcv/'+rc.agg+'?aggregate='+rc.mult+'&limit=300&currency=usd';
-        fetch(url,{headers:{'Accept':'application/json'}}).then(function(r){return r.json();}).then(function(d){
-          var list = d && d.data && d.data.attributes && d.data.attributes.ohlcv_list;
-          if (!list || !list.length) { onRes([], { noData: true }); return; }
-          var seen = {};
-          var bars = [];
-          for (var i = 0; i < list.length; i++) {
-            var c = list[i];
-            var tm = c[0] * 1000;
-            tm = Math.floor(tm / resMs) * resMs;
-            if (!tm || seen[tm]) continue;
-            seen[tm] = true;
-            bars.push({ time: tm, open: +c[1], high: +c[2], low: +c[3], close: +c[4], volume: +c[5] });
-          }
-          bars.sort(function(a,b){ return a.time - b.time; });
-          _barCache[cacheKey] = bars;
-          onRes(bars, { noData: bars.length === 0 });
-        }).catch(function(){ onRes([], { noData: true }); });
+        var attempt = 0;
+        function tryFetch() {
+          attempt++;
+          var ctrl = new AbortController();
+          var tid = setTimeout(function(){ ctrl.abort(); }, 8000);
+          fetch(url,{headers:{'Accept':'application/json'},signal:ctrl.signal}).then(function(r){clearTimeout(tid);return r.json();}).then(function(d){
+            var list = d && d.data && d.data.attributes && d.data.attributes.ohlcv_list;
+            if (!list || !list.length) {
+              if (attempt < 3) { setTimeout(tryFetch, 1000); return; }
+              onRes([], { noData: true }); return;
+            }
+            var seen = {};
+            var bars = [];
+            for (var i = 0; i < list.length; i++) {
+              var c = list[i];
+              var tm = c[0] * 1000;
+              tm = Math.floor(tm / resMs) * resMs;
+              if (!tm || seen[tm]) continue;
+              seen[tm] = true;
+              bars.push({ time: tm, open: +c[1], high: +c[2], low: +c[3], close: +c[4], volume: +c[5] });
+            }
+            bars.sort(function(a,b){ return a.time - b.time; });
+            _barCache[cacheKey] = bars;
+            onRes(bars, { noData: bars.length === 0 });
+          }).catch(function(){
+            clearTimeout(tid);
+            if (attempt < 3) { setTimeout(tryFetch, 1000); return; }
+            onRes([], { noData: true });
+          });
+        }
+        tryFetch();
       });
     },
     subscribeBars: function(sym, res, onTick, guid) {
@@ -9620,7 +9634,9 @@ function _fetchAndRenderTxns(t) {
   function _doFetch(pool) {
     if (!pool) { body.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-tertiary);padding:20px">No pool found</td></tr>'; return; }
     var url = 'https://api.geckoterminal.com/api/v2/networks/'+gNet+'/pools/'+pool+'/trades?trade_volume_in_usd_greater_than=0';
-    fetch(url,{headers:{'Accept':'application/json'}}).then(function(r){return r.json()}).then(function(d){
+    var ctrl = new AbortController();
+    var tid = setTimeout(function(){ ctrl.abort(); }, 8000);
+    fetch(url,{headers:{'Accept':'application/json'},signal:ctrl.signal}).then(function(r){clearTimeout(tid);return r.json()}).then(function(d){
       var raw = (d && d.data) || [];
       if (!raw.length) { body.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-tertiary);padding:20px">No trades found</td></tr>'; return; }
       var html = '';
@@ -9649,6 +9665,7 @@ function _fetchAndRenderTxns(t) {
       }
       body.innerHTML = html;
     }).catch(function(){
+      clearTimeout(tid);
       body.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-tertiary);padding:20px">Failed to load trades</td></tr>';
     });
   }
