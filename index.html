@@ -703,24 +703,6 @@
   .star-btn.pop img { animation: starPop 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
 
   /* WATCHLIST PANEL - FLOATING POPUP */
-  .watchlist-panel {
-    display: none;
-    position: fixed;
-    top: 120px;
-    right: 40px;
-    width: 380px;
-    max-height: 400px;
-    background: rgba(43, 42, 51, 0.95);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-    border: 1px solid rgba(74, 158, 255, 0.15);
-    border-radius: 9px;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 20px rgba(74, 158, 255, 0.08);
-    z-index: 100;
-    overflow: hidden;
-    resize: both;
-  }
-  .watchlist-panel.open { display: flex; flex-direction: column; }
   .popup-titlebar {
     display: flex;
     align-items: center;
@@ -767,59 +749,6 @@
     font-weight: 600;
     color: var(--text-primary);
   }
-  .watchlist-count {
-    font-family: 'Inter', sans-serif; font-variant-numeric: tabular-nums;
-    font-size: 10px;
-    color: var(--text-primary);
-  }
-  .watchlist-empty {
-    font-size: 12px;
-    color: var(--text-primary);
-    text-align: center;
-    padding: 16px 0;
-  }
-  .watchlist-items {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-  }
-  .watchlist-chip {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 5px 10px;
-    background: var(--bg-surface);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text-primary);
-    cursor: default;
-  }
-  .watchlist-chip-price {
-    font-family: 'Inter', sans-serif; font-variant-numeric: tabular-nums;
-    font-size: 11px;
-    color: var(--text-secondary);
-  }
-  .watchlist-chip-change {
-    font-family: 'Inter', sans-serif; font-variant-numeric: tabular-nums;
-    font-size: 10px;
-    font-weight: 700;
-  }
-  .watchlist-chip-change.up { color: var(--green); }
-  .watchlist-chip-change.down { color: var(--red); }
-  .watchlist-chip-remove {
-    background: none;
-    border: none;
-    color: var(--text-primary);
-    cursor: pointer;
-    font-size: 12px;
-    padding: 0;
-    line-height: 1;
-    margin-left: 2px;
-  }
-  .watchlist-chip-remove:hover { color: var(--red); }
-
   /* ALERTS PANEL */
   /* ALERTS PANEL - FLOATING POPUP */
   .alerts-panel {
@@ -5625,17 +5554,6 @@ if(window._embedMode) {
       </div>
     </div>
 
-    <!-- WATCHLIST POPUP -->
-    <div class="watchlist-panel" id="watchlist-panel">
-      <div class="popup-titlebar" onmousedown="startDrag(event, 'watchlist-panel')">
-        <span class="popup-titlebar-left">⭐ Watchlist</span>
-        <span class="watchlist-count" id="watchlist-count" style="font-family:'Inter',sans-serif;font-variant-numeric:tabular-nums;font-size: 11px;color:var(--text-tertiary)">0 tokens</span>
-        <button class="popup-close" onclick="toggleWatchlistPanel()">✕</button>
-      </div>
-      <div class="popup-body" id="watchlist-content">
-        <div class="watchlist-empty">Click the ★ next to any token to start tracking</div>
-      </div>
-    </div>
 
     <!-- ALERTS POPUP -->
     <div class="alerts-panel" id="alerts-panel">
@@ -6519,82 +6437,27 @@ function addFeedItem(platform, scrollId) {
 let watchlist = [];
 let watchlistVisible = false;
 
-function toggleWatchlistPanel() {
-  watchlistVisible = !watchlistVisible;
-  document.getElementById('watchlist-panel').classList.toggle('open', watchlistVisible);
-  var navW = document.getElementById('nav-watchlist'); if(navW) navW.classList.toggle('active', watchlistVisible);
-}
+function toggleWatchlistPanel() {}
 
 function toggleWatchlist(sym, btnEl) {
   const idx = watchlist.indexOf(sym);
   if (idx > -1) watchlist.splice(idx, 1);
   else watchlist.push(sym);
-  renderWatchlist();
   // Update star buttons in table
   document.querySelectorAll('.star-btn').forEach(btn => {
     const s = btn.getAttribute('onclick').match(/'([^']+)'/)[1];
     btn.classList.toggle('active', watchlist.includes(s));
   });
-  // Pop animation on clicked star
-  if (btnEl) {
-    btnEl.classList.remove('pop');
-    void btnEl.offsetWidth;
-    btnEl.classList.add('pop');
-    setTimeout(() => btnEl.classList.remove('pop'), 450);
+  // Update modal star
+  var modalStar = document.getElementById('bmStar');
+  if (modalStar && window._modalToken) {
+    modalStar.classList.toggle('active', watchlist.includes(window._modalToken.sym));
   }
-}
-
-function renderWatchlist() {
-  const content = document.getElementById('watchlist-content');
-  const countEl = document.getElementById('watchlist-count');
-  const badge = document.getElementById('watchlist-badge');
-  const tileBadge = document.getElementById('watchlist-tile-badge');
-  if(countEl) countEl.textContent = watchlist.length + ' token' + (watchlist.length !== 1 ? 's' : '');
-  // Update sidebar badge
-  if (badge && watchlist.length > 0) {
-    badge.textContent = watchlist.length;
-    badge.classList.add('visible');
-    badge.style.animation = 'none';
-    badge.offsetHeight; // force reflow
-    badge.style.animation = '';
-  } else if(badge) {
-    badge.classList.remove('visible');
-  }
-  // Update DexHub tile badge
-  if (tileBadge) {
-    if (watchlist.length > 0) {
-      tileBadge.textContent = watchlist.length;
-      tileBadge.classList.add('visible');
-      tileBadge.style.animation = 'none';
-      tileBadge.offsetHeight;
-      tileBadge.style.animation = '';
-    } else {
-      tileBadge.classList.remove('visible');
-    }
-  }
-  if (watchlist.length === 0) {
-    content.innerHTML = '<div class="watchlist-empty">Click the ★ star next to any token to add it here</div>';
-    return;
-  }
-  let html = '<div class="watchlist-items">';
-  watchlist.forEach(sym => {
-    const token = LIVE_TOKENS.find(t => t.sym === sym);
-    if (!token) return;
-    const changeVal = token.p24h;
-    const changeCls = changeVal >= 0 ? 'up' : 'down';
-    const changeStr = (changeVal >= 0 ? '+' : '') + changeVal.toFixed(1) + '%';
-    html += `<div class="watchlist-chip">
-      <span>${sym}</span>
-      <span class="watchlist-chip-price">${fmtPrice(token.price)}</span>
-      <span class="watchlist-chip-change ${changeCls}">${changeStr}</span>
-      <button class="watchlist-chip-remove" onclick="toggleWatchlist('${sym}')">✕</button>
-    </div>`;
-  });
-  html += '</div>';
-  content.innerHTML = html;
   // Sync alerts panel if open
   if (alertsVisible) renderAlerts();
 }
+
+function renderWatchlist() {}
 
 // ---- ALERTS ----
 let alerts = [];
