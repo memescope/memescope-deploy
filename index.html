@@ -2836,6 +2836,46 @@
     font-weight: 600;
   }
   .wc-footer a:hover { text-decoration: underline; }
+
+  /* Connecting animation state */
+  .wc-connecting {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px 48px;
+    gap: 16px;
+  }
+  .wc-connecting-icon {
+    width: 64px; height: 64px;
+    border-radius: 16px;
+    animation: wcIconPulse 2s ease-in-out infinite;
+  }
+  @keyframes wcIconPulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.05); opacity: 0.85; }
+  }
+  .wc-connecting-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  .wc-connecting-sub {
+    font-size: 13px;
+    color: var(--text-tertiary);
+    margin-top: -8px;
+  }
+  .wc-spinner {
+    width: 24px; height: 24px;
+    border: 2.5px solid rgba(255,255,255,0.08);
+    border-top-color: rgba(255,255,255,0.5);
+    border-radius: 50%;
+    animation: wcSpin 0.8s linear infinite;
+    margin-top: 4px;
+  }
+  @keyframes wcSpin {
+    to { transform: rotate(360deg); }
+  }
+
   /* Connected state in header */
   .ms-header-connect.connected {
     background: rgba(34,197,94,0.08);
@@ -10219,6 +10259,23 @@ async function connectWallet(walletId) {
     return;
   }
 
+  // Show connecting animation
+  var modal = document.querySelector('.wc-modal');
+  var prevContent = modal.innerHTML;
+  modal.innerHTML =
+    '<div class="wc-header">' +
+      '<span class="wc-title"></span>' +
+      '<button class="wc-close" onclick="closeWalletModal()">' +
+        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' +
+      '</button>' +
+    '</div>' +
+    '<div class="wc-connecting">' +
+      '<img class="wc-connecting-icon" src="' + wallet.icon + '" onerror="this.style.display=\'none\'">' +
+      '<div class="wc-connecting-title">Opening ' + wallet.name + '...</div>' +
+      '<div class="wc-connecting-sub">Confirm connection in the extension</div>' +
+      '<div class="wc-spinner"></div>' +
+    '</div>';
+
   try {
     var result = await wallet.connect();
     _wcState.connected = true;
@@ -10237,6 +10294,8 @@ async function connectWallet(walletId) {
     closeWalletModal();
   } catch(e) {
     console.log('Wallet connect error:', e);
+    // Restore wallet list on cancel/error
+    modal.innerHTML = prevContent;
   }
 }
 
