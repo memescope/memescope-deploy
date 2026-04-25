@@ -9381,30 +9381,47 @@ function initTokenPageChart(t) {
       var resMs = (!isNaN(resMin) ? resMin : 1) * 60000;
       if (res === '1D') resMs = 86400000;
 
-      fetch(apiUrl).then(function(r) {
-        if (!r.ok) throw new Error('fetch failed ' + r.status);
-        return r.json();
-      }).then(function(d) {
-        var raw = (d && d.bars) || [];
-        var seen = {};
-        var bars = [];
-        for (var i = 0; i < raw.length; i++) {
-          var b = raw[i];
-          var tm = b.time || b.t || 0;
-          if (tm && tm < 1e12) tm = tm * 1000;
-          tm = Math.floor(tm / resMs) * resMs;
-          if (!tm || tm <= 0 || seen[tm]) continue;
-          seen[tm] = true;
-          var o = +(b.open || b.o || 0), h = +(b.high || b.h || 0), l = +(b.low || b.l || 0), c = +(b.close || b.c || 0);
-          if (!o && !h && !l && !c) continue;
-          bars.push({ time: tm, open: o, high: h, low: l, close: c, volume: +(b.volume || b.v || 0) });
-        }
-        bars.sort(function(a, b) { return a.time - b.time; });
-        _barCache[cacheKey] = bars;
-        onRes(bars, { noData: bars.length === 0 });
-      }).catch(function(err) {
-        onRes([], { noData: true });
-      });
+      var _retries = 0;
+      function _fetchBars() {
+        fetch(apiUrl).then(function(r) {
+          if (!r.ok) throw new Error('fetch failed ' + r.status);
+          return r.json();
+        }).then(function(d) {
+          var raw = (d && d.bars) || [];
+          var seen = {};
+          var bars = [];
+          for (var i = 0; i < raw.length; i++) {
+            var b = raw[i];
+            var tm = b.time || b.t || 0;
+            if (tm && tm < 1e12) tm = tm * 1000;
+            tm = Math.floor(tm / resMs) * resMs;
+            if (!tm || tm <= 0 || seen[tm]) continue;
+            seen[tm] = true;
+            var o = +(b.open || b.o || 0), h = +(b.high || b.h || 0), l = +(b.low || b.l || 0), c = +(b.close || b.c || 0);
+            if (!o && !h && !l && !c) continue;
+            bars.push({ time: tm, open: o, high: h, low: l, close: c, volume: +(b.volume || b.v || 0) });
+          }
+          bars.sort(function(a, b) { return a.time - b.time; });
+          // If no bars and we haven't retried yet, retry after 3s (pool discovery may need time)
+          if (bars.length === 0 && _retries < 2) {
+            _retries++;
+            setTimeout(_fetchBars, 3000);
+            return;
+          }
+          _barCache[cacheKey] = bars;
+          // Store discovered pool so trades can skip pool lookup
+          if (d.pool && t) t._discoveredPool = d.pool;
+          onRes(bars, { noData: bars.length === 0 });
+        }).catch(function(err) {
+          if (_retries < 2) {
+            _retries++;
+            setTimeout(_fetchBars, 3000);
+            return;
+          }
+          onRes([], { noData: true });
+        });
+      }
+      _fetchBars();
     },
     subscribeBars: function(sym, res, onTick, guid) {
       var resMin = parseInt(res);
@@ -9571,7 +9588,7 @@ function _fetchAndRenderTxns(t) {
   var body = document.getElementById('tpTxnBody');
   if (!body) return;
   var chain = (t.net || 'solana').toLowerCase();
-  var apiUrl = 'https://memescope-scraper.memescope-io.workers.dev/trades?chain=' + encodeURIComponent(chain) + '&address=' + encodeURIComponent(t.ca);
+  var apiUrl = 'https://memescope-scraper.memescope-io.workers.dev/trades?chain=' + encodeURIComponent(chain) + '&address=' + encodeURIComponent(t.ca) + (t._discoveredPool ? '&pool=' + encodeURIComponent(t._discoveredPool) : '');
 
   var explorerMap = {
     solana: 'https://solscan.io/tx/',
