@@ -4860,11 +4860,11 @@
     opacity: 0;
   }
 
-  /* SIDEBAR WATCHLIST — only visible when tokens are starred */
+  /* SIDEBAR WATCHLIST — DexScreener style at bottom */
   .ms-sidebar-watchlist {
     border-top: 1px solid rgba(220,220,220,0.08);
     flex-shrink: 0;
-    max-height: 220px;
+    max-height: 280px;
     overflow: hidden;
     display: none;
     flex-direction: column;
@@ -4873,16 +4873,18 @@
   .ms-sidebar-wl-header {
     display: flex;
     align-items: center;
-    height: 30px;
-    padding: 0 16px;
+    gap: 6px;
+    height: 32px;
+    padding: 0 14px;
     color: var(--text-secondary);
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 700;
-    letter-spacing: 0.8px;
+    letter-spacing: 0.5px;
     user-select: none;
     opacity: 0;
     transition: opacity 0.15s ease 0.05s;
   }
+  .ms-sidebar-wl-header svg { flex-shrink: 0; }
   .ms-sidebar:hover .ms-sidebar-wl-header { opacity: 1; }
   .ms-sidebar-wl-title-col { flex: 1; }
   .ms-sidebar-wl-count {
@@ -4893,47 +4895,71 @@
   .ms-sidebar-wl-items {
     overflow-y: auto;
     padding: 0 0 4px;
-    max-height: 180px;
+    max-height: 240px;
   }
   .ms-sidebar-wl-token {
-    display: grid;
-    grid-template-columns: 55px 1fr auto;
+    display: flex;
     align-items: center;
-    height: 32px;
+    gap: 8px;
+    padding: 6px 14px;
     cursor: pointer;
     text-decoration: none;
     color: var(--text-primary);
-    font-size: 13px;
     transition: background 0.15s;
+    opacity: 0;
+    transition: opacity 0.15s ease 0.05s, background 0.15s;
   }
+  .ms-sidebar:hover .ms-sidebar-wl-token { opacity: 1; }
   .ms-sidebar-wl-token:hover { background: rgba(74,158,255,0.08); }
   .ms-sidebar-wl-token-img {
-    grid-column: 1;
-    justify-self: center;
     width: 20px;
     height: 20px;
     border-radius: 50%;
     object-fit: cover;
+    flex-shrink: 0;
+  }
+  .ms-sidebar-wl-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+  .ms-sidebar-wl-top {
+    display: flex;
+    align-items: center;
+    gap: 8px;
   }
   .ms-sidebar-wl-sym {
     font-weight: 600;
     font-size: 12px;
     white-space: nowrap;
-    opacity: 0;
-    transition: opacity 0.15s ease 0.05s;
   }
-  .ms-sidebar:hover .ms-sidebar-wl-sym { opacity: 1; }
-  .ms-sidebar-wl-change {
+  .ms-sidebar-wl-price {
     font-size: 11px;
-    font-weight: 600;
-    margin-right: 12px;
-    opacity: 0;
+    color: var(--text-secondary);
+    font-variant-numeric: tabular-nums;
     white-space: nowrap;
-    transition: opacity 0.15s ease 0.05s;
+    margin-left: auto;
   }
-  .ms-sidebar:hover .ms-sidebar-wl-change { opacity: 1; }
-  .ms-sidebar-wl-change.up { color: #22C55E; }
-  .ms-sidebar-wl-change.down { color: #EF4444; }
+  .ms-sidebar-wl-bottom {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .ms-sidebar-wl-pct {
+    font-size: 10px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .ms-sidebar-wl-pct-label {
+    font-size: 9px;
+    color: var(--text-tertiary);
+    font-weight: 400;
+  }
+  .ms-sidebar-wl-pct.up { color: var(--green); }
+  .ms-sidebar-wl-pct.down { color: var(--red); }
 
   .ms-utility {
     border-top: 1px solid rgba(220,220,220,0.08);
@@ -5243,10 +5269,10 @@
   <div class="ms-spacer"></div>
 
   <!-- SIDEBAR WATCHLIST (only visible when tokens are starred) -->
-  <div class="ms-sidebar-watchlist" id="msSidebarWatchlist" style="display:none;">
+  <div class="ms-sidebar-watchlist" id="msSidebarWatchlist">
     <div class="ms-sidebar-wl-header">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
       <span class="ms-sidebar-wl-title-col">WATCHLIST</span>
-      <span class="ms-sidebar-wl-count" id="msSidebarWlCount"></span>
     </div>
     <div class="ms-sidebar-wl-items" id="msSidebarWlItems"></div>
   </div>
@@ -6453,11 +6479,57 @@ function toggleWatchlist(sym, btnEl) {
   if (modalStar && window._modalToken) {
     modalStar.classList.toggle('active', watchlist.includes(window._modalToken.sym));
   }
+  // Update sidebar watchlist
+  renderWatchlist();
   // Sync alerts panel if open
   if (alertsVisible) renderAlerts();
 }
 
-function renderWatchlist() {}
+function renderWatchlist() {
+  var container = document.getElementById('msSidebarWatchlist');
+  var items = document.getElementById('msSidebarWlItems');
+  if (!container || !items) return;
+
+  if (watchlist.length === 0) {
+    container.classList.remove('has-items');
+    items.innerHTML = '';
+    return;
+  }
+
+  container.classList.add('has-items');
+  var html = '';
+  watchlist.forEach(function(sym) {
+    var token = LIVE_TOKENS.find(function(t) { return t.sym === sym; });
+    if (!token) return;
+    var p1h = token.p1h || 0;
+    var p24h = token.p24h || 0;
+    var p1hCls = p1h >= 0 ? 'up' : 'down';
+    var p24hCls = p24h >= 0 ? 'up' : 'down';
+    var p1hStr = (p1h >= 0 ? '+' : '') + p1h.toFixed(1) + '%';
+    var p24hStr = (p24h >= 0 ? '+' : '') + p24h.toFixed(1) + '%';
+    var priceStr = typeof dexPriceFmt === 'function' ? dexPriceFmt(token.price) : fmtPrice(token.price);
+    var imgSrc = token.img || '';
+    var letter = sym.charAt(0).toUpperCase();
+    var avatarHtml = imgSrc
+      ? '<img class="ms-sidebar-wl-token-img" src="' + imgSrc + '" onerror="this.style.display=\'none\'">'
+      : '<div class="ms-sidebar-wl-token-img" style="background:#333;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff">' + letter + '</div>';
+
+    html += '<div class="ms-sidebar-wl-token" onclick="openBubbleModal(LIVE_TOKENS.find(function(t){return t.sym===\'' + sym + '\'}))">' +
+      avatarHtml +
+      '<div class="ms-sidebar-wl-info">' +
+        '<div class="ms-sidebar-wl-top">' +
+          '<span class="ms-sidebar-wl-sym">' + sym + '</span>' +
+          '<span class="ms-sidebar-wl-price">' + priceStr + '</span>' +
+        '</div>' +
+        '<div class="ms-sidebar-wl-bottom">' +
+          '<span class="ms-sidebar-wl-pct-label">1H:</span><span class="ms-sidebar-wl-pct ' + p1hCls + '">' + p1hStr + '</span>' +
+          '<span class="ms-sidebar-wl-pct-label">24H:</span><span class="ms-sidebar-wl-pct ' + p24hCls + '">' + p24hStr + '</span>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  });
+  items.innerHTML = html;
+}
 
 // ---- ALERTS ----
 let alerts = [];
