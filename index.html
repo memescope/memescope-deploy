@@ -8875,6 +8875,13 @@ function _initModalChart(t) {
               hdr.classList.add(price > prevPrice ? 'glow-up' : 'glow-down');
             }
           }
+          // Update stats bar (mcap, vol, liq)
+          var mcapEl = document.getElementById('bmMcap');
+          var volEl = document.getElementById('bmVol');
+          var liqEl = document.getElementById('bmLiq');
+          if (mcapEl) mcapEl.textContent = fmt(pair.marketCap || pair.fdv || 0);
+          if (volEl) volEl.textContent = fmt(pair.volume ? (pair.volume.h24 || 0) : 0);
+          if (liqEl) liqEl.textContent = fmt(pair.liquidity ? (pair.liquidity.usd || 0) : 0);
         } catch(e) {}
       }, 10000);
       window._bmSubIntervals = window._bmSubIntervals || {};
