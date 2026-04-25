@@ -8645,6 +8645,23 @@ function openBubbleModal(t) {
   _bmPriceEl.setAttribute('data-price', t.price);
   _bmPriceEl.setAttribute('data-price-native', t.priceNative || 0);
 
+  // Fetch native price immediately from DexScreener if not already available
+  if (!t.priceNative && t.ca) {
+    fetch('https://api.dexscreener.com/latest/dex/tokens/' + t.ca)
+      .then(function(r) { return r.json(); })
+      .then(function(d) {
+        if (!d.pairs || !d.pairs.length) return;
+        var pair = d.pairs.reduce(function(b,p) { return (p.liquidity&&p.liquidity.usd||0) > (b.liquidity&&b.liquidity.usd||0) ? p : b; }, d.pairs[0]);
+        var pn = pair.priceNative ? parseFloat(pair.priceNative) : 0;
+        if (pn && window._modalToken && window._modalToken.ca === t.ca) {
+          window._modalToken.priceNative = pn;
+          var el = document.getElementById('bmPriceBig');
+          if (el) el.setAttribute('data-price-native', pn);
+          if (_bmPriceCurrency === 'native') updatePriceDisplay();
+        }
+      }).catch(function() {});
+  }
+
   // Initial header glow based on 5m change
   var hdr = document.querySelector('.bm-header');
   if (hdr) {
