@@ -5618,7 +5618,7 @@ if(window._embedMode) {
             <div class="tp-tab-pane" id="tpPaneTxns">
               <div class="tp-txn-header-row">
                 <table class="tp-txn-tbl"><colgroup><col style="width:22%"><col style="width:8%"><col style="width:16%"><col style="width:16%"><col style="width:12%"><col style="width:22%"><col style="width:4%"></colgroup><thead><tr>
-                  <th>Date</th><th>Type</th><th>Price (USD)</th><th>Amount</th><th>Total</th><th>Maker</th><th>Txn</th>
+                  <th>Date</th><th>Type</th><th>Price (USD)</th><th id="tpTxnAmtHeader">Amount</th><th>Total</th><th>Maker</th><th>Txn</th>
                 </tr></thead></table>
               </div>
               <div class="tp-txn-scroll" id="tpTxnScroll">
@@ -9560,6 +9560,8 @@ var _tpTxnTimer = null;
 
 function loadTokenPageTxns(t) {
   if (_tpTxnTimer) { clearInterval(_tpTxnTimer); _tpTxnTimer = null; }
+  var amtH = document.getElementById('tpTxnAmtHeader');
+  if (amtH) amtH.textContent = (t.ticker || t.symbol || 'Amount').toUpperCase();
   _fetchAndRenderTxns(t);
   // Auto-refresh every 10 seconds
   _tpTxnTimer = setInterval(function() { _fetchAndRenderTxns(t); }, 10000);
