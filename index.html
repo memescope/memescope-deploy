@@ -9578,7 +9578,7 @@ var _tpTxnTimer = null;
 function loadTokenPageTxns(t) {
   if (_tpTxnTimer) { clearInterval(_tpTxnTimer); _tpTxnTimer = null; }
   var amtH = document.getElementById('tpTxnAmtHeader');
-  if (amtH) amtH.textContent = (t.ticker || t.symbol || 'Amount').toUpperCase();
+  if (amtH) amtH.textContent = (t.sym || t.ticker || t.symbol || 'Amount').toUpperCase();
   _fetchAndRenderTxns(t);
   // Auto-refresh every 10 seconds
   _tpTxnTimer = setInterval(function() { _fetchAndRenderTxns(t); }, 10000);
