@@ -2841,33 +2841,11 @@
   /* Chart */
   .bm-chart {
     position: relative;
-    padding: 0 20px 10px;
-    min-height: 210px;
+    padding: 0;
+    min-height: 380px;
   }
-  .bm-chart canvas {
-    width: 100%;
-    height: 100%;
-    display: block;
-  }
-  .bm-chart-price-high,
-  .bm-chart-price-low {
-    position: absolute;
-    font-family: 'Inter', sans-serif;
-    font-variant-numeric: tabular-nums;
-    font-size: 11px;
-    font-weight: 700;
-    padding: 2px 6px;
-    z-index: 2;
-  }
-  .bm-chart-price-high {
-    top: 12px;
-    right: 10px;
-    color: var(--green);
-  }
-  .bm-chart-price-low {
-    bottom: 12px;
-    left: 10px;
-    color: var(--red);
+  .bm-chart iframe {
+    border: none !important;
   }
 
   /* Timeframes */
@@ -4581,9 +4559,8 @@
     .bm-stat-card { padding: 8px 6px !important; border-radius: 6px !important; }
     .bm-stat-label { font-size: 9px !important; }
     .bm-stat-value { font-size: 12px !important; }
-    .bm-chart-controls { padding: 4px 8px !important; }
-    .bm-ctf-btn { font-size: 13px !important; padding: 4px 8px !important; }
-    .bm-chart-canvas-wrap { height: 300px !important; }
+    .bm-chart { min-height: 300px !important; }
+    #bmTvChartContainer { height: 300px !important; }
     .bm-timeframes { padding: 6px 12px !important; gap: 4px !important; }
     .bm-tf { padding: 6px 0 !important; }
     .bm-tf-label { font-size: 9px !important; }
@@ -8411,9 +8388,144 @@ function openTokenModal(idx) {
 }
 
 function openBubbleModal(t) {
-  // Redirect to full token page instead of modal
   if (!t) return;
-  openTokenPage(t);
+  try {
+  var ov = document.getElementById("bubbleModalOverlay");
+  document.body.style.overflow = 'hidden';
+  window._modalToken = t;
+
+  // Avatar
+  var av = document.getElementById("bmAvatar");
+  if (t.img) {
+    av.innerHTML = '<img src="' + t.img + '" style="width:100%;height:100%;border-radius:6px;object-fit:cover" onerror="this.parentElement.textContent=\'' + t.sym.charAt(0) + '\'">';
+  } else {
+    var hue = t.p24h >= 0 ? 152 : 0;
+    var lum = Math.min(45, 25 + Math.abs(t.p24h || 0) * 0.3);
+    av.style.background = "hsl(" + hue + ",70%," + lum + "%)";
+    av.textContent = t.sym.charAt(0);
+  }
+
+  // Symbol & name
+  document.getElementById("bmSym").textContent = t.sym;
+  var bmSymEl = document.getElementById("bmSym");
+  var existingBadge = bmSymEl.parentElement.querySelector('.boost-badge');
+  if (existingBadge) existingBadge.remove();
+  if (t.boosted && t.boostCount) {
+    var badge = document.createElement('span');
+    badge.className = 'boost-badge';
+    badge.style.fontSize = '11px';
+    badge.style.marginLeft = '8px';
+    badge.textContent = '⚡' + t.boostCount;
+    bmSymEl.parentElement.insertBefore(badge, bmSymEl.nextSibling);
+  }
+  document.getElementById("bmFullname").textContent = t.name || t.sym;
+  var pairTokenMap = { 'solana':'/SOL','eth':'/WETH','ethereum':'/WETH','base':'/WETH','bsc':'/BNB','sui':'/SUI','tron':'/TRX' };
+  document.getElementById("bmChain").textContent = pairTokenMap[(t.net || 'solana').toLowerCase()] || '/SOL';
+  var ageBadge = document.getElementById("bmAgeBadge");
+  if (ageBadge) ageBadge.textContent = fmtAge(t.age) || '';
+
+  // Price
+  var priceFmt = function(p) {
+    if (p >= 1) return "$" + p.toFixed(2);
+    if (p >= 0.01) return "$" + p.toFixed(4);
+    if (p >= 0.0001) return "$" + p.toFixed(6);
+    return "$" + p.toExponential(2);
+  };
+  document.getElementById("bmPriceBig").textContent = priceFmt(t.price);
+
+  // Contract Address
+  var caEl = document.getElementById("bmCA");
+  var copyIcon = ' <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-left:4px;vertical-align:-1px;opacity:0.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>';
+  if (t.ca && t.ca.length > 8) {
+    caEl.innerHTML = t.ca.slice(0, 4) + "..." + t.ca.slice(-4) + copyIcon;
+    caEl.title = t.ca;
+  } else if (t.ca) {
+    caEl.innerHTML = t.ca + copyIcon;
+    caEl.title = t.ca;
+  } else {
+    caEl.innerHTML = "—";
+  }
+
+  // Stats
+  var fmt = function(n) {
+    if (!n || n === 0) return "$0";
+    if (n >= 1e9) return "$" + (n/1e9).toFixed(2) + "B";
+    if (n >= 1e6) return "$" + (n/1e6).toFixed(2) + "M";
+    if (n >= 1e3) return "$" + (n/1e3).toFixed(1) + "K";
+    return "$" + n.toFixed(2);
+  };
+  document.getElementById("bmMcap").textContent = fmt(t.mcap);
+  document.getElementById("bmVol").textContent = fmt(t.vol);
+  document.getElementById("bmLiq").textContent = fmt(t.liq);
+  document.getElementById("bmAge").textContent = fmtAge(t.age) || "??";
+
+  // Timeframes
+  var pFmt = function(v, id) {
+    var el = document.getElementById(id);
+    v = Math.max(-9999, Math.min(9999, v || 0));
+    el.textContent = (v >= 0 ? "+" : "") + v.toFixed(1) + "%";
+    el.style.color = v >= 0 ? "var(--green)" : "var(--red)";
+  };
+  pFmt(t.p5m, "bmTf5m");
+  pFmt(t.p1h, "bmTf1h");
+  pFmt(t.p6h, "bmTf6h");
+  pFmt(t.p24h, "bmTf24h");
+
+  // Converter
+  document.getElementById("bmConvSym").textContent = t.sym;
+  document.getElementById("bmConvAmount").value = 1;
+  document.getElementById("bmConvUsd").value = '';
+  updateConverter('token');
+
+  // Explorer links
+  var chainExplorer = {
+    'solana':'https://solscan.io/token/','eth':'https://etherscan.io/token/',
+    'base':'https://basescan.org/token/','bsc':'https://bscscan.com/token/',
+    'sui':'https://suiscan.xyz/mainnet/coin/','tron':'https://tronscan.org/#/token20/'
+  };
+  var solscanLink = document.getElementById("bmLinkSolscan");
+  if (solscanLink) {
+    solscanLink.href = (chainExplorer[t.net] || 'https://solscan.io/token/') + (t.ca || '');
+    var explorerNames = {'solana':'Solscan','eth':'Etherscan','base':'Basescan','bsc':'BscScan'};
+    try {
+      var scanIcon = document.getElementById('bmSolscanIcon');
+      if (scanIcon && typeof SCANNER_ICONS !== 'undefined') scanIcon.src = SCANNER_ICONS[t.net] || SCANNER_ICONS['solana'];
+      var scanName = document.getElementById('bmSolscanName');
+      if (scanName) scanName.textContent = explorerNames[t.net] || 'Explorer';
+    } catch(e2){}
+  }
+  var webLink = document.getElementById("bmLinkWeb");
+  if (webLink) { if (t.website) { webLink.href = t.website; webLink.style.display = ""; } else { webLink.style.display = "none"; } }
+  var xLink = document.getElementById("bmLinkX");
+  if (xLink) { xLink.href = t.twitter || ("https://x.com/search?q=%24" + t.sym); xLink.style.display = ''; }
+  var searchLink = document.getElementById("bmSearchLink");
+  if (searchLink) searchLink.href = "https://x.com/search?q=" + encodeURIComponent("$" + t.sym + " OR " + t.ca) + "&src=typed_query&f=live";
+
+  // Boost CTA
+  var boostTitle = document.querySelector('.bm-boost-title');
+  var boostDesc = document.querySelector('.bm-boost-desc');
+  if (boostTitle && boostDesc) {
+    if (t.boosted && t.boostCount) {
+      boostTitle.textContent = '⚡' + t.boostCount + ' Boosted!';
+      boostDesc.textContent = 'Add more boosts to increase visibility';
+    } else {
+      boostTitle.textContent = 'Boost this token';
+      boostDesc.textContent = 'Get featured with a golden spotlight in scopes';
+    }
+  }
+
+  // Show modal, then init TradingView chart
+  ov.classList.add("open");
+  setTimeout(function() { _initModalChart(t); }, 100);
+
+  // Update URL
+  try {
+    var chain = (t.net || 'solana').toLowerCase();
+    var ca = t.ca || '';
+    if (ca) history.pushState({ token: true, ca: ca, chain: chain }, '', '/' + chain + '/' + ca);
+  } catch(e3) {}
+
+  } catch(e) { console.error('Modal error:', e); }
 }
 
 function updateConverter(direction) {
@@ -8476,6 +8588,20 @@ function closeBubbleModal() {
   ov.classList.remove("open");
   document.body.style.overflow = '';
   if(_candlePollTimer) { clearInterval(_candlePollTimer); _candlePollTimer = null; }
+  // Destroy TradingView modal chart
+  if (window._bmChartPoll) { clearInterval(window._bmChartPoll); window._bmChartPoll = null; }
+  if (window._bmSubIntervals) {
+    Object.keys(window._bmSubIntervals).forEach(function(guid) { clearInterval(window._bmSubIntervals[guid]); });
+    window._bmSubIntervals = {};
+  }
+  if (window._bmWidget) { try { window._bmWidget.remove(); } catch(e) {} window._bmWidget = null; }
+  var bmChart = document.getElementById('bmTvChartContainer');
+  if (bmChart) bmChart.innerHTML = '';
+  // Clear bar cache for this token
+  var mt = window._modalToken;
+  if (mt && mt.ca) {
+    Object.keys(_barCache).forEach(function(k) { if (k.indexOf(mt.ca) === 0) delete _barCache[k]; });
+  }
   if(window.location.pathname !== '/') {
     try { history.replaceState({}, '', '/'); } catch(e) {}
   }
@@ -8487,7 +8613,226 @@ window.addEventListener('popstate', function() {
   if(ov && ov.classList.contains("open")) {
     closeBubbleModal();
   }
+  // Also close token page if open
+  var tp = document.getElementById('tokenPage');
+  if(tp && tp.style.display !== 'none') {
+    closeTokenPage();
+  }
 });
+
+// Init TradingView Advanced Chart inside the modal
+function _initModalChart(t) {
+  if (!window.TradingView || !t || !t.ca) return;
+  var container = document.getElementById('bmTvChartContainer');
+  if (!container) return;
+
+  // Clean up any previous widget
+  if (window._bmChartPoll) { clearInterval(window._bmChartPoll); window._bmChartPoll = null; }
+  if (window._bmSubIntervals) {
+    Object.keys(window._bmSubIntervals).forEach(function(guid) { clearInterval(window._bmSubIntervals[guid]); });
+    window._bmSubIntervals = {};
+  }
+  if (window._bmWidget) { try { window._bmWidget.remove(); } catch(e) {} window._bmWidget = null; }
+  container.innerHTML = '';
+
+  var chain = (t.net || 'solana').toLowerCase();
+  var pairTokenMap2 = { solana:'SOL', eth:'WETH', base:'WETH', bsc:'BNB', sui:'SUI', tron:'TRX' };
+  var geckoChainMap = { solana:'solana', eth:'eth', base:'base', bsc:'bsc', sui:'sui-network', tron:'tron' };
+  var dexChainMap2 = { solana:'solana', eth:'ethereum', base:'base', bsc:'bsc', sui:'sui', tron:'tron' };
+  var geckoNet = geckoChainMap[chain] || chain;
+  var dexNet = dexChainMap2[chain] || chain;
+
+  function _discoverPoolModal(cb) {
+    if (t._discoveredPool) { cb(t._discoveredPool); return; }
+    if (t.pairAddress) { t._discoveredPool = t.pairAddress; cb(t.pairAddress); return; }
+    var done = false;
+    fetch('https://api.dexscreener.com/latest/dex/tokens/' + t.ca).then(function(r){return r.json()}).then(function(d){
+      if (done) return;
+      if (d && d.pairs && d.pairs.length) {
+        var cp = d.pairs.filter(function(p){return p.chainId === dexNet});
+        var best = (cp.length ? cp : d.pairs).reduce(function(b,p){return (p.liquidity&&p.liquidity.usd||0)>(b.liquidity&&b.liquidity.usd||0)?p:b},(cp.length?cp:d.pairs)[0]);
+        if (best.pairAddress) { done = true; t._discoveredPool = best.pairAddress; cb(best.pairAddress); }
+      }
+    }).catch(function(){});
+    fetch('https://api.geckoterminal.com/api/v2/networks/'+geckoNet+'/tokens/'+t.ca+'/pools?page=1',{headers:{'Accept':'application/json'}}).then(function(r){return r.json()}).then(function(d){
+      if (done) return;
+      if (d && d.data && d.data.length) {
+        var poolId = d.data[0].attributes && d.data[0].attributes.address;
+        if (!poolId) { var pts = d.data[0].id.split('_'); poolId = pts.length > 1 ? pts.slice(1).join('_') : d.data[0].id; }
+        if (poolId) { done = true; t._discoveredPool = poolId; cb(poolId); }
+      }
+    }).catch(function(){});
+    setTimeout(function(){ if (!done) { done = true; cb(null); } }, 8000);
+  }
+
+  var datafeed = {
+    onReady: function(cb) {
+      setTimeout(function() {
+        cb({ supported_resolutions:['1','5','15','30','60','240','1D'], supports_time:true });
+      }, 0);
+    },
+    searchSymbols: function(q,e,st,cb) { cb([]); },
+    resolveSymbol: function(name, onRes, onErr) {
+      setTimeout(function() {
+        var p = t.price || 0.00001;
+        var ps = 100;
+        if (p < 1) ps = 10000;
+        if (p < 0.01) ps = 1000000;
+        if (p < 0.0001) ps = 100000000;
+        if (p < 0.000001) ps = 10000000000;
+        onRes({
+          name: t.sym + '/' + (pairTokenMap2[chain] || 'SOL'),
+          description: t.name || t.sym,
+          type: 'crypto',
+          session: '24x7',
+          exchange: 'MEMESCOPE',
+          timezone: 'Etc/UTC',
+          format: 'price',
+          pricescale: ps,
+          minmov: 1,
+          has_intraday: true,
+          supported_resolutions: ['1','5','15','30','60','240'],
+          volume_precision: 2,
+          data_status: 'streaming',
+        });
+      }, 0);
+    },
+    getBars: function(sym, res, params, onRes, onErr) {
+      if (params.firstDataRequest === false) { onRes([], { noData: true }); return; }
+      var cacheKey = t.ca + '_' + res;
+      if (_barCache[cacheKey]) { onRes(_barCache[cacheKey], { noData: _barCache[cacheKey].length === 0 }); return; }
+      var resMap = {'1':{agg:'minute',mult:1},'5':{agg:'minute',mult:5},'15':{agg:'minute',mult:15},'30':{agg:'minute',mult:30},'60':{agg:'hour',mult:1},'240':{agg:'hour',mult:4},'1D':{agg:'day',mult:1}};
+      var rc = resMap[res] || resMap['1'];
+      var resMin = parseInt(res);
+      var resMs = (!isNaN(resMin) ? resMin : 1) * 60000;
+      if (res === '1D') resMs = 86400000;
+      _discoverPoolModal(function(pool) {
+        if (!pool) { onRes([], { noData: true }); return; }
+        var url = 'https://api.geckoterminal.com/api/v2/networks/'+geckoNet+'/pools/'+pool+'/ohlcv/'+rc.agg+'?aggregate='+rc.mult+'&limit=300&currency=usd';
+        var attempt = 0;
+        function tryFetch() {
+          attempt++;
+          var ctrl = new AbortController();
+          var tid = setTimeout(function(){ ctrl.abort(); }, 8000);
+          fetch(url,{headers:{'Accept':'application/json'},signal:ctrl.signal}).then(function(r){clearTimeout(tid);return r.json();}).then(function(d){
+            var list = d && d.data && d.data.attributes && d.data.attributes.ohlcv_list;
+            if (!list || !list.length) {
+              if (attempt < 3) { setTimeout(tryFetch, 1000); return; }
+              onRes([], { noData: true }); return;
+            }
+            var seen = {};
+            var bars = [];
+            for (var i = 0; i < list.length; i++) {
+              var c = list[i];
+              var tm = c[0] * 1000;
+              tm = Math.floor(tm / resMs) * resMs;
+              if (!tm || seen[tm]) continue;
+              seen[tm] = true;
+              bars.push({ time: tm, open: +c[1], high: +c[2], low: +c[3], close: +c[4], volume: +c[5] });
+            }
+            bars.sort(function(a,b){ return a.time - b.time; });
+            _barCache[cacheKey] = bars;
+            onRes(bars, { noData: bars.length === 0 });
+          }).catch(function(){
+            clearTimeout(tid);
+            if (attempt < 3) { setTimeout(tryFetch, 1000); return; }
+            onRes([], { noData: true });
+          });
+        }
+        tryFetch();
+      });
+    },
+    subscribeBars: function(sym, res, onTick, guid) {
+      var resMin = parseInt(res);
+      var resMs = (!isNaN(resMin) ? resMin : 1) * 60000;
+      var iv = setInterval(async function() {
+        try {
+          var r = await fetch('https://api.dexscreener.com/latest/dex/tokens/' + t.ca);
+          var d = await r.json();
+          if (!d.pairs || !d.pairs.length) return;
+          var pair = d.pairs.reduce(function(b,p) { return (p.liquidity&&p.liquidity.usd||0) > (b.liquidity&&b.liquidity.usd||0) ? p : b; }, d.pairs[0]);
+          var price = parseFloat(pair.priceUsd);
+          if (!price) return;
+          var barTime = Math.floor(Date.now() / resMs) * resMs;
+          onTick({ time: barTime, open: price, high: price, low: price, close: price, volume: 0 });
+          // Update modal price display
+          var pFmt2 = function(p) { if(p>=1) return '$'+p.toFixed(2); if(p>=0.01) return '$'+p.toFixed(4); if(p>=0.0001) return '$'+p.toFixed(6); return '$'+p.toExponential(2); };
+          var priceEl = document.getElementById('bmPriceBig');
+          if (priceEl) priceEl.textContent = pFmt2(price);
+        } catch(e) {}
+      }, 10000);
+      window._bmSubIntervals = window._bmSubIntervals || {};
+      window._bmSubIntervals[guid] = iv;
+    },
+    unsubscribeBars: function(guid) {
+      if (window._bmSubIntervals && window._bmSubIntervals[guid]) {
+        clearInterval(window._bmSubIntervals[guid]);
+        delete window._bmSubIntervals[guid];
+      }
+    },
+  };
+
+  window._bmWidget = new TradingView.widget({
+    container: 'bmTvChartContainer',
+    locale: 'en',
+    library_path: '/charting_library/',
+    datafeed: datafeed,
+    symbol: t.sym + '/' + (pairTokenMap2[chain] || 'SOL'),
+    interval: '5',
+    fullscreen: false,
+    autosize: true,
+    theme: 'dark',
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    loading_screen: { backgroundColor: '#18171A', foregroundColor: '#4A9EFF' },
+    overrides: {
+      'paneProperties.background': '#18171A',
+      'paneProperties.backgroundType': 'solid',
+      'paneProperties.vertGridProperties.color': 'rgba(255,255,255,0.03)',
+      'paneProperties.horzGridProperties.color': 'rgba(255,255,255,0.03)',
+      'scalesProperties.backgroundColor': '#18171A',
+      'scalesProperties.textColor': '#6B7685',
+      'scalesProperties.lineColor': 'rgba(255,255,255,0.08)',
+      'mainSeriesProperties.candleStyle.upColor': '#22C55E',
+      'mainSeriesProperties.candleStyle.downColor': '#EF4444',
+      'mainSeriesProperties.candleStyle.borderUpColor': '#22C55E',
+      'mainSeriesProperties.candleStyle.borderDownColor': '#EF4444',
+      'mainSeriesProperties.candleStyle.wickUpColor': 'rgba(34,197,94,0.5)',
+      'mainSeriesProperties.candleStyle.wickDownColor': 'rgba(239,68,68,0.5)',
+    },
+    studies_overrides: {
+      'volume.volume.color.0': 'rgba(239,68,68,0.25)',
+      'volume.volume.color.1': 'rgba(34,197,94,0.25)',
+    },
+    disabled_features: ['header_symbol_search','symbol_search_hot_key','header_compare','display_market_status','go_to_date','timeframes_toolbar'],
+    enabled_features: ['side_toolbar_in_fullscreen_mode','header_in_fullscreen_mode','create_volume_indicator_by_default'],
+  });
+
+  // Poll for chart readiness
+  if (window._bmChartPoll) clearInterval(window._bmChartPoll);
+  var _didReset = false;
+  var _ck = t.ca + '_5';
+  window._bmChartPoll = setInterval(function() {
+    try {
+      var iframe = container.querySelector('iframe');
+      if (!iframe || !iframe.contentWindow || !iframe.contentWindow.chartWidget) return;
+      var cw = iframe.contentWindow.chartWidget;
+      cw.resize();
+      cw.paint();
+      if (_barCache[_ck] && _barCache[_ck].length > 0) {
+        if (!_didReset && window._bmWidget && window._bmWidget.activeChart) {
+          try { window._bmWidget.activeChart().executeActionById('timeScaleReset'); } catch(e) {}
+          _didReset = true;
+        }
+        setTimeout(function() {
+          try { if (iframe.contentWindow && iframe.contentWindow.chartWidget) { iframe.contentWindow.chartWidget.resize(); iframe.contentWindow.chartWidget.paint(); } } catch(e) {}
+          clearInterval(window._bmChartPoll);
+          window._bmChartPoll = null;
+        }, 500);
+      }
+    } catch(e) { clearInterval(window._bmChartPoll); window._bmChartPoll = null; }
+  }, 200);
+  setTimeout(function() { if (window._bmChartPoll) { clearInterval(window._bmChartPoll); window._bmChartPoll = null; } }, 15000);
+}
 
 // Check URL on page load for direct token links
 function checkUrlForToken() {
@@ -10149,49 +10494,9 @@ setTimeout(startRefreshProgress, 100);
       </div>
     </div>
 
-    <!-- Candlestick Chart (TradingView Lightweight Charts) -->
-    <div class="bm-chart">
-      <div class="bm-chart-controls">
-        <div class="bm-chart-tfs" id="bmChartTfs">
-          <button class="bm-ctf-btn" data-ctf="1" onclick="switchCandleTf(this,1)">1m</button>
-          <button class="bm-ctf-btn active" data-ctf="5" onclick="switchCandleTf(this,5)">5m</button>
-          <button class="bm-ctf-btn" data-ctf="15" onclick="switchCandleTf(this,15)">15m</button>
-          <button class="bm-ctf-btn" data-ctf="60" onclick="switchCandleTf(this,60)">1H</button>
-          <button class="bm-ctf-btn" data-ctf="240" onclick="switchCandleTf(this,240)">4H</button>
-          <button class="bm-ctf-btn" data-ctf="1440" onclick="switchCandleTf(this,1440)">1D</button>
-        </div>
-        <div style="display:flex;gap:4px;align-items:center">
-          <div class="bm-chart-type-wrap" style="position:relative">
-            <button class="bm-chart-vol-btn" id="bmChartTypeBtn" onclick="toggleChartTypeMenu()" style="display:flex;align-items:center;gap:4px">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="bmChartTypeIcon"><rect x="3" y="8" width="4" height="12" rx="1"/><rect x="10" y="4" width="4" height="16" rx="1"/><rect x="17" y="6" width="4" height="14" rx="1"/></svg>
-              <svg width="8" height="8" viewBox="0 0 12 12" fill="currentColor" style="opacity:0.5"><path d="M2 4l4 4 4-4"/></svg>
-            </button>
-            <div class="bm-chart-type-menu" id="bmChartTypeMenu" style="display:none">
-              <div class="bm-ctm-group">Candles</div>
-              <div class="bm-ctm-item active" data-type="candle" onclick="setChartType('candle')">Candles</div>
-              <div class="bm-ctm-item" data-type="bar" onclick="setChartType('bar')">Bars</div>
-              <div class="bm-ctm-item" data-type="hollow" onclick="setChartType('hollow')">Hollow Candles</div>
-              <div class="bm-ctm-item" data-type="heikin" onclick="setChartType('heikin')">Heikin Ashi</div>
-              <div class="bm-ctm-group">Lines</div>
-              <div class="bm-ctm-item" data-type="line" onclick="setChartType('line')">Line</div>
-              <div class="bm-ctm-item" data-type="line-markers" onclick="setChartType('line-markers')">Line with Markers</div>
-              <div class="bm-ctm-item" data-type="step" onclick="setChartType('step')">Step Line</div>
-              <div class="bm-ctm-group">Areas</div>
-              <div class="bm-ctm-item" data-type="area" onclick="setChartType('area')">Area</div>
-              <div class="bm-ctm-item" data-type="hlc-area" onclick="setChartType('hlc-area')">HLC Area</div>
-              <div class="bm-ctm-item" data-type="baseline" onclick="setChartType('baseline')">Baseline</div>
-            </div>
-          </div>
-          <button class="bm-chart-vol-btn" id="bmVolBtn" onclick="toggleCandleVol()">Vol</button>
-        </div>
-      </div>
-      <div class="bm-chart-canvas-wrap" id="bmChartWrap">
-        <div class="bm-chart-watermark">
-          <img src="/img/chart_watermark.png" alt="">
-          memescope
-        </div>
-        <div class="bm-chart-loader" id="bmChartLoader"><div class="bm-chart-spin"></div></div>
-      </div>
+    <!-- TradingView Advanced Chart -->
+    <div class="bm-chart" style="min-height:380px">
+      <div id="bmTvChartContainer" style="width:100%;height:380px"></div>
     </div>
 
     <!-- Timeframe Changes -->
