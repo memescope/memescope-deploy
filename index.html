@@ -4153,6 +4153,57 @@
     border-color: var(--phantom-purple);
   }
 
+  /* Buy/Sell panel under timeframes */
+  .bm-buysell {
+    display: none;
+    padding: 10px 18px 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .bm-buysell.open { display: block; }
+  .bm-bs-row {
+    display: flex;
+    gap: 16px;
+  }
+  .bm-bs-group {
+    flex: 1;
+  }
+  .bm-bs-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 4px;
+  }
+  .bm-bs-label {
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .bm-bs-vals {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 6px;
+  }
+  .bm-bs-val {
+    font-size: 13px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+  .bm-bs-val.green { color: var(--green); }
+  .bm-bs-val.red { color: var(--red); }
+  .bm-bs-bar {
+    height: 4px;
+    border-radius: 2px;
+    background: var(--red);
+    overflow: hidden;
+  }
+  .bm-bs-bar-fill {
+    height: 100%;
+    border-radius: 2px;
+    background: var(--green);
+    transition: width 0.3s ease;
+  }
+
   .bm-chart-tooltip {
     position: absolute;
     font-size: 12px;
@@ -4605,6 +4656,9 @@
     .bm-tf { padding: 6px 0 !important; }
     .bm-tf-label { font-size: 9px !important; }
     .bm-tf-val { font-size: 11px !important; }
+    .bm-buysell { padding: 8px 12px 10px !important; }
+    .bm-bs-val { font-size: 12px !important; }
+    .bm-bs-label { font-size: 9px !important; }
     .bm-converter { padding: 8px 12px 12px !important; }
 
     /* === BOOST MODAL === */
@@ -8454,6 +8508,13 @@ function openBubbleModal(t) {
   document.body.style.overflow = 'hidden';
   window._modalToken = t;
 
+  // Reset buy/sell panel
+  _bmBuySellData = null;
+  _bmActiveTf = null;
+  var bsPanel = document.getElementById('bmBuySell');
+  if (bsPanel) bsPanel.classList.remove('open');
+  document.querySelectorAll('.bm-tf').forEach(function(el) { el.classList.remove('active'); });
+
   // Avatar
   var av = document.getElementById("bmAvatar");
   if (t.img) {
@@ -8573,6 +8634,76 @@ function openBubbleModal(t) {
   } catch(e3) {}
 
   } catch(e) { console.error('Modal error:', e); }
+}
+
+// ── Buy/Sell panel under timeframes ──
+var _bmBuySellData = null; // stores { m5:{buys,sells}, h1:{...}, h6:{...}, h24:{...} } + volumes
+var _bmActiveTf = null;
+
+function toggleBuySell(tf) {
+  var panel = document.getElementById('bmBuySell');
+  var tabs = document.querySelectorAll('.bm-tf');
+  if (!panel) return;
+
+  // Toggle off if same tab clicked
+  if (_bmActiveTf === tf) {
+    _bmActiveTf = null;
+    panel.classList.remove('open');
+    tabs.forEach(function(t) { t.classList.remove('active'); });
+    return;
+  }
+
+  _bmActiveTf = tf;
+  tabs.forEach(function(t) {
+    t.classList.toggle('active', t.getAttribute('data-tf') === tf);
+  });
+  panel.classList.add('open');
+
+  // If we have cached data, show it immediately
+  if (_bmBuySellData) {
+    renderBuySell(tf);
+  }
+
+  // Fetch fresh data
+  var t = window._modalToken;
+  if (!t || !t.ca) return;
+  fetch('https://api.dexscreener.com/latest/dex/tokens/' + t.ca)
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (!d.pairs || !d.pairs.length) return;
+      var pair = d.pairs.reduce(function(b,p) { return (p.liquidity&&p.liquidity.usd||0) > (b.liquidity&&b.liquidity.usd||0) ? p : b; }, d.pairs[0]);
+      _bmBuySellData = { txns: pair.txns || {}, volume: pair.volume || {} };
+      if (_bmActiveTf) renderBuySell(_bmActiveTf);
+    }).catch(function() {});
+}
+
+function renderBuySell(tf) {
+  if (!_bmBuySellData) return;
+  var txns = _bmBuySellData.txns[tf] || { buys: 0, sells: 0 };
+  var vol = _bmBuySellData.volume[tf] || 0;
+  var buys = txns.buys || 0;
+  var sells = txns.sells || 0;
+  var total = buys + sells;
+  var buyPct = total > 0 ? (buys / total * 100) : 50;
+
+  document.getElementById('bmBsBuys').textContent = buys.toLocaleString();
+  document.getElementById('bmBsSells').textContent = sells.toLocaleString();
+  document.getElementById('bmBsTxnBar').style.width = buyPct + '%';
+
+  // Volume — DexScreener only gives total vol per timeframe, estimate split by txn ratio
+  var fmtV = function(n) {
+    if (n >= 1e9) return '$' + (n/1e9).toFixed(2) + 'B';
+    if (n >= 1e6) return '$' + (n/1e6).toFixed(2) + 'M';
+    if (n >= 1e3) return '$' + (n/1e3).toFixed(1) + 'K';
+    return '$' + Math.round(n);
+  };
+  var buyVol = total > 0 ? vol * (buys / total) : vol / 2;
+  var sellVol = total > 0 ? vol * (sells / total) : vol / 2;
+  var volPct = vol > 0 ? (buyVol / vol * 100) : 50;
+
+  document.getElementById('bmBsBuyVol').textContent = fmtV(buyVol);
+  document.getElementById('bmBsSellVol').textContent = fmtV(sellVol);
+  document.getElementById('bmBsVolBar').style.width = volPct + '%';
 }
 
 // ── Modal 3-dot dropdown ──
@@ -8882,6 +9013,9 @@ function _initModalChart(t) {
           if (mcapEl) mcapEl.textContent = fmt(pair.marketCap || pair.fdv || 0);
           if (volEl) volEl.textContent = fmt(pair.volume ? (pair.volume.h24 || 0) : 0);
           if (liqEl) liqEl.textContent = fmt(pair.liquidity ? (pair.liquidity.usd || 0) : 0);
+          // Keep buy/sell panel data fresh
+          _bmBuySellData = { txns: pair.txns || {}, volume: pair.volume || {} };
+          if (_bmActiveTf) renderBuySell(_bmActiveTf);
         } catch(e) {}
       }, 10000);
       window._bmSubIntervals = window._bmSubIntervals || {};
@@ -10104,10 +10238,25 @@ setTimeout(startRefreshProgress, 100);
     <div class="bm-footer">
       <!-- Timeframes -->
       <div class="bm-timeframes" id="bmTimeframes">
-        <div class="bm-tf"><span class="bm-tf-label">5M</span><span class="bm-tf-val" id="bmTf5m"></span></div>
-        <div class="bm-tf"><span class="bm-tf-label">1H</span><span class="bm-tf-val" id="bmTf1h"></span></div>
-        <div class="bm-tf"><span class="bm-tf-label">6H</span><span class="bm-tf-val" id="bmTf6h"></span></div>
-        <div class="bm-tf"><span class="bm-tf-label">24H</span><span class="bm-tf-val" id="bmTf24h"></span></div>
+        <div class="bm-tf" onclick="toggleBuySell('m5')" data-tf="m5"><span class="bm-tf-label">5M</span><span class="bm-tf-val" id="bmTf5m"></span></div>
+        <div class="bm-tf" onclick="toggleBuySell('h1')" data-tf="h1"><span class="bm-tf-label">1H</span><span class="bm-tf-val" id="bmTf1h"></span></div>
+        <div class="bm-tf" onclick="toggleBuySell('h6')" data-tf="h6"><span class="bm-tf-label">6H</span><span class="bm-tf-val" id="bmTf6h"></span></div>
+        <div class="bm-tf" onclick="toggleBuySell('h24')" data-tf="h24"><span class="bm-tf-label">24H</span><span class="bm-tf-val" id="bmTf24h"></span></div>
+      </div>
+      <!-- Buy/Sell panel -->
+      <div class="bm-buysell" id="bmBuySell">
+        <div class="bm-bs-row">
+          <div class="bm-bs-group">
+            <div class="bm-bs-header"><span class="bm-bs-label">Buys</span><span class="bm-bs-label">Sells</span></div>
+            <div class="bm-bs-vals"><span class="bm-bs-val green" id="bmBsBuys">0</span><span class="bm-bs-val red" id="bmBsSells">0</span></div>
+            <div class="bm-bs-bar"><div class="bm-bs-bar-fill" id="bmBsTxnBar" style="width:50%"></div></div>
+          </div>
+          <div class="bm-bs-group">
+            <div class="bm-bs-header"><span class="bm-bs-label">Buy Vol</span><span class="bm-bs-label">Sell Vol</span></div>
+            <div class="bm-bs-vals"><span class="bm-bs-val green" id="bmBsBuyVol">$0</span><span class="bm-bs-val red" id="bmBsSellVol">$0</span></div>
+            <div class="bm-bs-bar"><div class="bm-bs-bar-fill" id="bmBsVolBar" style="width:50%"></div></div>
+          </div>
+        </div>
       </div>
 
 
