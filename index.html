@@ -8537,6 +8537,15 @@ function openBubbleModal(t) {
   _bmPriceEl.innerHTML = dexPriceFmt(t.price);
   _bmPriceEl.setAttribute('data-price', t.price);
 
+  // Initial header glow based on 5m change
+  var hdr = document.querySelector('.bm-header');
+  if (hdr) {
+    hdr.classList.remove('glow-up','glow-down');
+    void hdr.offsetWidth;
+    var p5m = t.p5m || 0;
+    hdr.classList.add(p5m >= 0 ? 'glow-up' : 'glow-down');
+  }
+
   // Contract Address — just store on the element for copyCA()
   var caEl = document.getElementById("bmCA");
   if (caEl) caEl.title = t.ca ? ('Copy CA: ' + t.ca.slice(0,4) + '...' + t.ca.slice(-4)) : 'No CA';
