@@ -4155,11 +4155,10 @@
 
   /* Buy/Sell panel under timeframes */
   .bm-buysell {
-    display: none;
+    display: block;
     padding: 10px 18px 12px;
     border-bottom: 1px solid rgba(255,255,255,0.04);
   }
-  .bm-buysell.open { display: block; }
   .bm-bs-row {
     display: flex;
     gap: 16px;
@@ -8508,12 +8507,23 @@ function openBubbleModal(t) {
   document.body.style.overflow = 'hidden';
   window._modalToken = t;
 
-  // Reset buy/sell panel
+  // Init buy/sell panel — default to 5M
   _bmBuySellData = null;
-  _bmActiveTf = null;
-  var bsPanel = document.getElementById('bmBuySell');
-  if (bsPanel) bsPanel.classList.remove('open');
-  document.querySelectorAll('.bm-tf').forEach(function(el) { el.classList.remove('active'); });
+  _bmActiveTf = 'm5';
+  document.querySelectorAll('.bm-tf').forEach(function(el) {
+    el.classList.toggle('active', el.getAttribute('data-tf') === 'm5');
+  });
+  // Fetch buy/sell data right away
+  if (t.ca) {
+    fetch('https://api.dexscreener.com/latest/dex/tokens/' + t.ca)
+      .then(function(r) { return r.json(); })
+      .then(function(d) {
+        if (!d.pairs || !d.pairs.length) return;
+        var pair = d.pairs.reduce(function(b,p) { return (p.liquidity&&p.liquidity.usd||0) > (b.liquidity&&b.liquidity.usd||0) ? p : b; }, d.pairs[0]);
+        _bmBuySellData = { txns: pair.txns || {}, volume: pair.volume || {} };
+        if (_bmActiveTf) renderBuySell(_bmActiveTf);
+      }).catch(function() {});
+  }
 
   // Avatar
   var av = document.getElementById("bmAvatar");
@@ -8641,23 +8651,11 @@ var _bmBuySellData = null; // stores { m5:{buys,sells}, h1:{...}, h6:{...}, h24:
 var _bmActiveTf = null;
 
 function toggleBuySell(tf) {
-  var panel = document.getElementById('bmBuySell');
   var tabs = document.querySelectorAll('.bm-tf');
-  if (!panel) return;
-
-  // Toggle off if same tab clicked
-  if (_bmActiveTf === tf) {
-    _bmActiveTf = null;
-    panel.classList.remove('open');
-    tabs.forEach(function(t) { t.classList.remove('active'); });
-    return;
-  }
-
   _bmActiveTf = tf;
   tabs.forEach(function(t) {
     t.classList.toggle('active', t.getAttribute('data-tf') === tf);
   });
-  panel.classList.add('open');
 
   // If we have cached data, show it immediately
   if (_bmBuySellData) {
