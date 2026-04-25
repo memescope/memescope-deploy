@@ -2723,6 +2723,140 @@
     50%{transform:translateX(-50%) translateY(6px)}
   }
 
+  /* ========== WALLET CONNECT MODAL ========== */
+  .wc-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    z-index: 3000;
+  }
+  .wc-overlay.open { display: flex; align-items: center; justify-content: center; }
+  .wc-modal {
+    width: 360px;
+    background: #1a1a22;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: 0 32px 80px rgba(0,0,0,0.6);
+    animation: wcIn 0.2s ease-out;
+    overflow: hidden;
+  }
+  @keyframes wcIn {
+    from { opacity: 0; transform: scale(0.94); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  .wc-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 20px 14px;
+  }
+  .wc-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  .wc-close {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255,255,255,0.06);
+    color: var(--text-secondary);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .wc-close:hover { background: rgba(255,255,255,0.12); color: var(--text-primary); }
+  .wc-section {
+    padding: 0 16px 6px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #4A9EFF;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .wc-list {
+    padding: 0 12px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .wc-wallet {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: none;
+    background: rgba(255,255,255,0.03);
+    color: var(--text-primary);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    width: 100%;
+    text-align: left;
+  }
+  .wc-wallet:hover { background: rgba(255,255,255,0.07); }
+  .wc-wallet img {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+  }
+  .wc-wallet-name { flex: 1; }
+  .wc-badge {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+  .wc-badge-installed {
+    background: rgba(34,197,94,0.15);
+    color: #22C55E;
+  }
+  .wc-divider {
+    height: 1px;
+    background: var(--border);
+    margin: 4px 16px 8px;
+  }
+  .wc-footer {
+    padding: 12px 20px 16px;
+    text-align: center;
+    font-size: 12px;
+    color: var(--text-tertiary);
+    border-top: 1px solid var(--border);
+  }
+  .wc-footer a {
+    color: #4A9EFF;
+    text-decoration: none;
+    font-weight: 600;
+  }
+  .wc-footer a:hover { text-decoration: underline; }
+  /* Connected state in header */
+  .ms-header-connect.connected {
+    background: rgba(34,197,94,0.08);
+    border-color: rgba(34,197,94,0.25);
+  }
+  .ms-header-connect.connected:hover {
+    border-color: rgba(239,68,68,0.4);
+    background: rgba(239,68,68,0.08);
+  }
+  .ms-header-connect .wc-addr {
+    font-family: 'Inter', sans-serif;
+    font-variant-numeric: tabular-nums;
+    font-size: 13px;
+  }
+  .ms-header-connect .wc-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: #22C55E;
+    flex-shrink: 0;
+  }
+
   /* ========== BUBBLE MODAL ========== */
   .bubble-modal-overlay {
     display: none;
@@ -5319,7 +5453,7 @@ if(window._embedMode) {
           <input type="text" placeholder="Search by CA, token name, pairs..." />
           <kbd>/</kbd>
         </div>
-        <button class="ms-header-connect" onclick="event.preventDefault();" aria-label="Connect Wallet">
+        <button class="ms-header-connect" id="headerConnectBtn" onclick="handleHeaderWalletClick()" aria-label="Connect Wallet">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/></svg>
           <span>Connect</span>
         </button>
@@ -9803,6 +9937,23 @@ setTimeout(startRefreshProgress, 100);
     </div>
   </div>
 
+<!-- WALLET CONNECT MODAL -->
+<div class="wc-overlay" id="wcOverlay" onclick="closeWalletModal()">
+  <div class="wc-modal" onclick="event.stopPropagation()">
+    <div class="wc-header">
+      <span class="wc-title">Connect a Wallet</span>
+      <button class="wc-close" onclick="closeWalletModal()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div id="wcInstalled"></div>
+    <div id="wcAvailable"></div>
+    <div class="wc-footer">
+      New to wallets? <a href="https://phantom.app/" target="_blank">Get started</a>
+    </div>
+  </div>
+</div>
+
 <!-- BUBBLE MODAL -->
 <div class="bubble-modal-overlay" id="bubbleModalOverlay" onclick="history.back()">
   <div class="bubble-modal" onclick="event.stopPropagation()">
@@ -9897,6 +10048,219 @@ setTimeout(startRefreshProgress, 100);
 
   </div>
 </div>
+
+<!-- WALLET CONNECT SCRIPT -->
+<script>
+// ========== WALLET CONNECT ==========
+var _wcState = {
+  connected: false,
+  address: null,
+  walletType: null, // 'phantom', 'metamask', 'coinbase', 'trust', 'okx'
+  chainType: null,  // 'solana' or 'evm'
+};
+
+var WALLETS = [
+  {
+    id: 'phantom',
+    name: 'Phantom',
+    icon: '/img/phantom_logo.png',
+    detect: function() { return !!(window.phantom && window.phantom.solana && window.phantom.solana.isPhantom); },
+    connect: async function() {
+      var provider = window.phantom.solana;
+      var resp = await provider.connect();
+      return { address: resp.publicKey.toString(), chainType: 'solana' };
+    },
+    disconnect: function() { try { window.phantom.solana.disconnect(); } catch(e) {} },
+    installUrl: 'https://phantom.app/',
+  },
+  {
+    id: 'metamask',
+    name: 'MetaMask',
+    icon: 'https://upload.wikimedia.org/wikipedia/commons/3/36/MetaMask_Fox.svg',
+    detect: function() { return !!(window.ethereum && window.ethereum.isMetaMask); },
+    connect: async function() {
+      var accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+      return { address: accounts[0], chainType: 'evm' };
+    },
+    disconnect: function() {},
+    installUrl: 'https://metamask.io/',
+  },
+  {
+    id: 'coinbase',
+    name: 'Coinbase Wallet',
+    icon: 'https://altcoinsbox.com/wp-content/uploads/2022/12/coinbase-logo.webp',
+    detect: function() { return !!(window.ethereum && window.ethereum.isCoinbaseWallet); },
+    connect: async function() {
+      var provider = window.ethereum.providers ? window.ethereum.providers.find(function(p) { return p.isCoinbaseWallet; }) : window.ethereum;
+      var accounts = await provider.request({ method: 'eth_requestAccounts' });
+      return { address: accounts[0], chainType: 'evm' };
+    },
+    disconnect: function() {},
+    installUrl: 'https://www.coinbase.com/wallet',
+  },
+  {
+    id: 'trust',
+    name: 'Trust Wallet',
+    icon: 'https://avatars.githubusercontent.com/u/32179889?s=200&v=4',
+    detect: function() { return !!(window.trustwallet || (window.ethereum && window.ethereum.isTrust)); },
+    connect: async function() {
+      var provider = window.trustwallet || window.ethereum;
+      var accounts = await provider.request({ method: 'eth_requestAccounts' });
+      return { address: accounts[0], chainType: 'evm' };
+    },
+    disconnect: function() {},
+    installUrl: 'https://trustwallet.com/',
+  },
+  {
+    id: 'okx',
+    name: 'OKX Wallet',
+    icon: 'https://avatars.githubusercontent.com/u/59078187?s=200&v=4',
+    detect: function() { return !!(window.okxwallet); },
+    connect: async function() {
+      var accounts = await window.okxwallet.request({ method: 'eth_requestAccounts' });
+      return { address: accounts[0], chainType: 'evm' };
+    },
+    disconnect: function() {},
+    installUrl: 'https://www.okx.com/web3',
+  },
+];
+
+function openWalletModal() {
+  var overlay = document.getElementById('wcOverlay');
+  var installedEl = document.getElementById('wcInstalled');
+  var availableEl = document.getElementById('wcAvailable');
+
+  var installed = [];
+  var notInstalled = [];
+
+  for (var i = 0; i < WALLETS.length; i++) {
+    var w = WALLETS[i];
+    try {
+      if (w.detect()) installed.push(w);
+      else notInstalled.push(w);
+    } catch(e) {
+      notInstalled.push(w);
+    }
+  }
+
+  var html = '';
+
+  if (installed.length > 0) {
+    html = '<div class="wc-section">Installed</div><div class="wc-list">';
+    for (var j = 0; j < installed.length; j++) {
+      html += '<button class="wc-wallet" onclick="connectWallet(\'' + installed[j].id + '\')">' +
+        '<img src="' + installed[j].icon + '" alt="' + installed[j].name + '">' +
+        '<span class="wc-wallet-name">' + installed[j].name + '</span>' +
+        '<span class="wc-badge wc-badge-installed">Installed</span>' +
+        '</button>';
+    }
+    html += '</div>';
+  }
+
+  installedEl.innerHTML = html;
+
+  var html2 = '';
+  if (notInstalled.length > 0) {
+    if (installed.length > 0) html2 += '<div class="wc-divider"></div>';
+    html2 += '<div class="wc-section">More Wallets</div><div class="wc-list">';
+    for (var k = 0; k < notInstalled.length; k++) {
+      html2 += '<button class="wc-wallet" onclick="connectWallet(\'' + notInstalled[k].id + '\')">' +
+        '<img src="' + notInstalled[k].icon + '" alt="' + notInstalled[k].name + '" onerror="this.style.display=\'none\'">' +
+        '<span class="wc-wallet-name">' + notInstalled[k].name + '</span>' +
+        '</button>';
+    }
+    html2 += '</div>';
+  }
+
+  availableEl.innerHTML = html2;
+  overlay.classList.add('open');
+}
+
+function closeWalletModal() {
+  document.getElementById('wcOverlay').classList.remove('open');
+}
+
+async function connectWallet(walletId) {
+  var wallet = WALLETS.find(function(w) { return w.id === walletId; });
+  if (!wallet) return;
+
+  // If not installed, open install page
+  if (!wallet.detect()) {
+    window.open(wallet.installUrl, '_blank');
+    return;
+  }
+
+  try {
+    var result = await wallet.connect();
+    _wcState.connected = true;
+    _wcState.address = result.address;
+    _wcState.walletType = walletId;
+    _wcState.chainType = result.chainType;
+
+    // Also update boost state so boost system can use the wallet
+    if (walletId === 'phantom' && typeof boostState !== 'undefined') {
+      boostState.walletConnected = true;
+      boostState.walletAddress = result.address;
+      if (typeof updateBoostWalletUI === 'function') updateBoostWalletUI();
+    }
+
+    updateHeaderWallet();
+    closeWalletModal();
+  } catch(e) {
+    console.log('Wallet connect error:', e);
+  }
+}
+
+function disconnectWallet() {
+  if (_wcState.walletType) {
+    var wallet = WALLETS.find(function(w) { return w.id === _wcState.walletType; });
+    if (wallet) wallet.disconnect();
+  }
+
+  _wcState.connected = false;
+  _wcState.address = null;
+  _wcState.walletType = null;
+  _wcState.chainType = null;
+
+  // Also update boost state
+  if (typeof boostState !== 'undefined') {
+    boostState.walletConnected = false;
+    boostState.walletAddress = null;
+    if (typeof updateBoostWalletUI === 'function') updateBoostWalletUI();
+  }
+
+  updateHeaderWallet();
+}
+
+function updateHeaderWallet() {
+  var btn = document.getElementById('headerConnectBtn');
+  if (!btn) return;
+
+  if (_wcState.connected && _wcState.address) {
+    var short = _wcState.address.slice(0, 4) + '...' + _wcState.address.slice(-4);
+    btn.innerHTML = '<span class="wc-dot"></span><span class="wc-addr">' + short + '</span>';
+    btn.classList.add('connected');
+    btn.title = _wcState.address;
+  } else {
+    btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/></svg><span>Connect</span>';
+    btn.classList.remove('connected');
+    btn.title = '';
+  }
+}
+
+function handleHeaderWalletClick() {
+  if (_wcState.connected) {
+    disconnectWallet();
+  } else {
+    openWalletModal();
+  }
+}
+
+// Close wallet modal on ESC
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeWalletModal();
+});
+</script>
 
 <!-- BOOST SYSTEM SCRIPT -->
 <script>
