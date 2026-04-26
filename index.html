@@ -7811,6 +7811,7 @@ async function liveSearchDexScreener(query, resultsList) {
           img: (p.info && p.info.imageUrl) ? p.info.imageUrl : '',
           price: p.priceUsd ? parseFloat(p.priceUsd) : 0,
           priceNative: p.priceNative ? parseFloat(p.priceNative) : 0,
+          quoteSymbol: p.quoteToken ? p.quoteToken.symbol.toUpperCase() : '',
           p24h: pc.h24 ? parseFloat(pc.h24) : 0,
           net: chainMap[p.chainId] || 'solana', ca: p.baseToken.address || '',
           mcap: p.marketCap || p.fdv || 0, vol: p.volume ? (p.volume.h24||0) : 0,
@@ -8637,7 +8638,7 @@ function updatePriceDisplay() {
   var el = document.getElementById('bmPriceBig');
   if (!el || !window._modalToken) return;
   var t = window._modalToken;
-  var nativeSym = _nativeTokenMap[(t.net || 'solana').toLowerCase()] || 'SOL';
+  var nativeSym = t.quoteSymbol || _nativeTokenMap[(t.net || 'solana').toLowerCase()] || 'SOL';
   if (_bmPriceCurrency === 'native' && t.priceNative) {
     el.innerHTML = nativePriceFmt(t.priceNative, nativeSym);
   } else {
@@ -8726,8 +8727,10 @@ function openBubbleModal(t) {
         if (!d.pairs || !d.pairs.length) return;
         var pair = d.pairs.reduce(function(b,p) { return (p.liquidity&&p.liquidity.usd||0) > (b.liquidity&&b.liquidity.usd||0) ? p : b; }, d.pairs[0]);
         var pn = pair.priceNative ? parseFloat(pair.priceNative) : 0;
+        var qs = pair.quoteToken ? pair.quoteToken.symbol.toUpperCase() : '';
         if (pn && window._modalToken && window._modalToken.ca === t.ca) {
           window._modalToken.priceNative = pn;
+          if (qs) window._modalToken.quoteSymbol = qs;
           var el = document.getElementById('bmPriceBig');
           if (el) el.setAttribute('data-price-native', pn);
           if (_bmPriceCurrency === 'native') updatePriceDisplay();
@@ -9198,9 +9201,11 @@ function _initModalChart(t) {
           onTick({ time: barTime, open: price, high: price, low: price, close: price, volume: 0 });
           // Update native price on the token
           var pNative = pair.priceNative ? parseFloat(pair.priceNative) : 0;
+          var qSym = pair.quoteToken ? pair.quoteToken.symbol.toUpperCase() : '';
           if (window._modalToken) {
             window._modalToken.price = price;
             window._modalToken.priceNative = pNative;
+            if (qSym) window._modalToken.quoteSymbol = qSym;
           }
           // Update modal price display
           var priceEl = document.getElementById('bmPriceBig');
@@ -9210,7 +9215,7 @@ function _initModalChart(t) {
             priceEl.setAttribute('data-price-native', pNative);
             // Show in whichever currency is active
             if (_bmPriceCurrency === 'native' && pNative && window._modalToken) {
-              var _ns = _nativeTokenMap[(window._modalToken.net || 'solana').toLowerCase()] || 'SOL';
+              var _ns = (window._modalToken.quoteSymbol) || _nativeTokenMap[(window._modalToken.net || 'solana').toLowerCase()] || 'SOL';
               priceEl.innerHTML = nativePriceFmt(pNative, _ns);
             } else {
               priceEl.innerHTML = dexPriceFmt(price);
@@ -9335,6 +9340,7 @@ function checkUrlForToken() {
             img: (p.info && p.info.imageUrl) || '',
             price: p.priceUsd ? parseFloat(p.priceUsd) : 0,
             priceNative: p.priceNative ? parseFloat(p.priceNative) : 0,
+            quoteSymbol: p.quoteToken ? p.quoteToken.symbol.toUpperCase() : '',
             mcap: p.marketCap || p.fdv || 0,
             vol: p.volume ? (p.volume.h24 || 0) : 0,
             liq: p.liquidity ? (p.liquidity.usd || 0) : 0,
@@ -10186,6 +10192,7 @@ function parseDexPair(p) {
     name: p.baseToken ? p.baseToken.name : 'Unknown',
     price: price,
     priceNative: priceNative,
+    quoteSymbol: p.quoteToken ? p.quoteToken.symbol.toUpperCase() : '',
     mcap: mcap,
     vol: vol,
     liq: liq,
