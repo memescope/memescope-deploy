@@ -6403,6 +6403,74 @@ function updateBubblesSmooth() {
     }
   }
 
+  // Add new bubbles if count dropped below 50
+  var maxBubbles = 50;
+  if (bubs.length < maxBubbles) {
+    var existingSyms = {};
+    for (var ei = 0; ei < bubs.length; ei++) existingSyms[bubs[ei].token.sym] = true;
+
+    var tfField2 = getTimeframeField();
+    var candidates = tokens.filter(function(t) {
+      if (existingSyms[t.sym]) return false;
+      return t.boosted || (t.p5m || 0) !== 0 || (t.p1h || 0) !== 0 || (t.p6h || 0) !== 0 || (t.p24h || 0) !== 0 || (t.mcap || 0) > 0;
+    });
+    candidates.sort(function(a, b) { return Math.abs(getTfVal(b, tfField2)) - Math.abs(getTfVal(a, tfField2)); });
+    var needed = Math.min(maxBubbles - bubs.length, candidates.length);
+
+    if (needed > 0 && typeof world !== 'undefined' && world) {
+      var W2 = world.offsetWidth;
+      var H2 = world.offsetHeight;
+
+      for (var ni = 0; ni < needed; ni++) {
+        var nt = candidates[ni];
+        var tfVal2 = getTfVal(nt, tfField2);
+        var styles2 = computeBubbleStyles(tfVal2);
+        var newR = 20;
+
+        // Find a spot that doesn't overlap existing bubbles
+        var px = 0, py = 0, placed = false;
+        for (var tries = 0; tries < 500; tries++) {
+          px = newR + 8 + Math.random() * (W2 - newR * 2 - 16);
+          py = newR + 10 + Math.random() * (H2 - newR * 2 - 60);
+          var ok = true;
+          for (var ci = 0; ci < bubs.length; ci++) {
+            if (Math.hypot(bubs[ci].x - px, bubs[ci].y - py) < bubs[ci].r + newR + 1) {
+              ok = false; break;
+            }
+          }
+          if (ok) { placed = true; break; }
+        }
+        if (!placed) continue;
+
+        var fsTicker2 = Math.max(7, newR * 0.30);
+        var fsPct2 = Math.max(5, newR * 0.18);
+        var el2 = document.createElement('div');
+        el2.className = 'hm-bubble';
+        el2.style.width = (newR * 2) + 'px';
+        el2.style.height = (newR * 2) + 'px';
+        el2.innerHTML =
+          '<div class="hm-glow" style="background:' + styles2.glowBg + '"></div>' +
+          '<div class="hm-inner" style="background:' + styles2.innerBg + '"></div>' +
+          '<div class="hm-ring" style="border:' + styles2.ringBorder + '"></div>' +
+          '<div class="hm-content">' +
+            (nt.img ? '<img src="' + nt.img + '" style="width:18px;height:18px;border-radius:50%;object-fit:cover;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5))" onerror="this.style.display=\'none\'">' : '') +
+            '<div class="hm-ticker" style="font-size:' + fsTicker2 + 'px">' + nt.sym + '</div>' +
+            '<div class="hm-pct" style="font-size:' + fsPct2 + 'px;color:' + styles2.pctColor + '">' + (styles2.isUp ? '+' : '') + tfVal2.toFixed(1) + '%</div>' +
+          '</div>';
+        el2.onclick = (function(t) { return function(e) { e.stopPropagation(); openBubbleModal(t); }; })(nt);
+        world.appendChild(el2);
+
+        var spd2 = 0.03 + Math.random() * 0.05;
+        var ang2 = Math.random() * Math.PI * 2;
+        bubs.push({
+          x: px, y: py, r: newR, targetR: newR,
+          vx: Math.cos(ang2) * spd2, vy: Math.sin(ang2) * spd2,
+          el: el2, token: nt
+        });
+      }
+    }
+  }
+
   // Recalculate sizes based on new data
   resizeBubbles();
 }
