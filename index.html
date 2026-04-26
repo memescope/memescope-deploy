@@ -8364,9 +8364,9 @@ var bubs = [];
     
     var tfField = getTimeframeField();
     
-    // Filter out tokens with 0% change (stale/dead data)
+    // Filter out tokens only if ALL timeframes are 0 (truly dead data)
     tokens = tokens.filter(function(t) {
-      return t.boosted || Math.abs(getTfVal(t, tfField)) > 0.01;
+      return t.boosted || (t.p5m || 0) !== 0 || (t.p1h || 0) !== 0 || (t.p6h || 0) !== 0 || (t.p24h || 0) !== 0 || (t.mcap || 0) > 0;
     });
     if(!tokens.length){ setTimeout(init, 100); return; }
     
@@ -10395,14 +10395,6 @@ async function fetchLiveTokens() {
               for(var m = 0; m < incoming.length; m++) {
                 var ikey = incoming[m].ca || incoming[m].sym;
                 incomingByCa[ikey] = incoming[m];
-              }
-
-              // Remove tokens that are no longer in the API response (rugged/expired)
-              for(var r = LIVE_TOKENS.length - 1; r >= 0; r--) {
-                var rKey = LIVE_TOKENS[r].ca || LIVE_TOKENS[r].sym;
-                if(!incomingByCa[rKey]) {
-                  LIVE_TOKENS.splice(r, 1);
-                }
               }
 
               // Update existing tokens in place with fresh numbers
