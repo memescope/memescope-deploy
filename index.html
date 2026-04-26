@@ -6388,13 +6388,13 @@ var SCANNER_URLS = {
 
 function updateBubblesSmooth() {
   var tfField = getTimeframeField();
-  var tokens = LIVE_TOKENS;
+  var tokens = (typeof getFilteredTokens === 'function') ? getFilteredTokens() : LIVE_TOKENS;
 
-  // Build set of current token syms for quick lookup
+  // Build set of current filtered token syms for quick lookup
   var currentSyms = {};
   for(var k = 0; k < tokens.length; k++) currentSyms[tokens[k].sym] = true;
 
-  // Remove bubbles for tokens no longer in LIVE_TOKENS
+  // Remove bubbles for tokens no longer in filtered list
   for(var i = bubs.length - 1; i >= 0; i--) {
     if(!currentSyms[bubs[i].token.sym]) {
       if(bubs[i].el && bubs[i].el.parentNode) bubs[i].el.parentNode.removeChild(bubs[i].el);
@@ -6468,13 +6468,13 @@ function updateBubblesSmooth() {
         var nt = candidates[ni];
         var tfVal2 = getTfVal(nt, tfField2);
         var styles2 = computeBubbleStyles(tfVal2);
-        var newR = 20;
+        var newR = 15;
 
         // Find a spot that doesn't overlap existing bubbles
         var px = 0, py = 0, placed = false;
-        for (var tries = 0; tries < 500; tries++) {
-          px = newR + 8 + Math.random() * (W2 - newR * 2 - 16);
-          py = newR + 10 + Math.random() * (H2 - newR * 2 - 60);
+        for (var tries = 0; tries < 2000; tries++) {
+          px = newR + 4 + Math.random() * (W2 - newR * 2 - 8);
+          py = newR + 4 + Math.random() * (H2 - newR * 2 - 8);
           var ok = true;
           for (var ci = 0; ci < bubs.length; ci++) {
             if (Math.hypot(bubs[ci].x - px, bubs[ci].y - py) < bubs[ci].r + newR + 1) {
