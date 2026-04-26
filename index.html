@@ -10457,7 +10457,18 @@ function updateBubbleData(newTokens) {}
 
 // Live-verify ALL tokens against DexScreener — remove rugged ones, update prices
 var _verifyInProgress = false;
-var _ruggedCas = {}; // blacklist of CAs removed during this session
+var _ruggedCas = {}; // temp blacklist: CA -> timestamp (expires after 5 min)
+var _RUGGED_EXPIRY_MS = 5 * 60 * 1000; // 5 minutes — tokens get a second chance
+
+function isRugged(ca) {
+  if (!_ruggedCas[ca]) return false;
+  if (Date.now() - _ruggedCas[ca] > _RUGGED_EXPIRY_MS) {
+    delete _ruggedCas[ca]; // expired — let it back in
+    return false;
+  }
+  return true;
+}
+
 async function verifyTopTokens() {
   if (_verifyInProgress) return;
   _verifyInProgress = true;
@@ -10501,16 +10512,9 @@ async function verifyTopTokens() {
       var t = LIVE_TOKENS[j];
       if (!t.ca) continue;
 
-      // Skip already blacklisted tokens
-      if (_ruggedCas[t.ca]) {
-        LIVE_TOKENS.splice(j, 1);
-        removed++;
-        continue;
-      }
-
-      // If we sent this CA to DexScreener but got NO pair back = dead token
+      // If we sent this CA to DexScreener but got NO pair back = likely dead
       if (sentCas[t.ca] && !pairByCa[t.ca]) {
-        _ruggedCas[t.ca] = true;
+        _ruggedCas[t.ca] = Date.now(); // temp blacklist with timestamp
         LIVE_TOKENS.splice(j, 1);
         removed++;
         continue;
@@ -10522,9 +10526,10 @@ async function verifyTopTokens() {
       var price = pair.priceUsd ? parseFloat(pair.priceUsd) : 0;
       var mcap = pair.marketCap || pair.fdv || 0;
 
-      // Remove rugged/dead tokens (low liquidity, zero price, or tiny mcap)
-      if (liq < 3000 || price === 0 || mcap < 5000) {
-        _ruggedCas[t.ca] = true;
+      // Only remove truly dead tokens (zero price = confirmed rug)
+      // Lowered thresholds: memecoins naturally dip in liq/mcap temporarily
+      if (price === 0 || liq < 500 || mcap < 1000) {
+        _ruggedCas[t.ca] = Date.now(); // temp blacklist with timestamp
         LIVE_TOKENS.splice(j, 1);
         removed++;
         continue;
@@ -10544,7 +10549,7 @@ async function verifyTopTokens() {
       if (pair.quoteToken) t.quoteSymbol = pair.quoteToken.symbol.toUpperCase();
     }
 
-    console.log('MemeScope: Verified', Object.keys(pairByCa).length, 'tokens, removed', removed, 'rugged');
+    console.log('MemeScope: Verified', Object.keys(pairByCa).length, 'tokens, removed', removed, 'rugged, blacklist size:', Object.keys(_ruggedCas).length);
     loadData();
     if (typeof updateBubblesSmooth === 'function') updateBubblesSmooth();
   } catch (e) {
@@ -10576,7 +10581,7 @@ async function fetchLiveTokens() {
               var tk = data.tokens[i];
               var ca = tk.ca || tk.sym;
               if(seenCa[ca]) continue;
-              if(_ruggedCas[ca]) continue; // skip blacklisted rugged tokens
+              if(isRugged(ca)) continue; // skip temporarily blacklisted tokens (expires after 5 min)
               seenCa[ca] = true;
               var sym = (tk.sym || '').toUpperCase();
               if(seenSym[sym] && (tk.vol || 0) <= (seenSym[sym].vol || 0)) continue;
