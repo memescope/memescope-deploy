@@ -10039,8 +10039,8 @@ window.addEventListener('popstate', function() {
 // ========== LIVE DATA ==========
 var LIVE_MODE = true;
 var liveDataLoaded = false;
-// SET YOUR API URL HERE after deploying memescope-api to Vercel
-var MEMESCOPE_API = 'https://memescope-api.vercel.app/api/tokens';
+// Cloudflare Worker API (reads from Supabase, populated by scraper cron)
+var MEMESCOPE_API = 'https://memescope-scraper.memescope-io.workers.dev/tokens';
 
 function updateBubbleData(newTokens) {}
 
