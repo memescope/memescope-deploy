@@ -10206,8 +10206,8 @@ async function verifyTopTokens() {
       var price = pair.priceUsd ? parseFloat(pair.priceUsd) : 0;
       var mcap = pair.marketCap || pair.fdv || 0;
 
-      // Remove rugged tokens (low liquidity, zero price, or tiny mcap)
-      if (liq < 1000 || price === 0 || mcap < 1000) {
+      // Remove rugged/dead tokens (low liquidity, zero price, or tiny mcap)
+      if (liq < 3000 || price === 0 || mcap < 5000) {
         _ruggedCas[t.ca] = true;
         LIVE_TOKENS.splice(j, 1);
         removed++;
