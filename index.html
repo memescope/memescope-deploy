@@ -9239,7 +9239,7 @@ function _initModalChart(t) {
           _bmBuySellData = { txns: pair.txns || {}, volume: pair.volume || {} };
           if (_bmActiveTf) renderBuySell(_bmActiveTf);
         } catch(e) {}
-      }, 10000);
+      }, 4000);
       window._bmSubIntervals = window._bmSubIntervals || {};
       window._bmSubIntervals[guid] = iv;
     },
@@ -9763,7 +9763,7 @@ function initTokenPageChart(t) {
           var pFmt = function(p) { if(p>=1) return '$'+p.toFixed(2); if(p>=0.01) return '$'+p.toFixed(4); if(p>=0.0001) return '$'+p.toFixed(6); return '$'+p.toExponential(2); };
           document.getElementById('tpRPriceBig').textContent = pFmt(price);
         } catch(e) {}
-      }, 10000);
+      }, 4000);
       window._tpSubIntervals = window._tpSubIntervals || {};
       window._tpSubIntervals[guid] = iv;
     },
@@ -9904,8 +9904,8 @@ function loadTokenPageTxns(t) {
   var amtH = document.getElementById('tpTxnAmtHeader');
   if (amtH) amtH.textContent = (t.sym || t.ticker || t.symbol || 'Amount').toUpperCase();
   _fetchAndRenderTxns(t);
-  // Auto-refresh every 10 seconds
-  _tpTxnTimer = setInterval(function() { _fetchAndRenderTxns(t); }, 10000);
+  // Auto-refresh every 4 seconds
+  _tpTxnTimer = setInterval(function() { _fetchAndRenderTxns(t); }, 4000);
 }
 
 function _fetchAndRenderTxns(t) {
