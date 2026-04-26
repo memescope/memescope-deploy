@@ -6500,53 +6500,37 @@ function loadData() {
 
   var existingRows = tbody.querySelectorAll('tr:not(.skeleton-row)');
 
-  // Helper: flash a cell if value changed
+  // Helper: silently update cell value
   function flashCell(td, oldText, newText) {
-    if (oldText === newText) return;
-    td.textContent = newText;
-    // Determine direction from percentage or price
-    var newVal = parseFloat(newText.replace(/[^0-9.\-]/g, ''));
-    var oldVal = parseFloat(oldText.replace(/[^0-9.\-]/g, ''));
-    var cls = (newVal >= oldVal) ? 'cell-flash-green' : 'cell-flash-red';
-    td.classList.remove('cell-flash-green', 'cell-flash-red');
-    void td.offsetWidth; // reflow to restart animation
-    td.classList.add(cls);
+    if (oldText !== newText) td.textContent = newText;
   }
 
-  // Helper: flash a pct cell (also update color)
+  // Helper: silently update pct cell value and color
   function flashPctCell(td, oldText, newText, val) {
     td.innerHTML = newText;
     td.style.color = val >= 0 ? 'var(--green)' : 'var(--red)';
-    if (oldText !== newText) {
-      var cls = val >= 0 ? 'cell-flash-green' : 'cell-flash-red';
-      td.classList.remove('cell-flash-green', 'cell-flash-red');
-      void td.offsetWidth;
-      td.classList.add(cls);
-    }
   }
 
-  // If row count matches, update in place; otherwise rebuild
-  if (existingRows.length === pagedTokens.length && existingRows.length > 0) {
-    pagedTokens.forEach((t, i) => {
-      var tr = existingRows[i];
+  // Update rows in place whenever possible (skip full rebuild)
+  if (existingRows.length > 0) {
+    // Update existing rows
+    var updateCount = Math.min(existingRows.length, pagedTokens.length);
+    for (var ui = 0; ui < updateCount; ui++) {
+      var t = pagedTokens[ui];
+      var tr = existingRows[ui];
       var tds = tr.querySelectorAll('td');
-      // Update onclick index
-      tr.setAttribute('onclick', 'openTokenModal(' + (startIdx + i) + ')');
-      // Update dots onclick
+      tr.setAttribute('onclick', 'openTokenModal(' + (startIdx + ui) + ')');
       var dots = tr.querySelector('.token-dots');
-      if (dots) dots.setAttribute('onclick', 'event.stopPropagation();showRowMenu(this, ' + (startIdx + i) + ')');
-      // Update token name/symbol if changed
+      if (dots) dots.setAttribute('onclick', 'event.stopPropagation();showRowMenu(this, ' + (startIdx + ui) + ')');
       var symEl = tr.querySelector('.token-symbol');
       if (symEl && symEl.textContent !== t.sym) {
         symEl.textContent = t.sym;
         var imgEl = tr.querySelector('.token-avatar-img');
         if (imgEl && t.img) imgEl.src = t.img;
       }
-      // Update value cells with flash (price, age, vol, pcts, mcap)
       if (tds[1]) { var newPrice = window._priceColMode === 'mcap' ? fmt(t.mcap) : fmtPrice(t.price); flashCell(tds[1], tds[1].textContent, newPrice); }
       if (tds[2]) { tds[2].textContent = fmtAge(t.age); }
       if (tds[3]) { var newVol = fmt(t.vol); flashCell(tds[3], tds[3].textContent, newVol); }
-      // Pct cells: 4=5m, 5=15m, 6=1h, 7=6h(4h), 8=24h
       var pctVals = [t.p5m, t.p5m, t.p1h, t.p6h, t.p24h];
       for (var pi = 0; pi < pctVals.length; pi++) {
         var ptd = tds[4 + pi];
@@ -6555,9 +6539,22 @@ function loadData() {
         var newPct = (pv >= 0 ? '+' : '') + pv.toFixed(2) + '%';
         flashPctCell(ptd, ptd.textContent, newPct, pv);
       }
-      // Mcap cell (last)
       if (tds[9]) { var newMcap = window._priceColMode === 'mcap' ? fmtPrice(t.price) : fmt(t.mcap); flashCell(tds[9], tds[9].textContent, newMcap); }
-    });
+    }
+    // Remove extra rows if we have more rows than tokens
+    for (var ri = existingRows.length - 1; ri >= pagedTokens.length; ri--) {
+      existingRows[ri].remove();
+    }
+    // Add new rows if we have more tokens than rows
+    for (var ai = existingRows.length; ai < pagedTokens.length; ai++) {
+      var at = pagedTokens[ai];
+      var aIdx = startIdx + ai;
+      var aGrad = GRADIENTS[aIdx % GRADIENTS.length];
+      var aLetter = at.sym.charAt(0).toUpperCase();
+      var aChainImg = CHAIN_ICONS[at.net] || CHAIN_ICONS['solana'];
+      var aRow = '<tr style="cursor:pointer" onclick="openTokenModal(' + aIdx + ')"><td><div class="token-cell"><span class="token-dots" onclick="event.stopPropagation();showRowMenu(this, ' + aIdx + ')"><svg width="18" height="18" viewBox="-13.5 0 32 32" fill="currentColor"><path d="M2.48 11.84c-1.36 0-2.48-1.12-2.48-2.48s1.12-2.48 2.48-2.48 2.48 1.12 2.48 2.48-1.12 2.48-2.48 2.48zM2.48 8.56c-0.44 0-0.8 0.36-0.8 0.8s0.36 0.8 0.8 0.8 0.8-0.36 0.8-0.8c0-0.44-0.36-0.8-0.8-0.8zM2.48 18.48c-1.36 0-2.48-1.12-2.48-2.48s1.12-2.48 2.48-2.48 2.48 1.12 2.48 2.48-1.12 2.48-2.48 2.48zM2.48 15.2c-0.44 0-0.8 0.36-0.8 0.8s0.36 0.8 0.8 0.8 0.8-0.36 0.8-0.8-0.36-0.8-0.8-0.8zM2.48 25.12c-1.36 0-2.48-1.12-2.48-2.48s1.12-2.48 2.48-2.48 2.48 1.12 2.48 2.48c0 1.36-1.12 2.48-2.48 2.48zM2.48 21.84c-0.44 0-0.8 0.36-0.8 0.8s0.36 0.8 0.8 0.8 0.8-0.36 0.8-0.8-0.36-0.8-0.8-0.8z"/></svg></span><div class="token-badges"><img class="token-badge-icon" src="' + aChainImg + '"></div><div class="token-avatar-wrap"><img class="token-avatar-img" src="' + (at.img || '') + '" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'"><div class="token-avatar" style="display:' + (at.img ? 'none' : 'flex') + ';background:linear-gradient(135deg,' + aGrad + ')">' + aLetter + '</div></div><div class="token-info"><div class="token-top-row"><span class="token-symbol">' + at.sym + '</span><span class="token-pair" style="color:rgba(255,255,255,0.3);font-size:14px;font-weight:400">/' + (at.pair || 'USD') + '</span>' + (at.boosted ? '<span class="boost-badge">⚡' + (at.boostCount || '') + '</span>' : '') + '</div></div></div></div></div></td><td class="price-col">' + (window._priceColMode === 'mcap' ? fmt(at.mcap) : fmtPrice(at.price)) + '</td><td class="age-col">' + fmtAge(at.age) + '</td><td class="vol-col">' + fmt(at.vol) + '</td>' + pctTd(at.p5m) + pctTd(at.p5m) + pctTd(at.p1h) + pctTd(at.p6h) + pctTd(at.p24h) + '<td class="mcap-col">' + (window._priceColMode === 'mcap' ? fmtPrice(at.price) : fmt(at.mcap)) + '</td></tr>';
+      tbody.insertAdjacentHTML('beforeend', aRow);
+    }
   } else {
     // Full rebuild (first load or page change)
     tbody.innerHTML = '';
