@@ -4235,10 +4235,8 @@
     display: block;
     padding: 10px 18px 12px;
     border-bottom: 1px solid rgba(255,255,255,0.04);
-    opacity: 0.4;
-    transition: opacity 0.2s;
+    opacity: 1;
   }
-  .bm-buysell:hover { opacity: 1; }
   .bm-bs-row {
     display: flex;
     gap: 16px;
@@ -8902,11 +8900,11 @@ function openBubbleModal(t) {
   document.body.style.overflow = 'hidden';
   window._modalToken = t;
 
-  // Init buy/sell panel — default to 5M
+  // Init buy/sell panel — default to 24H
   _bmBuySellData = null;
-  _bmActiveTf = 'm5';
+  _bmActiveTf = 'h24';
   document.querySelectorAll('.bm-tf').forEach(function(el) {
-    el.classList.toggle('active', el.getAttribute('data-tf') === 'm5');
+    el.classList.toggle('active', el.getAttribute('data-tf') === 'h24');
   });
   // Fetch buy/sell data right away
   if (t.ca) {
