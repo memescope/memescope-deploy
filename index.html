@@ -10141,6 +10141,7 @@ function updateBubbleData(newTokens) {}
 
 // Live-verify ALL tokens against DexScreener — remove rugged ones, update prices
 var _verifyInProgress = false;
+var _ruggedCas = {}; // blacklist of CAs removed during this session
 async function verifyTopTokens() {
   if (_verifyInProgress) return;
   _verifyInProgress = true;
@@ -10184,8 +10185,16 @@ async function verifyTopTokens() {
       var t = LIVE_TOKENS[j];
       if (!t.ca) continue;
 
+      // Skip already blacklisted tokens
+      if (_ruggedCas[t.ca]) {
+        LIVE_TOKENS.splice(j, 1);
+        removed++;
+        continue;
+      }
+
       // If we sent this CA to DexScreener but got NO pair back = dead token
       if (sentCas[t.ca] && !pairByCa[t.ca]) {
+        _ruggedCas[t.ca] = true;
         LIVE_TOKENS.splice(j, 1);
         removed++;
         continue;
@@ -10199,6 +10208,7 @@ async function verifyTopTokens() {
 
       // Remove rugged tokens (low liquidity, zero price, or tiny mcap)
       if (liq < 1000 || price === 0 || mcap < 1000) {
+        _ruggedCas[t.ca] = true;
         LIVE_TOKENS.splice(j, 1);
         removed++;
         continue;
@@ -10250,6 +10260,7 @@ async function fetchLiveTokens() {
               var tk = data.tokens[i];
               var ca = tk.ca || tk.sym;
               if(seenCa[ca]) continue;
+              if(_ruggedCas[ca]) continue; // skip blacklisted rugged tokens
               seenCa[ca] = true;
               var sym = (tk.sym || '').toUpperCase();
               if(seenSym[sym] && (tk.vol || 0) <= (seenSym[sym].vol || 0)) continue;
