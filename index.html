@@ -6796,6 +6796,19 @@ let watchlist = JSON.parse(localStorage.getItem('msWatchlist') || '[]');
 let watchlistVisible = false;
 // Update nav star on load
 setTimeout(function() { if (typeof renderWatchlist === 'function') renderWatchlist(); }, 100);
+// Auto-clean stale watchlist entries once tokens load
+setTimeout(function() {
+  if (typeof LIVE_TOKENS !== 'undefined' && LIVE_TOKENS.length > 0) {
+    var before = watchlist.length;
+    watchlist = watchlist.filter(function(sym) {
+      return LIVE_TOKENS.some(function(t) { return t.sym === sym; });
+    });
+    if (watchlist.length !== before) {
+      localStorage.setItem('msWatchlist', JSON.stringify(watchlist));
+      if (typeof renderWatchlist === 'function') renderWatchlist();
+    }
+  }
+}, 5000);
 
 function toggleWatchlistPanel() {}
 
