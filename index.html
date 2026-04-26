@@ -6417,9 +6417,10 @@ function updateBubblesSmooth() {
     candidates.sort(function(a, b) { return Math.abs(getTfVal(b, tfField2)) - Math.abs(getTfVal(a, tfField2)); });
     var needed = Math.min(maxBubbles - bubs.length, candidates.length);
 
-    if (needed > 0 && typeof world !== 'undefined' && world) {
-      var W2 = world.offsetWidth;
-      var H2 = world.offsetHeight;
+    var bubbleWorld = document.getElementById('bubbleWorld');
+    if (needed > 0 && bubbleWorld) {
+      var W2 = bubbleWorld.offsetWidth;
+      var H2 = bubbleWorld.offsetHeight;
 
       for (var ni = 0; ni < needed; ni++) {
         var nt = candidates[ni];
@@ -6458,7 +6459,7 @@ function updateBubblesSmooth() {
             '<div class="hm-pct" style="font-size:' + fsPct2 + 'px;color:' + styles2.pctColor + '">' + (styles2.isUp ? '+' : '') + tfVal2.toFixed(1) + '%</div>' +
           '</div>';
         el2.onclick = (function(t) { return function(e) { e.stopPropagation(); openBubbleModal(t); }; })(nt);
-        world.appendChild(el2);
+        bubbleWorld.appendChild(el2);
 
         var spd2 = 0.03 + Math.random() * 0.05;
         var ang2 = Math.random() * Math.PI * 2;
