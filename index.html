@@ -2942,6 +2942,37 @@
     color: var(--text-primary);
     overflow: hidden;
     flex-shrink: 0;
+    cursor: pointer;
+  }
+  .bm-banner-overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    z-index: 10;
+    border-radius: 14px 14px 0 0;
+    overflow: hidden;
+    animation: bannerSlideDown 0.3s ease-out;
+  }
+  .bm-banner-overlay img {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+    display: block;
+  }
+  .bm-banner-overlay .bm-banner-close {
+    position: absolute;
+    top: 8px; right: 8px;
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.5);
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .bm-banner-overlay .bm-banner-close:hover { background: rgba(0,0,0,0.7); }
+  @keyframes bannerSlideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
   }
   .bm-header-info {
     display: flex;
@@ -8986,6 +9017,11 @@ function openBubbleModal(t) {
       }).catch(function() {});
   }
 
+  // Remove any existing banner overlay
+  var existingBanner = document.querySelector('.bm-banner-overlay');
+  if (existingBanner) existingBanner.remove();
+  window._bmBannerUrl = null;
+
   // Avatar
   var av = document.getElementById("bmAvatar");
   if (t.img) {
@@ -8995,6 +9031,21 @@ function openBubbleModal(t) {
     var lum = Math.min(45, 25 + Math.abs(t.p24h || 0) * 0.3);
     av.style.background = "hsl(" + hue + ",70%," + lum + "%)";
     av.textContent = t.sym.charAt(0);
+  }
+  // Click avatar to show banner
+  av.onclick = function(e) {
+    e.stopPropagation();
+    showTokenBanner();
+  };
+  // Fetch banner URL from DexScreener
+  if (t.ca) {
+    fetch('https://api.dexscreener.com/latest/dex/tokens/' + t.ca)
+      .then(function(r) { return r.json(); })
+      .then(function(d) {
+        if (d && d.pairs && d.pairs.length > 0 && d.pairs[0].info && d.pairs[0].info.header) {
+          window._bmBannerUrl = d.pairs[0].info.header;
+        }
+      }).catch(function() {});
   }
 
   // Symbol & name
@@ -9202,6 +9253,21 @@ function renderBuySell(tf) {
 }
 
 // ── Modal watchlist star ──
+function showTokenBanner() {
+  var existing = document.querySelector('.bm-banner-overlay');
+  if (existing) { existing.remove(); return; }
+  if (!window._bmBannerUrl) return;
+  var modal = document.querySelector('.bubble-modal');
+  if (!modal) return;
+  var overlay = document.createElement('div');
+  overlay.className = 'bm-banner-overlay';
+  overlay.innerHTML = '<img src="' + window._bmBannerUrl + '" onerror="this.parentElement.remove()">' +
+    '<button class="bm-banner-close" onclick="event.stopPropagation();this.parentElement.remove()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>';
+  modal.insertBefore(overlay, modal.firstChild);
+  // Auto-hide after 4 seconds
+  setTimeout(function() { if (overlay.parentNode) overlay.remove(); }, 4000);
+}
+
 function toggleModalWatchlist(btnEl) {
   var t = window._modalToken;
   if (!t || !t.sym) return;
