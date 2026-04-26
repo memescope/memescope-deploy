@@ -2842,6 +2842,16 @@
     background: #22C55E;
     flex-shrink: 0;
   }
+  .ms-header-connect .wc-jazzicon {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+  .ms-header-connect .wc-jazzicon svg {
+    display: block;
+    opacity: 1;
+  }
 
   /* ========== BUBBLE MODAL ========== */
   .bubble-modal-overlay {
@@ -11111,13 +11121,43 @@ function disconnectWallet() {
   updateHeaderWallet();
 }
 
+// Generate a jazzicon SVG from an address string
+function generateJazzicon(address, size) {
+  size = size || 18;
+  // Simple hash from address
+  var seed = 0;
+  for (var i = 0; i < address.length; i++) {
+    seed = ((seed << 5) - seed) + address.charCodeAt(i);
+    seed = seed & seed; // to 32-bit int
+  }
+  function rand() {
+    var t = seed += 0x6D2B79F5;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  }
+  var colors = ['#01888C','#FC7500','#034F5D','#F73F01','#FC1960','#C7144C','#F3C100','#1598F2','#2465E1','#F19E02','#8B5CF6','#EC4899'];
+  var bg = colors[Math.floor(rand() * colors.length)];
+  var shapes = '';
+  for (var s = 0; s < 3; s++) {
+    var c = colors[Math.floor(rand() * colors.length)];
+    var x = rand() * size;
+    var y = rand() * size;
+    var r = (rand() * size * 0.6) + size * 0.2;
+    shapes += '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="' + r.toFixed(1) + '" fill="' + c + '" opacity="0.7"/>';
+  }
+  return '<svg width="' + size + '" height="' + size + '" viewBox="0 0 ' + size + ' ' + size + '" xmlns="http://www.w3.org/2000/svg">' +
+    '<rect width="' + size + '" height="' + size + '" fill="' + bg + '"/>' + shapes + '</svg>';
+}
+
 function updateHeaderWallet() {
   var btn = document.getElementById('headerConnectBtn');
   if (!btn) return;
 
   if (_wcState.connected && _wcState.address) {
     var short = _wcState.address.slice(0, 4) + '...' + _wcState.address.slice(-4);
-    btn.innerHTML = '<span class="wc-dot"></span><span class="wc-addr">' + short + '</span>';
+    var jazz = generateJazzicon(_wcState.address, 18);
+    btn.innerHTML = '<span class="wc-jazzicon">' + jazz + '</span><span class="wc-addr">' + short + '</span>';
     btn.classList.add('connected');
     btn.title = _wcState.address;
   } else {
