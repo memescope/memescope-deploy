@@ -10345,7 +10345,12 @@ async function verifyTopTokens() {
 
     console.log('MemeScope: Verified', Object.keys(pairByCa).length, 'tokens, removed', removed, 'rugged');
     loadData();
-    if (typeof updateBubblesSmooth === 'function') updateBubblesSmooth();
+    // If tokens were removed, rebuild bubbles from scratch so new ones fill the gaps
+    if (removed > 0 && typeof init === 'function') {
+      init();
+    } else if (typeof updateBubblesSmooth === 'function') {
+      updateBubblesSmooth();
+    }
   } catch (e) {
     console.log('MemeScope: Verify error', e);
   }
@@ -10438,18 +10443,21 @@ async function fetchLiveTokens() {
               else { finalSym[s] = true; }
             }
 
-            loadData();
-            // Only reinit bubble layout on first load; later refreshes just update values
-            if(isFirstLoad && typeof init === 'function') init();
-            var bl = document.getElementById('bubbleLoading');
-            if(bl) bl.classList.add('hidden');
-            // Scroll to top on first load so user sees bubbles
-            if(!window._firstLoadDone) { window._firstLoadDone = true; window.scrollTo(0, 0); checkUrlForToken(); var ls=document.getElementById('loadingScreen'); if(ls) ls.remove(); }
+            if(isFirstLoad) {
+              // First load: verify BEFORE rendering so stale/rugged tokens never flash on screen
+              await verifyTopTokens();
+              loadData();
+              if(typeof init === 'function') init();
+              var bl = document.getElementById('bubbleLoading');
+              if(bl) bl.classList.add('hidden');
+              if(!window._firstLoadDone) { window._firstLoadDone = true; window.scrollTo(0, 0); checkUrlForToken(); var ls=document.getElementById('loadingScreen'); if(ls) ls.remove(); }
+            } else {
+              // Subsequent refreshes: render immediately, verify in background
+              loadData();
+              verifyTopTokens();
+            }
             console.log('MemeScope: Live via API!', LIVE_TOKENS.length, 'tokens', data.cached ? '(cached)' : '(fresh)', isFirstLoad ? '(first load)' : '(merged)');
             resetRefreshProgress();
-
-            // Live-verify top tokens against DexScreener to catch rugs
-            verifyTopTokens();
             return;
           }
         }
