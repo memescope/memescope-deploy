@@ -10139,32 +10139,39 @@ var MEMESCOPE_API = 'https://memescope-scraper.memescope-io.workers.dev/tokens';
 
 function updateBubbleData(newTokens) {}
 
-// Live-verify top tokens against DexScreener — remove rugged ones, update prices
+// Live-verify ALL tokens against DexScreener — remove rugged ones, update prices
 var _verifyInProgress = false;
 async function verifyTopTokens() {
   if (_verifyInProgress) return;
   _verifyInProgress = true;
   try {
-    // Get top 30 tokens by volume that have contract addresses
-    var toVerify = LIVE_TOKENS.filter(function(t) { return t.ca && t.ca.length > 5; }).slice(0, 30);
+    // Get all tokens with contract addresses
+    var toVerify = LIVE_TOKENS.filter(function(t) { return t.ca && t.ca.length > 5; });
     if (toVerify.length === 0) { _verifyInProgress = false; return; }
 
-    // Batch into chunks of 30 (DexScreener limit)
-    var cas = toVerify.map(function(t) { return t.ca; });
-    var resp = await fetch('https://api.dexscreener.com/latest/dex/tokens/' + cas.join(','));
-    if (!resp.ok) { _verifyInProgress = false; return; }
-    var dexData = await resp.json();
-    if (!dexData.pairs) { _verifyInProgress = false; return; }
-
-    // Build lookup: ca -> best pair (highest liquidity)
+    // Build lookup of all pairs from DexScreener (batch in groups of 30)
     var pairByCa = {};
-    for (var i = 0; i < dexData.pairs.length; i++) {
-      var p = dexData.pairs[i];
-      var ca = p.baseToken ? p.baseToken.address : null;
-      if (!ca) continue;
-      if (!pairByCa[ca] || (p.liquidity && p.liquidity.usd || 0) > (pairByCa[ca].liquidity && pairByCa[ca].liquidity.usd || 0)) {
-        pairByCa[ca] = p;
-      }
+    var allCas = toVerify.map(function(t) { return t.ca; });
+    var batchSize = 30;
+
+    for (var b = 0; b < allCas.length; b += batchSize) {
+      var chunk = allCas.slice(b, b + batchSize);
+      try {
+        var resp = await fetch('https://api.dexscreener.com/latest/dex/tokens/' + chunk.join(','));
+        if (!resp.ok) continue;
+        var dexData = await resp.json();
+        if (!dexData.pairs) continue;
+        for (var i = 0; i < dexData.pairs.length; i++) {
+          var p = dexData.pairs[i];
+          var ca = p.baseToken ? p.baseToken.address : null;
+          if (!ca) continue;
+          var existingLiq = pairByCa[ca] && pairByCa[ca].liquidity ? (pairByCa[ca].liquidity.usd || 0) : 0;
+          var newLiq = p.liquidity ? (p.liquidity.usd || 0) : 0;
+          if (!pairByCa[ca] || newLiq > existingLiq) {
+            pairByCa[ca] = p;
+          }
+        }
+      } catch (e) { continue; }
     }
 
     // Update or remove tokens
@@ -10177,7 +10184,7 @@ async function verifyTopTokens() {
       var price = pair.priceUsd ? parseFloat(pair.priceUsd) : 0;
       var mcap = pair.marketCap || pair.fdv || 0;
 
-      // Remove rugged tokens (liquidity dropped to near zero)
+      // Remove rugged tokens
       if (liq < 500 || price === 0 || mcap < 500) {
         LIVE_TOKENS.splice(j, 1);
         removed++;
@@ -10198,15 +10205,9 @@ async function verifyTopTokens() {
       if (pair.quoteToken) t.quoteSymbol = pair.quoteToken.symbol.toUpperCase();
     }
 
-    if (removed > 0) {
-      console.log('MemeScope: Removed', removed, 'rugged tokens');
-      loadData();
-      if (typeof updateBubblesSmooth === 'function') updateBubblesSmooth();
-    } else {
-      // Still update displays with fresh prices
-      loadData();
-      if (typeof updateBubblesSmooth === 'function') updateBubblesSmooth();
-    }
+    console.log('MemeScope: Verified', Object.keys(pairByCa).length, 'tokens, removed', removed, 'rugged');
+    loadData();
+    if (typeof updateBubblesSmooth === 'function') updateBubblesSmooth();
   } catch (e) {
     console.log('MemeScope: Verify error', e);
   }
