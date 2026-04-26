@@ -8231,7 +8231,7 @@ function buildSearchItem(t) {
   if(caShort) addrHtml += '<span style="color:var(--text-tertiary);font-size:10px">TOKEN:</span> ' + caShort + ' ';
   if(pairCa) addrHtml += '<span style="color:var(--text-tertiary);font-size:10px">PAIR:</span> ' + pairCa;
 
-  return '<div class="search-modal-item" onclick="selectSearchResult(\'' + t.sym + '\')">' +
+  return '<div class="search-modal-item" onclick="selectSearchResult(\'' + (t.ca || '').replace(/'/g,'') + '\',\'' + t.sym + '\')">' +
     '<div class="smi-top">' +
       '<div class="smi-left">' + avatarHtml +
         '<img class="search-modal-item-chain" src="' + chainImg + '">' +
@@ -8258,15 +8258,19 @@ function buildSearchItem(t) {
   '</div>';
 }
 
-function selectSearchResult(sym) {
+function selectSearchResult(ca, sym) {
   closeSearchModal();
-  var token = LIVE_TOKENS.find(function(t){ return t.sym === sym; });
+  // Match by CA first (exact match), then fall back to symbol
+  var token = null;
+  if (ca) token = LIVE_TOKENS.find(function(t){ return t.ca === ca; });
+  if (!token) token = LIVE_TOKENS.find(function(t){ return t.sym === sym; });
   if(token) {
     saveRecentSearch(token);
     openBubbleModal(token);
   } else {
-    // Token from live search - do a fresh lookup and open modal
-    fetch('https://api.dexscreener.com/latest/dex/search?q=' + encodeURIComponent(sym))
+    // Token from live search - do a fresh lookup by CA first, then symbol
+    var query = ca || sym;
+    fetch('https://api.dexscreener.com/latest/dex/' + (ca ? 'tokens/' : 'search?q=') + encodeURIComponent(query))
       .then(function(r){ return r.json(); })
       .then(function(d){
         if(d && d.pairs && d.pairs.length > 0) {
