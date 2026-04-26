@@ -632,6 +632,16 @@
     from { opacity: 0; transform: translateY(4px); }
     to { opacity: 1; transform: translateY(0); }
   }
+  @keyframes cellFlashGreen {
+    0% { background: rgba(0, 255, 100, 0.25); }
+    100% { background: transparent; }
+  }
+  @keyframes cellFlashRed {
+    0% { background: rgba(255, 50, 50, 0.25); }
+    100% { background: transparent; }
+  }
+  .cell-flash-green { animation: cellFlashGreen 1s ease-out; }
+  .cell-flash-red { animation: cellFlashRed 1s ease-out; }
   tbody tr:nth-child(even) {
     background: transparent;
   }
@@ -6344,10 +6354,10 @@ function resizeBubbles() {
 
 function loadData() {
   const tbody = document.querySelector('tbody');
-  tbody.innerHTML = '';
 
   // Don't show mock data before live data loads
   if(LIVE_MODE && !liveDataLoaded) {
+    tbody.innerHTML = '';
     var skeletonRows = '';
     for(var sk = 0; sk < 15; sk++) {
       skeletonRows += '<tr class="skeleton-row"><td><div class="token-cell" style="gap:8px"><div class="skeleton-box" style="width:28px;height:28px;border-radius:6px"></div><div class="skeleton-box" style="width:' + (60 + Math.random()*40) + 'px;height:14px;border-radius:4px"></div></div></td><td><div class="skeleton-box" style="width:70px;height:14px;border-radius:4px;margin-left:auto"></div></td><td><div class="skeleton-box" style="width:30px;height:14px;border-radius:4px;margin-left:auto"></div></td><td><div class="skeleton-box" style="width:60px;height:14px;border-radius:4px;margin-left:auto"></div></td><td><div class="skeleton-box" style="width:45px;height:14px;border-radius:4px;margin-left:auto"></div></td><td><div class="skeleton-box" style="width:45px;height:14px;border-radius:4px;margin-left:auto"></div></td><td><div class="skeleton-box" style="width:45px;height:14px;border-radius:4px;margin-left:auto"></div></td><td><div class="skeleton-box" style="width:45px;height:14px;border-radius:4px;margin-left:auto"></div></td><td><div class="skeleton-box" style="width:45px;height:14px;border-radius:4px;margin-left:auto"></div></td><td><div class="skeleton-box" style="width:60px;height:14px;border-radius:4px;margin-left:auto"></div></td></tr>';
@@ -6373,34 +6383,97 @@ function loadData() {
   var pagedTokens = tokens.slice(startIdx, startIdx + rowsPerPage);
   renderPagination(totalItems);
 
-  pagedTokens.forEach((t, i) => {
-    const globalIdx = startIdx + i;
-    const grad = GRADIENTS[globalIdx % GRADIENTS.length];
-    const letter = t.sym.charAt(0).toUpperCase();
-    const chainImg = CHAIN_ICONS[t.net] || CHAIN_ICONS['solana'];
-    const dexImg = DEX_ICONS[t.dex] || DEX_ICONS['raydium'];
+  var existingRows = tbody.querySelectorAll('tr:not(.skeleton-row)');
 
-    const row = `<tr style="animation-delay:${i * 15}ms;cursor:pointer" onclick="openTokenModal(${startIdx + i})">
-      <td><div class="token-cell">
-        <span class="token-dots" onclick="event.stopPropagation();showRowMenu(this, ${startIdx + i})"><svg width="18" height="18" viewBox="-13.5 0 32 32" fill="currentColor"><path d="M2.48 11.84c-1.36 0-2.48-1.12-2.48-2.48s1.12-2.48 2.48-2.48 2.48 1.12 2.48 2.48-1.12 2.48-2.48 2.48zM2.48 8.56c-0.44 0-0.8 0.36-0.8 0.8s0.36 0.8 0.8 0.8 0.8-0.36 0.8-0.8c0-0.44-0.36-0.8-0.8-0.8zM2.48 18.48c-1.36 0-2.48-1.12-2.48-2.48s1.12-2.48 2.48-2.48 2.48 1.12 2.48 2.48-1.12 2.48-2.48 2.48zM2.48 15.2c-0.44 0-0.8 0.36-0.8 0.8s0.36 0.8 0.8 0.8 0.8-0.36 0.8-0.8-0.36-0.8-0.8-0.8zM2.48 25.12c-1.36 0-2.48-1.12-2.48-2.48s1.12-2.48 2.48-2.48 2.48 1.12 2.48 2.48c0 1.36-1.12 2.48-2.48 2.48zM2.48 21.84c-0.44 0-0.8 0.36-0.8 0.8s0.36 0.8 0.8 0.8 0.8-0.36 0.8-0.8-0.36-0.8-0.8-0.8z"/></svg></span>
-        <div class="token-badges"><img class="token-badge-icon" src="${chainImg}"></div>
-        <div class="token-avatar-wrap"><img class="token-avatar-img" src="${t.img || ''}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="token-avatar" style="display:${t.img ? 'none' : 'flex'};background:linear-gradient(135deg,${grad})">${letter}</div></div>
-        <div class="token-info"><div class="token-top-row"><span class="token-symbol">${t.sym}</span><span class="token-pair" style="color:rgba(255,255,255,0.3);font-size:14px;font-weight:400">/${t.pair||'USD'}</span>${t.boosted ? '<span class="boost-badge">⚡' + (t.boostCount || '') + '</span>' : ''}</div></div>
-        </div></div>
+  // Helper: flash a cell if value changed
+  function flashCell(td, oldText, newText) {
+    if (oldText === newText) return;
+    td.textContent = newText;
+    // Determine direction from percentage or price
+    var newVal = parseFloat(newText.replace(/[^0-9.\-]/g, ''));
+    var oldVal = parseFloat(oldText.replace(/[^0-9.\-]/g, ''));
+    var cls = (newVal >= oldVal) ? 'cell-flash-green' : 'cell-flash-red';
+    td.classList.remove('cell-flash-green', 'cell-flash-red');
+    void td.offsetWidth; // reflow to restart animation
+    td.classList.add(cls);
+  }
 
-      </div></td>
-      <td class="price-col">${window._priceColMode === 'mcap' ? fmt(t.mcap) : fmtPrice(t.price)}</td>
-      <td class="age-col">${fmtAge(t.age)}</td>
-      <td class="vol-col">${fmt(t.vol)}</td>
-      ${pctTd(t.p5m)}
-      ${pctTd(t.p5m)}
-      ${pctTd(t.p1h)}
-      ${pctTd(t.p6h)}
-      ${pctTd(t.p24h)}
-            <td class="mcap-col">${window._priceColMode === 'mcap' ? fmtPrice(t.price) : fmt(t.mcap)}</td>
-    </tr>`;
-    tbody.insertAdjacentHTML('beforeend', row);
-  });
+  // Helper: flash a pct cell (also update color)
+  function flashPctCell(td, oldText, newText, val) {
+    td.innerHTML = newText;
+    td.style.color = val >= 0 ? 'var(--green)' : 'var(--red)';
+    if (oldText !== newText) {
+      var cls = val >= 0 ? 'cell-flash-green' : 'cell-flash-red';
+      td.classList.remove('cell-flash-green', 'cell-flash-red');
+      void td.offsetWidth;
+      td.classList.add(cls);
+    }
+  }
+
+  // If row count matches, update in place; otherwise rebuild
+  if (existingRows.length === pagedTokens.length && existingRows.length > 0) {
+    pagedTokens.forEach((t, i) => {
+      var tr = existingRows[i];
+      var tds = tr.querySelectorAll('td');
+      // Update onclick index
+      tr.setAttribute('onclick', 'openTokenModal(' + (startIdx + i) + ')');
+      // Update dots onclick
+      var dots = tr.querySelector('.token-dots');
+      if (dots) dots.setAttribute('onclick', 'event.stopPropagation();showRowMenu(this, ' + (startIdx + i) + ')');
+      // Update token name/symbol if changed
+      var symEl = tr.querySelector('.token-symbol');
+      if (symEl && symEl.textContent !== t.sym) {
+        symEl.textContent = t.sym;
+        var imgEl = tr.querySelector('.token-avatar-img');
+        if (imgEl && t.img) imgEl.src = t.img;
+      }
+      // Update value cells with flash (price, age, vol, pcts, mcap)
+      if (tds[1]) { var newPrice = window._priceColMode === 'mcap' ? fmt(t.mcap) : fmtPrice(t.price); flashCell(tds[1], tds[1].textContent, newPrice); }
+      if (tds[2]) { tds[2].textContent = fmtAge(t.age); }
+      if (tds[3]) { var newVol = fmt(t.vol); flashCell(tds[3], tds[3].textContent, newVol); }
+      // Pct cells: 4=5m, 5=15m, 6=1h, 7=6h(4h), 8=24h
+      var pctVals = [t.p5m, t.p5m, t.p1h, t.p6h, t.p24h];
+      for (var pi = 0; pi < pctVals.length; pi++) {
+        var ptd = tds[4 + pi];
+        if (!ptd) continue;
+        var pv = pctVals[pi] || 0;
+        var newPct = (pv >= 0 ? '+' : '') + pv.toFixed(2) + '%';
+        flashPctCell(ptd, ptd.textContent, newPct, pv);
+      }
+      // Mcap cell (last)
+      if (tds[9]) { var newMcap = window._priceColMode === 'mcap' ? fmtPrice(t.price) : fmt(t.mcap); flashCell(tds[9], tds[9].textContent, newMcap); }
+    });
+  } else {
+    // Full rebuild (first load or page change)
+    tbody.innerHTML = '';
+    pagedTokens.forEach((t, i) => {
+      const globalIdx = startIdx + i;
+      const grad = GRADIENTS[globalIdx % GRADIENTS.length];
+      const letter = t.sym.charAt(0).toUpperCase();
+      const chainImg = CHAIN_ICONS[t.net] || CHAIN_ICONS['solana'];
+
+      const row = `<tr style="animation-delay:${i * 15}ms;cursor:pointer" onclick="openTokenModal(${startIdx + i})">
+        <td><div class="token-cell">
+          <span class="token-dots" onclick="event.stopPropagation();showRowMenu(this, ${startIdx + i})"><svg width="18" height="18" viewBox="-13.5 0 32 32" fill="currentColor"><path d="M2.48 11.84c-1.36 0-2.48-1.12-2.48-2.48s1.12-2.48 2.48-2.48 2.48 1.12 2.48 2.48-1.12 2.48-2.48 2.48zM2.48 8.56c-0.44 0-0.8 0.36-0.8 0.8s0.36 0.8 0.8 0.8 0.8-0.36 0.8-0.8c0-0.44-0.36-0.8-0.8-0.8zM2.48 18.48c-1.36 0-2.48-1.12-2.48-2.48s1.12-2.48 2.48-2.48 2.48 1.12 2.48 2.48-1.12 2.48-2.48 2.48zM2.48 15.2c-0.44 0-0.8 0.36-0.8 0.8s0.36 0.8 0.8 0.8 0.8-0.36 0.8-0.8-0.36-0.8-0.8-0.8zM2.48 25.12c-1.36 0-2.48-1.12-2.48-2.48s1.12-2.48 2.48-2.48 2.48 1.12 2.48 2.48c0 1.36-1.12 2.48-2.48 2.48zM2.48 21.84c-0.44 0-0.8 0.36-0.8 0.8s0.36 0.8 0.8 0.8 0.8-0.36 0.8-0.8-0.36-0.8-0.8-0.8z"/></svg></span>
+          <div class="token-badges"><img class="token-badge-icon" src="${chainImg}"></div>
+          <div class="token-avatar-wrap"><img class="token-avatar-img" src="${t.img || ''}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="token-avatar" style="display:${t.img ? 'none' : 'flex'};background:linear-gradient(135deg,${grad})">${letter}</div></div>
+          <div class="token-info"><div class="token-top-row"><span class="token-symbol">${t.sym}</span><span class="token-pair" style="color:rgba(255,255,255,0.3);font-size:14px;font-weight:400">/${t.pair||'USD'}</span>${t.boosted ? '<span class="boost-badge">⚡' + (t.boostCount || '') + '</span>' : ''}</div></div>
+          </div></div>
+
+        </div></td>
+        <td class="price-col">${window._priceColMode === 'mcap' ? fmt(t.mcap) : fmtPrice(t.price)}</td>
+        <td class="age-col">${fmtAge(t.age)}</td>
+        <td class="vol-col">${fmt(t.vol)}</td>
+        ${pctTd(t.p5m)}
+        ${pctTd(t.p5m)}
+        ${pctTd(t.p1h)}
+        ${pctTd(t.p6h)}
+        ${pctTd(t.p24h)}
+              <td class="mcap-col">${window._priceColMode === 'mcap' ? fmtPrice(t.price) : fmt(t.mcap)}</td>
+      </tr>`;
+      tbody.insertAdjacentHTML('beforeend', row);
+    });
+  }
 }
 
 // ========== SOCIAL FEED BOXES ==========
