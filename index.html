@@ -9489,16 +9489,6 @@ function _initModalChart(t) {
           _pFmt(pc.h1 ? parseFloat(pc.h1) : 0, 'bmTf1h');
           _pFmt(pc.h6 ? parseFloat(pc.h6) : 0, 'bmTf6h');
           _pFmt(pc.h24 ? parseFloat(pc.h24) : 0, 'bmTf24h');
-          // Update timeframe bar colors — brief flash then fade back
-          var tfBars = document.querySelectorAll('.bm-tf');
-          tfBars.forEach(function(bar) {
-            var val = bar.querySelector('.bm-tf-val');
-            if (val) {
-              var v = parseFloat(val.textContent);
-              bar.style.background = v >= 0 ? 'rgba(0,255,100,0.08)' : 'rgba(255,50,50,0.08)';
-              setTimeout(function() { bar.style.background = ''; }, 2000);
-            }
-          });
           // Keep buy/sell panel data fresh
           _bmBuySellData = { txns: pair.txns || {}, volume: pair.volume || {} };
           if (_bmActiveTf) renderBuySell(_bmActiveTf);
