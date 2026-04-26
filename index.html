@@ -10139,6 +10139,80 @@ var MEMESCOPE_API = 'https://memescope-scraper.memescope-io.workers.dev/tokens';
 
 function updateBubbleData(newTokens) {}
 
+// Live-verify top tokens against DexScreener — remove rugged ones, update prices
+var _verifyInProgress = false;
+async function verifyTopTokens() {
+  if (_verifyInProgress) return;
+  _verifyInProgress = true;
+  try {
+    // Get top 30 tokens by volume that have contract addresses
+    var toVerify = LIVE_TOKENS.filter(function(t) { return t.ca && t.ca.length > 5; }).slice(0, 30);
+    if (toVerify.length === 0) { _verifyInProgress = false; return; }
+
+    // Batch into chunks of 30 (DexScreener limit)
+    var cas = toVerify.map(function(t) { return t.ca; });
+    var resp = await fetch('https://api.dexscreener.com/latest/dex/tokens/' + cas.join(','));
+    if (!resp.ok) { _verifyInProgress = false; return; }
+    var dexData = await resp.json();
+    if (!dexData.pairs) { _verifyInProgress = false; return; }
+
+    // Build lookup: ca -> best pair (highest liquidity)
+    var pairByCa = {};
+    for (var i = 0; i < dexData.pairs.length; i++) {
+      var p = dexData.pairs[i];
+      var ca = p.baseToken ? p.baseToken.address : null;
+      if (!ca) continue;
+      if (!pairByCa[ca] || (p.liquidity && p.liquidity.usd || 0) > (pairByCa[ca].liquidity && pairByCa[ca].liquidity.usd || 0)) {
+        pairByCa[ca] = p;
+      }
+    }
+
+    // Update or remove tokens
+    var removed = 0;
+    for (var j = LIVE_TOKENS.length - 1; j >= 0; j--) {
+      var t = LIVE_TOKENS[j];
+      if (!t.ca || !pairByCa[t.ca]) continue;
+      var pair = pairByCa[t.ca];
+      var liq = pair.liquidity ? (pair.liquidity.usd || 0) : 0;
+      var price = pair.priceUsd ? parseFloat(pair.priceUsd) : 0;
+      var mcap = pair.marketCap || pair.fdv || 0;
+
+      // Remove rugged tokens (liquidity dropped to near zero)
+      if (liq < 500 || price === 0 || mcap < 500) {
+        LIVE_TOKENS.splice(j, 1);
+        removed++;
+        continue;
+      }
+
+      // Update with live data
+      t.price = price;
+      t.mcap = mcap;
+      t.liq = liq;
+      t.vol = pair.volume ? (pair.volume.h24 || 0) : t.vol;
+      var pc = pair.priceChange || {};
+      t.p5m = pc.m5 ? parseFloat(pc.m5) : t.p5m;
+      t.p1h = pc.h1 ? parseFloat(pc.h1) : t.p1h;
+      t.p6h = pc.h6 ? parseFloat(pc.h6) : t.p6h;
+      t.p24h = pc.h24 ? parseFloat(pc.h24) : t.p24h;
+      if (pair.priceNative) t.priceNative = parseFloat(pair.priceNative);
+      if (pair.quoteToken) t.quoteSymbol = pair.quoteToken.symbol.toUpperCase();
+    }
+
+    if (removed > 0) {
+      console.log('MemeScope: Removed', removed, 'rugged tokens');
+      loadData();
+      if (typeof updateBubblesSmooth === 'function') updateBubblesSmooth();
+    } else {
+      // Still update displays with fresh prices
+      loadData();
+      if (typeof updateBubblesSmooth === 'function') updateBubblesSmooth();
+    }
+  } catch (e) {
+    console.log('MemeScope: Verify error', e);
+  }
+  _verifyInProgress = false;
+}
+
 async function fetchLiveTokens() {
   try {
     console.log('MemeScope: Fetching...');
@@ -10233,6 +10307,9 @@ async function fetchLiveTokens() {
             if(!window._firstLoadDone) { window._firstLoadDone = true; window.scrollTo(0, 0); checkUrlForToken(); var ls=document.getElementById('loadingScreen'); if(ls) ls.remove(); }
             console.log('MemeScope: Live via API!', LIVE_TOKENS.length, 'tokens', data.cached ? '(cached)' : '(fresh)', isFirstLoad ? '(first load)' : '(merged)');
             resetRefreshProgress();
+
+            // Live-verify top tokens against DexScreener to catch rugs
+            verifyTopTokens();
             return;
           }
         }
