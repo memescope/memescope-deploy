@@ -657,49 +657,16 @@ async function handleBugReport(request) {
         status: 400, headers: { ...corsHeaders(), 'Content-Type': 'application/json' }
       });
     }
-    const userEmail = (body.email || '').trim();
-    const pageUrl = body.url || '';
-    const ua = body.ua || '';
-    const timestamp = new Date().toISOString();
-
-    // Send via MailChannels (free for Cloudflare Workers)
-    const mailRes = await fetch('https://api.mailchannels.net/tx/v1/send', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        personalizations: [{ to: [{ email: 'contact@memescope.io', name: 'MemeScope' }] }],
-        from: { email: 'bugs@memescope.io', name: 'MemeScope Bug Report' },
-        reply_to: userEmail ? { email: userEmail } : undefined,
-        subject: 'Bug Report — MemeScope',
-        content: [{
-          type: 'text/plain',
-          value: [
-            'Bug Report',
-            '──────────',
-            '',
-            'Message: ' + message,
-            '',
-            'Reporter Email: ' + (userEmail || 'Not provided'),
-            'Page: ' + pageUrl,
-            'User Agent: ' + ua,
-            'Time: ' + timestamp
-          ].join('\n')
-        }]
-      })
-    });
-
-    if (mailRes.status === 202 || mailRes.ok) {
-      return new Response(JSON.stringify({ ok: true }), {
-        headers: { ...corsHeaders(), 'Content-Type': 'application/json' }
-      });
-    }
-    // Fallback: log the report so it's not lost
-    console.log('BUG_REPORT:', JSON.stringify({ message, email: userEmail, url: pageUrl, timestamp }));
+    console.log('BUG_REPORT:', JSON.stringify({
+      message,
+      email: (body.email || '').trim() || null,
+      url: body.url || null,
+      time: new Date().toISOString()
+    }));
     return new Response(JSON.stringify({ ok: true }), {
       headers: { ...corsHeaders(), 'Content-Type': 'application/json' }
     });
   } catch (err) {
-    console.error('Bug report error:', err);
     return new Response(JSON.stringify({ error: 'Internal error' }), {
       status: 500, headers: { ...corsHeaders(), 'Content-Type': 'application/json' }
     });
