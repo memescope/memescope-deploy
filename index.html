@@ -1645,7 +1645,9 @@
     border: 1px solid var(--border);
     border-radius: 7px;
     padding: 8px 14px;
-    width: 400px;
+    flex: 1;
+    margin: 0 16px;
+    min-width: 0;
     transition: all 0.25s cubic-bezier(0.16,1,0.3,1);
   }
   .top-header-search:focus-within {
@@ -4444,15 +4446,15 @@
     }
     .memescope-logo { font-size: 26px !important; letter-spacing: 0.5px; }
     .memescope-icon { height: 15px !important; width: 15px !important; vertical-align: -1px !important; margin: 0 1px !important; }
-    .top-header-search { 
-      display: flex !important; 
+    .top-header-search {
+      display: flex !important;
       flex: 0 0 auto !important;
       min-width: auto !important;
       max-width: 30px !important;
       width: 30px !important;
       height: 30px !important;
       padding: 0 !important;
-      margin-left: auto !important;
+      margin: 0 0 0 auto !important;
       align-items: center;
       justify-content: center;
       background: rgba(145, 180, 220, 0.052) !important;
@@ -5710,12 +5712,12 @@ if(window._embedMode) {
     <!-- TOP HEADER BAR -->
     <div class="top-header-bar">
       <div class="top-header-left"><span class="memescope-logo" style="cursor:pointer" onclick="if(document.getElementById('tokenPage')&&document.getElementById('tokenPage').style.display!=='none'){closeTokenPage();try{history.pushState({},'','/');} catch(e){}}else{window.scrollTo({top:0,behavior:'smooth'}); if(typeof fetchLiveTokens==='function') fetchLiveTokens();}">meme<span class="memescope-scope">sc<img src="/img/logo_scope.png" class="memescope-icon">pe</span></div>
+      <div class="top-header-search" onclick="openSearchModal()">
+        <img src="/img/search_icon.png" width="15" height="15" class="search-mag-icon" style="opacity:0.5">
+        <input type="text" placeholder="Search by token name, symbol or address" />
+        <kbd>/</kbd>
+      </div>
       <div class="top-header-right-group">
-        <div class="top-header-search" onclick="openSearchModal()">
-          <img src="/img/search_icon.png" width="15" height="15" class="search-mag-icon" style="opacity:0.5">
-          <input type="text" placeholder="Search by CA, token name, pairs..." />
-          <kbd>/</kbd>
-        </div>
         <button class="ms-header-connect" id="headerConnectBtn" onclick="handleHeaderWalletClick()" aria-label="Connect Wallet">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/></svg>
           <span>Connect</span>
