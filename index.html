@@ -8342,7 +8342,7 @@ var bubs = [];
     bubs = [];
     if(rafId) cancelAnimationFrame(rafId);
     
-    var tokens = (typeof getFilteredTokens === 'function') ? getFilteredTokens().slice(0, 50) : ((typeof LIVE_TOKENS !== 'undefined') ? LIVE_TOKENS.slice(0, 50) : []);
+    var tokens = (typeof getFilteredTokens === 'function') ? getFilteredTokens().slice(0, 100) : ((typeof LIVE_TOKENS !== 'undefined') ? LIVE_TOKENS.slice(0, 100) : []);
     if(!tokens.length){ setTimeout(init, 100); return; }
     
     // Deduplicate: first by CA, then by symbol (keep highest volume per symbol)
@@ -8374,8 +8374,8 @@ var bubs = [];
     var boostedTokens = tokens.filter(function(t){ return t.boosted; });
     var normalTokens = tokens.filter(function(t){ return !t.boosted; });
     normalTokens.sort(function(a,b){ return Math.abs(getTfVal(b, tfField)) - Math.abs(getTfVal(a, tfField)); });
-    tokens = boostedTokens.concat(normalTokens);
-    
+    tokens = boostedTokens.concat(normalTokens).slice(0, 50);
+
     // Use shared sizing function
     var radii = calcBubbleSizes(tokens, W, H, tfField);
     
