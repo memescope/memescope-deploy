@@ -2005,6 +2005,7 @@
     top: 56px;
     left: 50%;
     transform: translateX(-50%);
+    transform-origin: top center;
     z-index: 1001;
     background: var(--bg-primary);
     border: 1px solid rgba(255,255,255,0.06);
@@ -2014,11 +2015,10 @@
     display: flex;
     flex-direction: column;
     animation: searchDropDown 0.25s cubic-bezier(0.16,1,0.3,1);
-    transform-origin: top center;
   }
   @keyframes searchDropDown {
-    from { opacity: 0; transform: translateX(-50%) scaleY(0.3) translateY(-10px); }
-    to { opacity: 1; transform: translateX(-50%) scaleY(1) translateY(0); }
+    from { opacity: 0; transform: scaleY(0) translateY(0); }
+    to { opacity: 1; transform: scaleY(1) translateY(0); }
   }
 
   .search-modal-input-wrap {
@@ -7896,7 +7896,9 @@ function openSearchModal() {
   if (bar && modal) {
     var rect = bar.getBoundingClientRect();
     modal.style.top = (rect.bottom) + 'px';
+    modal.style.left = rect.left + 'px';
     modal.style.width = rect.width + 'px';
+    modal.style.transform = 'none';
   }
   overlay.classList.add('open');
   document.body.style.overflow = 'hidden';
