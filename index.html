@@ -10174,18 +10174,31 @@ async function verifyTopTokens() {
       } catch (e) { continue; }
     }
 
+    // Build set of CAs we actually sent to DexScreener
+    var sentCas = {};
+    for (var s = 0; s < allCas.length; s++) sentCas[allCas[s]] = true;
+
     // Update or remove tokens
     var removed = 0;
     for (var j = LIVE_TOKENS.length - 1; j >= 0; j--) {
       var t = LIVE_TOKENS[j];
-      if (!t.ca || !pairByCa[t.ca]) continue;
+      if (!t.ca) continue;
+
+      // If we sent this CA to DexScreener but got NO pair back = dead token
+      if (sentCas[t.ca] && !pairByCa[t.ca]) {
+        LIVE_TOKENS.splice(j, 1);
+        removed++;
+        continue;
+      }
+
+      if (!pairByCa[t.ca]) continue;
       var pair = pairByCa[t.ca];
       var liq = pair.liquidity ? (pair.liquidity.usd || 0) : 0;
       var price = pair.priceUsd ? parseFloat(pair.priceUsd) : 0;
       var mcap = pair.marketCap || pair.fdv || 0;
 
-      // Remove rugged tokens
-      if (liq < 500 || price === 0 || mcap < 500) {
+      // Remove rugged tokens (low liquidity, zero price, or tiny mcap)
+      if (liq < 1000 || price === 0 || mcap < 1000) {
         LIVE_TOKENS.splice(j, 1);
         removed++;
         continue;
