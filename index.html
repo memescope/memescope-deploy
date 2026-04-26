@@ -1645,7 +1645,10 @@
     border: 1px solid var(--border);
     border-radius: 7px;
     padding: 8px 14px;
-    width: 400px;
+    width: 560px;
+    max-width: 560px;
+    flex-shrink: 1;
+    min-width: 0;
     transition: all 0.25s cubic-bezier(0.16,1,0.3,1);
   }
   .top-header-search:focus-within {
@@ -1996,25 +1999,26 @@
   .search-overlay.open { display: block; }
 
   .search-modal {
-    width: 760px;
-    max-height: 80vh;
+    width: 560px;
+    max-height: 75vh;
     position: fixed;
-    top: 50%;
+    top: 56px;
     left: 50%;
-    transform: translate(-50%, -50%);
+    transform: translateX(-50%);
     z-index: 1001;
     background: var(--bg-primary);
     border: 1px solid rgba(255,255,255,0.06);
-    border-radius: 16px;
+    border-radius: 0 0 16px 16px;
     box-shadow: 0 32px 80px rgba(0,0,0,0.55);
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    animation: searchModalIn 0.2s ease-out;
+    animation: searchDropDown 0.25s cubic-bezier(0.16,1,0.3,1);
+    transform-origin: top center;
   }
-  @keyframes searchModalIn {
-    from { opacity: 0; transform: translate(-50%, -50%) scale(0.97); }
-    to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  @keyframes searchDropDown {
+    from { opacity: 0; transform: translateX(-50%) scaleY(0.3) translateY(-10px); }
+    to { opacity: 1; transform: translateX(-50%) scaleY(1) translateY(0); }
   }
 
   .search-modal-input-wrap {
@@ -4491,6 +4495,12 @@
       border-radius: 8px !important;
       cursor: pointer;
     }
+    .search-modal {
+      width: calc(100% - 20px) !important;
+      left: 10px !important;
+      transform: none !important;
+      border-radius: 0 0 12px 12px !important;
+    }
     .top-header-search input { display: none !important; }
     .top-header-search kbd { display: none !important; }
     .top-header-search .search-mag-icon { opacity: 0.5 !important; width: 13px !important; height: 13px !important; }
@@ -5741,12 +5751,12 @@ if(window._embedMode) {
     <!-- TOP HEADER BAR -->
     <div class="top-header-bar">
       <div class="top-header-left"><span class="memescope-logo" style="cursor:pointer" onclick="if(document.getElementById('tokenPage')&&document.getElementById('tokenPage').style.display!=='none'){closeTokenPage();try{history.pushState({},'','/');} catch(e){}}else{window.scrollTo({top:0,behavior:'smooth'}); if(typeof fetchLiveTokens==='function') fetchLiveTokens();}">meme<span class="memescope-scope">sc<img src="/img/logo_scope.png" class="memescope-icon">pe</span></div>
+      <div class="top-header-search" id="headerSearchBar" onclick="openSearchModal()">
+        <img src="/img/search_icon.png" width="15" height="15" class="search-mag-icon" style="opacity:0.5">
+        <input type="text" placeholder="Search by token name, symbol or address" />
+        <kbd>/</kbd>
+      </div>
       <div class="top-header-right-group">
-        <div class="top-header-search" onclick="openSearchModal()">
-          <img src="/img/search_icon.png" width="15" height="15" class="search-mag-icon" style="opacity:0.5">
-          <input type="text" placeholder="Search by CA, token name, pairs..." />
-          <kbd>/</kbd>
-        </div>
         <button class="ms-header-connect" id="headerConnectBtn" onclick="handleHeaderWalletClick()" aria-label="Connect Wallet">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/></svg>
           <span>Connect</span>
@@ -7880,6 +7890,14 @@ var searchHighlightIdx = -1;
 
 function openSearchModal() {
   var overlay = document.getElementById('search-overlay');
+  // Position modal right below the search bar
+  var bar = document.getElementById('headerSearchBar');
+  var modal = document.getElementById('search-modal');
+  if (bar && modal) {
+    var rect = bar.getBoundingClientRect();
+    modal.style.top = (rect.bottom) + 'px';
+    modal.style.width = rect.width + 'px';
+  }
   overlay.classList.add('open');
   document.body.style.overflow = 'hidden';
   var input = document.getElementById('search-modal-input');
@@ -7893,6 +7911,8 @@ function closeSearchModal() {
   document.getElementById('search-overlay').classList.remove('open');
   document.body.style.overflow = '';
   searchHighlightIdx = -1;
+  var bar = document.getElementById('headerSearchBar');
+  if (bar) bar.style.opacity = '';
 }
 
 // Wire up the header search bar to open modal
