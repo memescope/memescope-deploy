@@ -9235,6 +9235,28 @@ function _initModalChart(t) {
           if (mcapEl) mcapEl.textContent = fmt(pair.marketCap || pair.fdv || 0);
           if (volEl) volEl.textContent = fmt(pair.volume ? (pair.volume.h24 || 0) : 0);
           if (liqEl) liqEl.textContent = fmt(pair.liquidity ? (pair.liquidity.usd || 0) : 0);
+          // Update percentage timeframes
+          var pc = pair.priceChange || {};
+          var _pFmt = function(v, id) {
+            var el = document.getElementById(id);
+            if (!el) return;
+            v = Math.max(-9999, Math.min(9999, v || 0));
+            el.textContent = (v >= 0 ? '+' : '') + v.toFixed(1) + '%';
+            el.style.color = v >= 0 ? 'var(--green)' : 'var(--red)';
+          };
+          _pFmt(pc.m5 ? parseFloat(pc.m5) : 0, 'bmTf5m');
+          _pFmt(pc.h1 ? parseFloat(pc.h1) : 0, 'bmTf1h');
+          _pFmt(pc.h6 ? parseFloat(pc.h6) : 0, 'bmTf6h');
+          _pFmt(pc.h24 ? parseFloat(pc.h24) : 0, 'bmTf24h');
+          // Update timeframe bar colors
+          var tfBars = document.querySelectorAll('.bm-tf');
+          tfBars.forEach(function(bar) {
+            var val = bar.querySelector('.bm-tf-val');
+            if (val) {
+              var v = parseFloat(val.textContent);
+              bar.style.background = v >= 0 ? 'rgba(0,255,100,0.08)' : 'rgba(255,50,50,0.08)';
+            }
+          });
           // Keep buy/sell panel data fresh
           _bmBuySellData = { txns: pair.txns || {}, volume: pair.volume || {} };
           if (_bmActiveTf) renderBuySell(_bmActiveTf);
