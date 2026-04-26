@@ -6144,6 +6144,7 @@ document.addEventListener('click', function(e) {
 function setCategory(el, cat) {
   currentCategory = cat;
   currentPage = 1;
+  _lastRowOrder = null;
   document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active-pill'));
   el.classList.add('active-pill');
   loadData();
@@ -6188,6 +6189,7 @@ var _chainLinkSvg = '<svg width="13" height="13" viewBox="0 0 512 512" fill="cur
 
 function toggleChain(el, chain) {
   currentChain = chain;
+  _lastRowOrder = null;
   document.getElementById('chain-dropdown-menu').querySelectorAll('.dropdown-item').forEach(b => b.classList.remove('active'));
   el.classList.add('active');
   document.getElementById('chain-dropdown-menu').classList.remove('open');
@@ -6256,6 +6258,8 @@ function sortByColumn(col) {
       th.classList.add(currentSort.asc ? 'sort-asc' : 'sort-desc');
     }
   });
+  window._userSortTriggered = true;
+  _lastRowOrder = null;
   loadData();
 }
 
@@ -6467,6 +6471,7 @@ function resizeBubbles() {
   }
 }
 
+var _lastRowOrder = null; // preserve row order between refreshes
 function loadData() {
   const tbody = document.querySelector('tbody');
 
@@ -6496,7 +6501,35 @@ function loadData() {
   var pagedTokens = tokens.slice(startIdx, startIdx + rowsPerPage);
   renderPagination(totalItems);
 
+  // Keep row order stable between refreshes — only re-sort on first load or user sort action
   var existingRows = tbody.querySelectorAll('tr:not(.skeleton-row)');
+  if (_lastRowOrder && existingRows.length > 0 && !window._userSortTriggered) {
+    // Reorder pagedTokens to match last known row order
+    var tokenByCa = {};
+    for (var oi = 0; oi < pagedTokens.length; oi++) {
+      var okey = pagedTokens[oi].ca || pagedTokens[oi].sym;
+      tokenByCa[okey] = pagedTokens[oi];
+    }
+    var reordered = [];
+    // First: tokens in their previous order
+    for (var li = 0; li < _lastRowOrder.length; li++) {
+      if (tokenByCa[_lastRowOrder[li]]) {
+        reordered.push(tokenByCa[_lastRowOrder[li]]);
+        delete tokenByCa[_lastRowOrder[li]];
+      }
+    }
+    // Then: any new tokens that weren't in the last order
+    for (var nk in tokenByCa) {
+      if (tokenByCa.hasOwnProperty(nk)) reordered.push(tokenByCa[nk]);
+    }
+    pagedTokens = reordered;
+  }
+  window._userSortTriggered = false;
+
+  // Save current order
+  _lastRowOrder = pagedTokens.map(function(t) { return t.ca || t.sym; });
+
+  existingRows = tbody.querySelectorAll('tr:not(.skeleton-row)');
 
   // Helper: silently update cell value
   function flashCell(td, oldText, newText) {
@@ -7060,12 +7093,14 @@ function changePage(dir) {
 
 function goToPage(p) {
   currentPage = p;
+  _lastRowOrder = null;
   loadData();
 }
 
 function changeRowsPerPage(val) {
   rowsPerPage = parseInt(val);
   currentPage = 1;
+  _lastRowOrder = null;
   loadData();
 }
 
@@ -10340,12 +10375,7 @@ async function verifyTopTokens() {
 
     console.log('MemeScope: Verified', Object.keys(pairByCa).length, 'tokens, removed', removed, 'rugged');
     loadData();
-    // If tokens were removed, rebuild bubbles from scratch so new ones fill the gaps
-    if (removed > 0 && typeof init === 'function') {
-      init();
-    } else if (typeof updateBubblesSmooth === 'function') {
-      updateBubblesSmooth();
-    }
+    if (typeof updateBubblesSmooth === 'function') updateBubblesSmooth();
   } catch (e) {
     console.log('MemeScope: Verify error', e);
   }
