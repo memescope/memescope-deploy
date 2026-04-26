@@ -6338,7 +6338,19 @@ var SCANNER_URLS = {
 function updateBubblesSmooth() {
   var tfField = getTimeframeField();
   var tokens = LIVE_TOKENS;
-  
+
+  // Build set of current token syms for quick lookup
+  var currentSyms = {};
+  for(var k = 0; k < tokens.length; k++) currentSyms[tokens[k].sym] = true;
+
+  // Remove bubbles for tokens no longer in LIVE_TOKENS
+  for(var i = bubs.length - 1; i >= 0; i--) {
+    if(!currentSyms[bubs[i].token.sym]) {
+      if(bubs[i].el && bubs[i].el.parentNode) bubs[i].el.parentNode.removeChild(bubs[i].el);
+      bubs.splice(i, 1);
+    }
+  }
+
   // Update existing bubbles with new data
   for(var i = 0; i < bubs.length; i++) {
     var b = bubs[i];
@@ -6353,35 +6365,35 @@ function updateBubblesSmooth() {
     if(newToken) {
       // Update token data
       b.token = newToken;
-      
+
       // Update percentage text and all visual colors
       var tfVal = getTfVal(newToken, tfField);
       var styles = computeBubbleStyles(tfVal);
-      
+
       var pctEl = b.el.querySelector('.hm-pct');
       if(pctEl) {
         pctEl.textContent = (styles.isUp ? '+' : '') + tfVal.toFixed(1) + '%';
         pctEl.style.color = styles.pctColor;
       }
-      
+
       var glowEl = b.el.querySelector('.hm-glow');
       if(glowEl) {
         glowEl.style.background = styles.glowBg;
         if(styles.isHot) { glowEl.classList.add('hot'); } else { glowEl.classList.remove('hot'); }
       }
-      
+
       var innerEl = b.el.querySelector('.hm-inner');
       if(innerEl) {
         innerEl.style.background = styles.innerBg;
       }
-      
+
       var ringEl = b.el.querySelector('.hm-ring');
       if(ringEl) {
         ringEl.style.border = styles.ringBorder;
       }
     }
   }
-  
+
   // Recalculate sizes based on new data
   resizeBubbles();
 }
@@ -10383,6 +10395,14 @@ async function fetchLiveTokens() {
               for(var m = 0; m < incoming.length; m++) {
                 var ikey = incoming[m].ca || incoming[m].sym;
                 incomingByCa[ikey] = incoming[m];
+              }
+
+              // Remove tokens that are no longer in the API response (rugged/expired)
+              for(var r = LIVE_TOKENS.length - 1; r >= 0; r--) {
+                var rKey = LIVE_TOKENS[r].ca || LIVE_TOKENS[r].sym;
+                if(!incomingByCa[rKey]) {
+                  LIVE_TOKENS.splice(r, 1);
+                }
               }
 
               // Update existing tokens in place with fresh numbers
