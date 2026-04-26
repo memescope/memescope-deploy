@@ -6483,9 +6483,11 @@ function loadData() {
 
   let tokens = (typeof getFilteredTokens === 'function') ? getFilteredTokens() : [...LIVE_TOKENS];
 
-  // Empty state
+  // Empty state — only show if live data has fully loaded and verified
   if (tokens.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="12" style="text-align:center;padding:40px;color:var(--text-tertiary);font-size:14px">No tokens match the current filters</td></tr>`;
+    if (liveDataLoaded && !_verifyInProgress) {
+      tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;padding:40px;color:var(--text-tertiary);font-size:14px">No tokens match the current filters</td></tr>';
+    }
     renderPagination(0);
     return;
   }
