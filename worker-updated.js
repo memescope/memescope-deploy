@@ -648,6 +648,64 @@ function rowToToken(row) {
   };
 }
 
+async function handleBugReport(request) {
+  try {
+    const body = await request.json();
+    const message = (body.message || '').trim();
+    if (!message) {
+      return new Response(JSON.stringify({ error: 'Message required' }), {
+        status: 400, headers: { ...corsHeaders(), 'Content-Type': 'application/json' }
+      });
+    }
+    const userEmail = (body.email || '').trim();
+    const pageUrl = body.url || '';
+    const ua = body.ua || '';
+    const timestamp = new Date().toISOString();
+
+    // Send via MailChannels (free for Cloudflare Workers)
+    const mailRes = await fetch('https://api.mailchannels.net/tx/v1/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        personalizations: [{ to: [{ email: 'contact@memescope.io', name: 'MemeScope' }] }],
+        from: { email: 'bugs@memescope.io', name: 'MemeScope Bug Report' },
+        reply_to: userEmail ? { email: userEmail } : undefined,
+        subject: 'Bug Report — MemeScope',
+        content: [{
+          type: 'text/plain',
+          value: [
+            'Bug Report',
+            '──────────',
+            '',
+            'Message: ' + message,
+            '',
+            'Reporter Email: ' + (userEmail || 'Not provided'),
+            'Page: ' + pageUrl,
+            'User Agent: ' + ua,
+            'Time: ' + timestamp
+          ].join('\n')
+        }]
+      })
+    });
+
+    if (mailRes.status === 202 || mailRes.ok) {
+      return new Response(JSON.stringify({ ok: true }), {
+        headers: { ...corsHeaders(), 'Content-Type': 'application/json' }
+      });
+    }
+    // Fallback: log the report so it's not lost
+    console.log('BUG_REPORT:', JSON.stringify({ message, email: userEmail, url: pageUrl, timestamp }));
+    return new Response(JSON.stringify({ ok: true }), {
+      headers: { ...corsHeaders(), 'Content-Type': 'application/json' }
+    });
+  } catch (err) {
+    console.error('Bug report error:', err);
+    return new Response(JSON.stringify({ error: 'Internal error' }), {
+      status: 500, headers: { ...corsHeaders(), 'Content-Type': 'application/json' }
+    });
+  }
+}
+
 async function handleTokens(url, env) {
   const search = url.searchParams.get('search');
   const supabaseUrl = env.SUPABASE_URL;
@@ -802,6 +860,11 @@ export default {
     // === TRADES PROXY ROUTE ===
     if (url.pathname === '/trades') {
       return handleTrades(url);
+    }
+
+    // === BUG REPORT ===
+    if (url.pathname === '/bug-report' && request.method === 'POST') {
+      return handleBugReport(request);
     }
 
     // === TOKENS FEED (replaces Vercel API) ===

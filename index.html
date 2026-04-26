@@ -3934,6 +3934,105 @@
     line-height: 1.4;
   }
 
+  /* Bug Report Modal */
+  .bugreport-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    z-index: 3000;
+  }
+  .bugreport-overlay.open { display: flex; align-items: center; justify-content: center; }
+  .bugreport-modal {
+    width: 480px;
+    max-width: 94vw;
+    background: #222228;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    box-shadow: 0 32px 80px rgba(0,0,0,0.65), 0 0 0 1px rgba(255,255,255,0.04);
+    overflow: hidden;
+    animation: bugreportModalIn 0.25s ease-out;
+    position: relative;
+  }
+  @keyframes bugreportModalIn {
+    from { opacity: 0; transform: scale(0.95) translateY(10px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+  }
+  .bugreport-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 24px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .bugreport-title {
+    font-size: 16px; font-weight: 700; color: var(--text-primary);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .bugreport-close {
+    background: none; border: none; color: var(--text-tertiary);
+    cursor: pointer; padding: 6px; border-radius: 6px;
+    transition: all 0.15s;
+  }
+  .bugreport-close:hover { color: var(--text-primary); background: rgba(145, 180, 220, 0.078); }
+  .bugreport-body { padding: 18px 24px 24px; }
+  .bugreport-desc {
+    font-size: 13px; color: var(--text-secondary); line-height: 1.5;
+    margin-bottom: 16px;
+  }
+  .bugreport-label {
+    display: block; font-size: 12px; font-weight: 600;
+    color: var(--text-secondary); margin-bottom: 6px;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .bugreport-input, .bugreport-textarea {
+    width: 100%; box-sizing: border-box;
+    background: rgba(145, 180, 220, 0.04);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text-primary);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    padding: 10px 12px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .bugreport-input:focus, .bugreport-textarea:focus {
+    border-color: rgba(74, 158, 255, 0.4);
+  }
+  .bugreport-input::placeholder, .bugreport-textarea::placeholder {
+    color: var(--text-tertiary);
+  }
+  .bugreport-textarea {
+    resize: vertical; min-height: 100px; line-height: 1.5;
+  }
+  .bugreport-field { margin-bottom: 14px; }
+  .bugreport-submit {
+    width: 100%;
+    padding: 12px;
+    border: none; border-radius: 6px;
+    background: linear-gradient(135deg, #4A9EFF, #6C5CE7);
+    color: #fff; font-family: 'Inter', sans-serif;
+    font-size: 14px; font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 4px;
+  }
+  .bugreport-submit:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(74, 158, 255, 0.3);
+  }
+  .bugreport-submit:disabled {
+    opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none;
+  }
+  .bugreport-status {
+    text-align: center; font-size: 13px;
+    margin-top: 12px; min-height: 20px;
+    color: var(--text-secondary);
+  }
+  .bugreport-status.success { color: var(--green); }
+  .bugreport-status.error { color: var(--red); }
+
   .token-avatar-img {
     width: 28px;
     height: 28px;
@@ -5330,6 +5429,10 @@
       <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .3a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2c-3.3.7-4-1.6-4-1.6-.5-1.4-1.3-1.8-1.3-1.8-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.8-1.6-2.7-.3-5.5-1.3-5.5-6 0-1.3.5-2.3 1.2-3.2-.1-.3-.5-1.5.1-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0c2.3-1.5 3.3-1.2 3.3-1.2.6 1.7.2 2.9.1 3.2.8.9 1.2 2 1.2 3.2 0 4.6-2.8 5.6-5.5 5.9.5.4.9 1.2.9 2.4v3.5c0 .3.2.7.8.6A12 12 0 0 0 12 .3"/></svg>
       <span class="ms-nav-text">GitHub</span>
     </a>
+    <a class="ms-nav-link" href="#" onclick="event.preventDefault();openBugReportModal();" title="Report Bug">
+      <svg width="20" height="20" viewBox="0 0 74.364 74.364" fill="currentColor"><path d="M72.123,42.782H59.58c0-0.896,0-1.791,0-2.688c0-1.12,0-2.017-0.227-2.912c7.617-1.567,13.666-9.856,13.666-19.937c0-1.344-0.896-2.238-2.24-2.238s-2.239,0.896-2.239,2.238c0,8.064-4.479,14.562-10.526,15.457c-1.121-1.567-2.465-2.017-4.257-2.017c-0.448-6.495-3.36-11.872-7.616-15.231c2.912-2.465,4.93-6.271,4.93-10.527c0-1.346-0.896-2.24-2.239-2.24c-1.345,0-2.24,0.896-2.24,2.24c0,3.359-1.792,6.496-4.704,8.062c-1.566-0.672-3.136-0.896-4.704-0.896c-1.566,0-3.136,0.224-4.704,0.896c-2.688-1.566-4.704-4.703-4.704-8.062c0-1.346-0.896-2.24-2.238-2.24c-1.346,0-2.24,0.896-2.24,2.24c0,4.256,1.792,8.062,4.928,10.527c-4.031,3.359-6.942,8.959-7.616,15.231c-1.792,0-3.358,0.673-4.256,2.017c-6.048-0.896-10.526-7.393-10.526-15.457c0-1.344-0.896-2.238-2.24-2.238c-1.344,0-2.24,0.896-2.24,2.238c0,9.856,5.824,18.146,13.664,19.938c0,0.896-0.224,1.792-0.224,2.912c0,0.896,0,1.792,0,2.688H2.24c-1.346,0-2.24,0.896-2.24,2.24s0.896,2.24,2.24,2.24h13.216c0.448,1.792,0.896,3.809,1.566,5.376c-8.287,1.12-14.782,8.063-14.782,16.8c0,1.344,0.896,2.24,2.238,2.24c1.346,0,2.24-0.896,2.24-2.24c0-6.943,5.602-12.544,12.544-12.544l0,0c4.032,6.72,10.528,11.2,17.92,11.2c7.394,0,13.664-4.48,17.919-11.2l0,0c6.943,0,12.545,5.601,12.545,12.544c0,1.344,0.896,2.24,2.24,2.24c1.344,0,2.238-0.896,2.238-2.24c0-8.512-6.496-15.68-14.783-16.8c0.672-1.792,1.344-3.584,1.568-5.376h13.215c1.346,0,2.239-0.896,2.239-2.24S73.244,42.782,72.123,42.782z M52.412,46.588h-4.705c-0.672,4.703-4.256,8.287-8.959,8.961v4.703c0,0.896-0.672,1.568-1.568,1.568s-1.566-0.674-1.566-1.568v-4.703c-4.704-0.674-8.288-4.258-8.96-8.961h-4.705c-0.896,0-1.568-0.672-1.568-1.567s0.672-1.567,1.568-1.567h4.704c0.672-4.703,4.256-8.288,8.96-8.959v-4.705c0-0.896,0.672-1.566,1.566-1.566c0.896,0,1.568,0.672,1.568,1.566v4.705c4.703,0.672,8.287,4.256,8.959,8.959h4.705c0.896,0,1.565,0.672,1.565,1.567S53.309,46.588,52.412,46.588z"/><path d="M29.788,43.454h6.048v-6.049C32.701,38.079,30.237,40.54,29.788,43.454z"/><path d="M38.748,52.415c2.912-0.672,5.375-2.912,6.048-6.049h-6.048V52.415z"/><path d="M38.748,37.404v6.049h6.048C44.123,40.54,41.66,38.079,38.748,37.404z"/><path d="M35.613,52.415v-6.049h-6.05C30.237,49.5,32.701,51.965,35.613,52.415z"/></svg>
+      <span class="ms-nav-text">Report Bug</span>
+    </a>
     <a class="ms-nav-link" href="mailto:contact@memescope.io" title="Contact">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
       <span class="ms-nav-text">Contact</span>
@@ -5510,7 +5613,7 @@ if(window._embedMode) {
     var app = document.querySelector('.app');
     if(app) app.style.display = 'none';
     // Hide all overlays too
-    var els = document.querySelectorAll('.search-overlay,.bubble-modal-overlay,.boost-modal-overlay');
+    var els = document.querySelectorAll('.search-overlay,.bubble-modal-overlay,.boost-modal-overlay,.bugreport-overlay');
     for(var i=0;i<els.length;i++) els[i].style.display='none';
 
     var embed = document.createElement('div');
@@ -10591,6 +10694,34 @@ setTimeout(startRefreshProgress, 100);
     </div>
   </div>
 
+<!-- BUG REPORT MODAL -->
+<div class="bugreport-overlay" id="bugreportOverlay" onclick="if(event.target===this)closeBugReportModal()">
+  <div class="bugreport-modal" onclick="event.stopPropagation()">
+    <div class="bugreport-header">
+      <div class="bugreport-title">
+        <svg width="18" height="18" viewBox="0 0 74.364 74.364" fill="currentColor"><path d="M72.123,42.782H59.58c0-0.896,0-1.791,0-2.688c0-1.12,0-2.017-0.227-2.912c7.617-1.567,13.666-9.856,13.666-19.937c0-1.344-0.896-2.238-2.24-2.238s-2.239,0.896-2.239,2.238c0,8.064-4.479,14.562-10.526,15.457c-1.121-1.567-2.465-2.017-4.257-2.017c-0.448-6.495-3.36-11.872-7.616-15.231c2.912-2.465,4.93-6.271,4.93-10.527c0-1.346-0.896-2.24-2.239-2.24c-1.345,0-2.24,0.896-2.24,2.24c0,3.359-1.792,6.496-4.704,8.062c-1.566-0.672-3.136-0.896-4.704-0.896c-1.566,0-3.136,0.224-4.704,0.896c-2.688-1.566-4.704-4.703-4.704-8.062c0-1.346-0.896-2.24-2.238-2.24c-1.346,0-2.24,0.896-2.24,2.24c0,4.256,1.792,8.062,4.928,10.527c-4.031,3.359-6.942,8.959-7.616,15.231c-1.792,0-3.358,0.673-4.256,2.017c-6.048-0.896-10.526-7.393-10.526-15.457c0-1.344-0.896-2.238-2.24-2.238c-1.344,0-2.24,0.896-2.24,2.238c0,9.856,5.824,18.146,13.664,19.938c0,0.896-0.224,1.792-0.224,2.912c0,0.896,0,1.792,0,2.688H2.24c-1.346,0-2.24,0.896-2.24,2.24s0.896,2.24,2.24,2.24h13.216c0.448,1.792,0.896,3.809,1.566,5.376c-8.287,1.12-14.782,8.063-14.782,16.8c0,1.344,0.896,2.24,2.238,2.24c1.346,0,2.24-0.896,2.24-2.24c0-6.943,5.602-12.544,12.544-12.544l0,0c4.032,6.72,10.528,11.2,17.92,11.2c7.394,0,13.664-4.48,17.919-11.2l0,0c6.943,0,12.545,5.601,12.545,12.544c0,1.344,0.896,2.24,2.24,2.24c1.344,0,2.238-0.896,2.238-2.24c0-8.512-6.496-15.68-14.783-16.8c0.672-1.792,1.344-3.584,1.568-5.376h13.215c1.346,0,2.239-0.896,2.239-2.24S73.244,42.782,72.123,42.782z"/></svg>
+        Report a Bug
+      </div>
+      <button class="bugreport-close" onclick="closeBugReportModal()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="bugreport-body">
+      <div class="bugreport-desc">Found something broken? Let us know and we'll fix it. Describe the issue below and we'll get back to you.</div>
+      <div class="bugreport-field">
+        <label class="bugreport-label">Your Email (optional)</label>
+        <input type="email" class="bugreport-input" id="bugreportEmail" placeholder="you@example.com">
+      </div>
+      <div class="bugreport-field">
+        <label class="bugreport-label">Describe the Bug</label>
+        <textarea class="bugreport-textarea" id="bugreportMessage" placeholder="What happened? What did you expect to happen?"></textarea>
+      </div>
+      <button class="bugreport-submit" id="bugreportSubmitBtn" onclick="submitBugReport()">Send Report</button>
+      <div class="bugreport-status" id="bugreportStatus"></div>
+    </div>
+  </div>
+</div>
+
 <!-- WALLET CONNECT MODAL -->
 <div class="wc-overlay" id="wcOverlay" onclick="closeWalletModal()">
   <div class="wc-modal" onclick="event.stopPropagation()">
@@ -11092,6 +11223,52 @@ function openBoostModal() {
 
 function closeBoostModal() {
   document.getElementById('boostModalOverlay').classList.remove('open');
+}
+
+/* ── Bug Report Modal ── */
+function openBugReportModal() {
+  document.getElementById('bugreportOverlay').classList.add('open');
+  document.getElementById('bugreportEmail').value = '';
+  document.getElementById('bugreportMessage').value = '';
+  document.getElementById('bugreportStatus').textContent = '';
+  document.getElementById('bugreportStatus').className = 'bugreport-status';
+  document.getElementById('bugreportSubmitBtn').disabled = false;
+}
+function closeBugReportModal() {
+  document.getElementById('bugreportOverlay').classList.remove('open');
+}
+function submitBugReport() {
+  var email = document.getElementById('bugreportEmail').value.trim();
+  var message = document.getElementById('bugreportMessage').value.trim();
+  var statusEl = document.getElementById('bugreportStatus');
+  var btn = document.getElementById('bugreportSubmitBtn');
+  if (!message) {
+    statusEl.textContent = 'Please describe the bug before sending.';
+    statusEl.className = 'bugreport-status error';
+    return;
+  }
+  btn.disabled = true;
+  statusEl.textContent = 'Sending...';
+  statusEl.className = 'bugreport-status';
+  var body = { message: message };
+  if (email) body.email = email;
+  body.url = window.location.href;
+  body.ua = navigator.userAgent;
+  fetch('https://memescope-scraper.memescope-io.workers.dev/bug-report', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  }).then(function(r) {
+    if (!r.ok) throw new Error('Server error');
+    statusEl.textContent = 'Bug report sent! Thank you for helping us improve.';
+    statusEl.className = 'bugreport-status success';
+    btn.disabled = true;
+    setTimeout(closeBugReportModal, 2500);
+  }).catch(function() {
+    statusEl.textContent = 'Failed to send. Please try again later.';
+    statusEl.className = 'bugreport-status error';
+    btn.disabled = false;
+  });
 }
 
 function selectBoostTier(tier) {
