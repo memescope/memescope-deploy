@@ -9264,8 +9264,6 @@ function showTokenBanner() {
   overlay.innerHTML = '<img src="' + window._bmBannerUrl + '" onerror="this.parentElement.remove()">' +
     '<button class="bm-banner-close" onclick="event.stopPropagation();this.parentElement.remove()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>';
   modal.insertBefore(overlay, modal.firstChild);
-  // Auto-hide after 4 seconds
-  setTimeout(function() { if (overlay.parentNode) overlay.remove(); }, 4000);
 }
 
 function toggleModalWatchlist(btnEl) {
