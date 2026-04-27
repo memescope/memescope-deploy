@@ -5,7 +5,11 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://memescope-api.vercel.app">
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#101218">
+<link rel="manifest" href="/manifest.json">
 <title>MemeScope — Real-Time Meme Coin Tracker | Live Prices & Charts</title>
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png">
 <meta name="description" content="Track trending meme coins in real-time across Solana, Ethereum, Base & more. Live prices, interactive scope charts, and detailed token analytics.">
@@ -67,6 +71,10 @@
   body {
     overflow-y: auto;
     background: #101218;
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
     color: var(--text-primary);
     font-family: 'Inter', sans-serif;
     min-height: 100vh;
@@ -4743,6 +4751,7 @@
       max-height: calc(100% - 40px) !important;
       border-radius: 20px 20px 0 0 !important;
       top: 40px !important;
+      padding-bottom: env(safe-area-inset-bottom) !important;
       bottom: 0 !important;
       left: 0 !important;
       right: 0 !important;
@@ -4780,6 +4789,7 @@
       border-radius: 20px 20px 0 0 !important;
       border: none !important;
       border-top: 1px solid rgba(255,255,255,0.08) !important;
+      padding-bottom: env(safe-area-inset-bottom) !important;
       box-shadow: 0 -4px 30px rgba(0,0,0,0.3) !important;
       animation: mobileSheetUp 0.7s cubic-bezier(0.05, 0.7, 0.1, 1) !important;
     }
