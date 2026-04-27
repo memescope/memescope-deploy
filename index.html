@@ -8756,7 +8756,7 @@ var bubs = [];
         
         b.x += b.vx; b.y += b.vy;
         var padX = (window.innerWidth <= 768) ? 14 : 4;
-        var padY = 10;
+        var padY = 18;
         if(b.x - b.r < padX){ b.x = b.r + padX; b.vx = Math.abs(b.vx); }
         if(b.x + b.r > W - padX){ b.x = W - b.r - padX; b.vx = -Math.abs(b.vx); }
         if(b.y - b.r < padY){ b.y = b.r + padY; b.vy = Math.abs(b.vy); }
