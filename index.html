@@ -7903,6 +7903,9 @@ function openSearchModal() {
     window._scrollY = window.scrollY;
     document.body.classList.add('modal-scroll-lock');
     document.body.style.top = -window._scrollY + 'px';
+    // Force animation replay on mobile
+    var sm = document.getElementById('search-modal');
+    if (sm) { sm.style.animation = 'none'; sm.offsetHeight; sm.style.animation = ''; }
   }
   var input = document.getElementById('search-modal-input');
   input.value = '';
@@ -9037,6 +9040,9 @@ function openBubbleModal(t) {
     window._scrollY = window.scrollY;
     document.body.classList.add('modal-scroll-lock');
     document.body.style.top = -window._scrollY + 'px';
+    // Force animation replay on mobile
+    var bm = document.querySelector('.bubble-modal');
+    if (bm) { bm.style.animation = 'none'; bm.offsetHeight; bm.style.animation = ''; }
   }
   window._modalToken = t;
 
