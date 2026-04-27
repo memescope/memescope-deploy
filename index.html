@@ -6375,7 +6375,8 @@ function calcBubbleSizes(items, W, H, tfField, getToken) {
   var scaleFactor = Math.sqrt(0.70 * screenArea / (Math.PI * totalW2));
   var radii = weights.map(function(w) {
     var r = w * scaleFactor;
-    return Math.max(minDim * 0.022, Math.min(r, minDim * 0.16));
+    var maxCap = (W <= 768) ? minDim * 0.13 : minDim * 0.16;
+    return Math.max(minDim * 0.022, Math.min(r, maxCap));
   });
   return radii;
 }
