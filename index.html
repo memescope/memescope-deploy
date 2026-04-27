@@ -8755,8 +8755,8 @@ var bubs = [];
         }
         
         b.x += b.vx; b.y += b.vy;
-        var padX = (window.innerWidth <= 768) ? 18 : 8;
-        var padY = 18;
+        var padX = (window.innerWidth <= 768) ? 6 : 4;
+        var padY = 4;
         if(b.x - b.r < padX){ b.x = b.r + padX; b.vx = Math.abs(b.vx); }
         if(b.x + b.r > W - padX){ b.x = W - b.r - padX; b.vx = -Math.abs(b.vx); }
         if(b.y - b.r < padY){ b.y = b.r + padY; b.vy = Math.abs(b.vy); }
@@ -8789,16 +8789,6 @@ var bubs = [];
       }
 
       
-      // Second boundary clamp — collisions can push bubbles out of bounds
-      var padX2 = (window.innerWidth <= 768) ? 18 : 8;
-      var padY2 = 18;
-      for(var i = 0; i < bubs.length; i++){
-        var b = bubs[i];
-        if(b.x - b.r < padX2) b.x = b.r + padX2;
-        if(b.x + b.r > W - padX2) b.x = W - b.r - padX2;
-        if(b.y - b.r < padY2) b.y = b.r + padY2;
-        if(b.y + b.r > H - padY2) b.y = H - b.r - padY2;
-      }
       for(var i = 0; i < bubs.length; i++){
         var b = bubs[i];
         // Smoothly interpolate radius toward target
