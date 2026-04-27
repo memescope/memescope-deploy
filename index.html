@@ -1991,7 +1991,6 @@
 
 
   .search-overlay {
-    display: none;
     position: fixed;
     top: 0;
     left: 0;
@@ -2001,8 +2000,17 @@
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
     z-index: 1000;
+    visibility: hidden;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.35s ease, visibility 0s linear 0.35s;
   }
-  .search-overlay.open { display: block; }
+  .search-overlay.open {
+    visibility: visible;
+    pointer-events: auto;
+    opacity: 1;
+    transition: opacity 0.35s ease, visibility 0s linear 0s;
+  }
 
   .search-modal {
     width: 560px;
@@ -2867,15 +2875,23 @@
 
   /* ========== BUBBLE MODAL ========== */
   .bubble-modal-overlay {
-    display: none;
     position: fixed;
     inset: 0;
     background: rgba(0,0,0,0.6);
     backdrop-filter: blur(6px);
     -webkit-backdrop-filter: blur(6px);
     z-index: 2000;
+    visibility: hidden;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.35s ease, visibility 0s linear 0.35s;
   }
-  .bubble-modal-overlay.open { display: block; }
+  .bubble-modal-overlay.open {
+    visibility: visible;
+    pointer-events: auto;
+    opacity: 1;
+    transition: opacity 0.35s ease, visibility 0s linear 0s;
+  }
   .bubble-modal {
     position: fixed;
     top: 50%;
@@ -4749,20 +4765,20 @@
       height: calc(100% - 40px) !important;
       max-height: calc(100% - 40px) !important;
       border-radius: 20px 20px 0 0 !important;
-      top: 40px !important;
-      padding-bottom: env(safe-area-inset-bottom) !important;
       bottom: 0 !important;
       left: 0 !important;
       right: 0 !important;
-      transform: none !important;
+      top: auto !important;
+      padding-bottom: env(safe-area-inset-bottom) !important;
       overflow-y: auto !important;
       -webkit-overflow-scrolling: touch;
       display: flex !important;
       flex-direction: column !important;
+      transition: transform 0.7s cubic-bezier(0.05, 0.7, 0.1, 1) !important;
+      transform: translateY(100%) !important;
     }
-    @keyframes mobileSheetUp {
-      0% { transform: translateY(100%); }
-      100% { transform: translateY(0); }
+    .bubble-modal-overlay.open .bubble-modal {
+      transform: translateY(0) !important;
     }
     /* Lock background scroll when modal is open on iOS */
     body.modal-scroll-lock {
@@ -4779,16 +4795,20 @@
       height: calc(100% - 40px) !important;
       max-height: none !important;
       position: fixed !important;
-      top: 40px !important;
+      top: auto !important;
       bottom: 0 !important;
       left: 0 !important;
       right: 0 !important;
-      transform: none !important;
       border-radius: 20px 20px 0 0 !important;
       border: none !important;
       border-top: 1px solid rgba(255,255,255,0.08) !important;
       padding-bottom: env(safe-area-inset-bottom) !important;
       box-shadow: 0 -4px 30px rgba(0,0,0,0.3) !important;
+      transition: transform 0.7s cubic-bezier(0.05, 0.7, 0.1, 1) !important;
+      transform: translateY(100%) !important;
+    }
+    .search-overlay.open .search-modal {
+      transform: translateY(0) !important;
     }
     .bm-header { padding: 10px 12px !important; gap: 8px !important; }
     .bm-sym { font-size: 14px !important; }
@@ -5660,7 +5680,7 @@ if(window._embedMode) {
     if(app) app.style.display = 'none';
     // Hide all overlays too
     var els = document.querySelectorAll('.search-overlay,.bubble-modal-overlay,.boost-modal-overlay,.bugreport-overlay');
-    for(var i=0;i<els.length;i++) els[i].style.display='none';
+    for(var i=0;i<els.length;i++) els[i].classList.remove('open');
 
     var embed = document.createElement('div');
     embed.style.cssText = 'position:fixed;inset:0;background:#101218;display:flex;flex-direction:column;font-family:Inter,sans-serif;';
@@ -7898,12 +7918,12 @@ function openSearchModal() {
     modal.style.width = rect.width + 'px';
     modal.style.transform = 'none';
   } else if (isMobile && modal) {
-    // Mobile: bottom sheet — clear desktop positioning, pre-hide below
+    // Mobile: clear desktop positioning — CSS transition handles the slide
     modal.style.top = '';
     modal.style.left = '';
     modal.style.width = '';
-    modal.style.transform = 'translateY(100%)';
-    modal.style.animation = 'none';
+    modal.style.transform = '';
+    modal.style.animation = '';
   }
   if (isMobile) {
     window._scrollY = window.scrollY;
@@ -7912,14 +7932,6 @@ function openSearchModal() {
   }
   overlay.classList.add('open');
   document.body.style.overflow = 'hidden';
-  if (isMobile && modal) {
-    requestAnimationFrame(function() {
-      requestAnimationFrame(function() {
-        modal.style.transform = '';
-        modal.style.animation = 'mobileSheetUp 0.7s cubic-bezier(0.05, 0.7, 0.1, 1) forwards';
-      });
-    });
-  }
   var input = document.getElementById('search-modal-input');
   input.value = '';
   if (!isMobile) input.focus();
@@ -7940,7 +7952,7 @@ function closeSearchModal() {
   var bar = document.getElementById('headerSearchBar');
   if (bar) bar.style.opacity = '';
   var modal = document.getElementById('search-modal');
-  if (modal) { modal.style.height = ''; modal.style.transition = ''; }
+  if (modal) { modal.style.height = ''; modal.style.transition = ''; modal.style.transform = ''; modal.style.animation = ''; }
 }
 
 // Wire up the header search bar to open modal
@@ -9239,23 +9251,7 @@ function openBubbleModal(t) {
   }
 
   // Show modal
-  var bm = document.querySelector('.bubble-modal');
-  if (_isMobile && bm) {
-    bm.style.transform = 'translateY(100%)';
-    bm.style.animation = 'none';
-  }
   ov.classList.add("open");
-  if (_isMobile && bm) {
-    // Trigger slide-up on next frame so browser registers the start position
-    requestAnimationFrame(function() {
-      requestAnimationFrame(function() {
-        bm.style.transform = '';
-        bm.style.animation = 'mobileSheetUp 0.7s cubic-bezier(0.05, 0.7, 0.1, 1) forwards';
-      });
-    });
-  } else if (bm) {
-    bm.style.animation = 'bmIn 0.2s ease-out';
-  }
   setTimeout(function() { _initModalChart(t); }, 100);
 
   // Update URL
