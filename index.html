@@ -4544,6 +4544,7 @@
     .bubble-hero {
       width: 100% !important;
       max-width: 100vw !important;
+      height: 240px !important;
       overflow: hidden !important;
       padding: 0 !important;
       box-sizing: border-box !important;
@@ -8755,8 +8756,8 @@ var bubs = [];
         }
         
         b.x += b.vx; b.y += b.vy;
-        var padX = (window.innerWidth <= 768) ? 14 : 4;
-        var padY = 10;
+        var padX = (window.innerWidth <= 768) ? 18 : 8;
+        var padY = 18;
         if(b.x - b.r < padX){ b.x = b.r + padX; b.vx = Math.abs(b.vx); }
         if(b.x + b.r > W - padX){ b.x = W - b.r - padX; b.vx = -Math.abs(b.vx); }
         if(b.y - b.r < padY){ b.y = b.r + padY; b.vy = Math.abs(b.vy); }
