@@ -6515,16 +6515,24 @@ function updateBubblesSmooth() {
 
         var fsTicker2 = Math.max(7, newR * 0.30);
         var fsPct2 = Math.max(5, newR * 0.18);
+        var showCrosshair2 = newR > 22;
+        var showScopeRing2 = newR > 20;
+        var showTicks2 = newR > 35;
+        var emojiSize2 = Math.max(10, newR * 0.28);
         var el2 = document.createElement('div');
-        el2.className = 'hm-bubble';
+        el2.className = 'hm-bubble' + (nt.boosted ? ' boosted' : '');
         el2.style.width = (newR * 2) + 'px';
         el2.style.height = (newR * 2) + 'px';
         el2.innerHTML =
-          '<div class="hm-glow" style="background:' + styles2.glowBg + '"></div>' +
+          '<div class="hm-glow' + (styles2.isHot ? ' hot' : '') + '" style="background:' + styles2.glowBg + '"></div>' +
           '<div class="hm-inner" style="background:' + styles2.innerBg + '"></div>' +
           '<div class="hm-ring" style="border:' + styles2.ringBorder + '"></div>' +
+          (showCrosshair2 ? '<div class="hm-crosshair"></div>' : '') +
+          (showScopeRing2 ? '<div class="hm-scope-ring"></div>' : '') +
+          (showTicks2 ? '<div class="hm-ticks"></div>' : '') +
+          (nt.boosted && newR > 25 ? '<div class="hm-boosted-badge">⚡' + (nt.boostCount || '') + ' BOOSTED</div>' : '') +
           '<div class="hm-content">' +
-            (nt.img ? '<img src="' + nt.img + '" style="width:18px;height:18px;border-radius:50%;object-fit:cover;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5))" onerror="this.style.display=\'none\'">' : '') +
+            (nt.img ? '<img src="' + nt.img + '" style="width:' + (emojiSize2 + 4) + 'px;height:' + (emojiSize2 + 4) + 'px;border-radius:50%;object-fit:cover;margin-bottom:-1px;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5))" onerror="this.style.display=\'none\'">' : '') +
             '<div class="hm-ticker" style="font-size:' + fsTicker2 + 'px">' + nt.sym + '</div>' +
             '<div class="hm-pct" style="font-size:' + fsPct2 + 'px;color:' + styles2.pctColor + '">' + (styles2.isUp ? '+' : '') + tfVal2.toFixed(1) + '%</div>' +
           '</div>';
