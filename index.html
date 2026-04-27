@@ -7915,7 +7915,11 @@ function openSearchModal() {
     document.body.style.top = -window._scrollY + 'px';
     // Force animation replay on mobile
     var sm = document.getElementById('search-modal');
-    if (sm) { sm.style.animation = 'none'; sm.offsetHeight; sm.style.animation = ''; }
+    if (sm) {
+      sm.style.animation = 'none';
+      void sm.offsetHeight;
+      sm.style.animation = 'mobileSheetUp 0.7s cubic-bezier(0.05, 0.7, 0.1, 1)';
+    }
   }
   var input = document.getElementById('search-modal-input');
   input.value = '';
@@ -9052,7 +9056,11 @@ function openBubbleModal(t) {
     document.body.style.top = -window._scrollY + 'px';
     // Force animation replay on mobile
     var bm = document.querySelector('.bubble-modal');
-    if (bm) { bm.style.animation = 'none'; bm.offsetHeight; bm.style.animation = ''; }
+    if (bm) {
+      bm.style.animation = 'none';
+      void bm.offsetHeight;
+      bm.style.animation = 'mobileSheetUp 0.7s cubic-bezier(0.05, 0.7, 0.1, 1)';
+    }
   }
   window._modalToken = t;
 
