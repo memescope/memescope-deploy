@@ -4536,8 +4536,7 @@
     #bubbleHero {
       width: 100% !important;
       max-width: 100vw !important;
-      height: 200px !important;
-      max-height: 200px !important;
+      height: calc(100dvh - 280px) !important;
       overflow: hidden !important;
     }
     .bubble-hero {
@@ -8496,16 +8495,17 @@ function searchXByCA(sym) {
 
 
 
-  // Dynamically size bubble hero to fill remaining viewport (leave room for table rows on mobile)
+  // Dynamically size bubble hero to fill remaining viewport
   function sizeBubbleHero(){
     var hero = document.getElementById("bubbleHero");
     if(!hero) return;
+    if(window.innerWidth <= 768){
+      // Mobile: let CSS handle it, clear any inline height
+      hero.style.height = '';
+      return;
+    }
     var rect = hero.getBoundingClientRect();
     var available = window.innerHeight - rect.top;
-    if(window.innerWidth <= 768){
-      // Reserve ~140px so table header + 2 coin rows peek below
-      available = available - 140;
-    }
     hero.style.height = available + "px";
   }
   sizeBubbleHero();
