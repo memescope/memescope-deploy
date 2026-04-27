@@ -6619,6 +6619,26 @@ function resizeBubbles() {
         logoEl.style.height = logoSize2 + 'px';
         logoEl.style.display = newR > 18 ? '' : 'none';
       }
+
+      // Add scope visual elements if bubble grew past threshold
+      var ringRef = bubs[i].el.querySelector('.hm-ring');
+      if(newR > 20 && !bubs[i].el.querySelector('.hm-scope-ring') && ringRef) {
+        var sr = document.createElement('div');
+        sr.className = 'hm-scope-ring';
+        ringRef.parentNode.insertBefore(sr, ringRef.nextSibling);
+      }
+      if(newR > 22 && !bubs[i].el.querySelector('.hm-crosshair') && ringRef) {
+        var ch = document.createElement('div');
+        ch.className = 'hm-crosshair';
+        ringRef.parentNode.insertBefore(ch, ringRef.nextSibling);
+      }
+      if(newR > 35 && !bubs[i].el.querySelector('.hm-ticks')) {
+        var tk = document.createElement('div');
+        tk.className = 'hm-ticks';
+        var scopeRing = bubs[i].el.querySelector('.hm-scope-ring');
+        if(scopeRing) scopeRing.parentNode.insertBefore(tk, scopeRing.nextSibling);
+        else if(ringRef) ringRef.parentNode.insertBefore(tk, ringRef.nextSibling);
+      }
     }
   }
 }
