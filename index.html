@@ -3,7 +3,16 @@
 <head>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preconnect" href="https://memescope-api.vercel.app">
+<link rel="preconnect" href="https://memescope-scraper.memescope-io.workers.dev">
+<link rel="preconnect" href="https://api.dexscreener.com">
+<link rel="preconnect" href="https://dd.dexscreener.com" crossorigin>
+<link rel="dns-prefetch" href="https://memescope-scraper.memescope-io.workers.dev">
+<link rel="dns-prefetch" href="https://api.dexscreener.com">
+<link rel="dns-prefetch" href="https://dd.dexscreener.com">
+<script>
+// Early fetch — start API call while HTML is still parsing
+window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/tokens').then(function(r){return r.json()}).catch(function(){return null});
+</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -6734,7 +6743,7 @@ function loadData() {
         <td><div class="token-cell">
           <span class="token-dots" onclick="event.stopPropagation();showRowMenu(this, ${startIdx + i})"><svg width="18" height="18" viewBox="-13.5 0 32 32" fill="currentColor"><path d="M2.48 11.84c-1.36 0-2.48-1.12-2.48-2.48s1.12-2.48 2.48-2.48 2.48 1.12 2.48 2.48-1.12 2.48-2.48 2.48zM2.48 8.56c-0.44 0-0.8 0.36-0.8 0.8s0.36 0.8 0.8 0.8 0.8-0.36 0.8-0.8c0-0.44-0.36-0.8-0.8-0.8zM2.48 18.48c-1.36 0-2.48-1.12-2.48-2.48s1.12-2.48 2.48-2.48 2.48 1.12 2.48 2.48-1.12 2.48-2.48 2.48zM2.48 15.2c-0.44 0-0.8 0.36-0.8 0.8s0.36 0.8 0.8 0.8 0.8-0.36 0.8-0.8-0.36-0.8-0.8-0.8zM2.48 25.12c-1.36 0-2.48-1.12-2.48-2.48s1.12-2.48 2.48-2.48 2.48 1.12 2.48 2.48c0 1.36-1.12 2.48-2.48 2.48zM2.48 21.84c-0.44 0-0.8 0.36-0.8 0.8s0.36 0.8 0.8 0.8 0.8-0.36 0.8-0.8-0.36-0.8-0.8-0.8z"/></svg></span>
           <div class="token-badges"><img class="token-badge-icon" src="${chainImg}"></div>
-          <div class="token-avatar-wrap"><img class="token-avatar-img" src="${t.img || ''}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="token-avatar" style="display:${t.img ? 'none' : 'flex'};background:linear-gradient(135deg,${grad})">${letter}</div></div>
+          <div class="token-avatar-wrap"><img class="token-avatar-img" loading="lazy" src="${t.img || ''}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="token-avatar" style="display:${t.img ? 'none' : 'flex'};background:linear-gradient(135deg,${grad})">${letter}</div></div>
           <div class="token-info"><div class="token-top-row"><span class="token-symbol">${t.sym}</span><span class="token-pair" style="color:rgba(255,255,255,0.3);font-size:14px;font-weight:400">/${t.pair||'USD'}</span>${t.boosted ? '<span class="boost-badge">⚡' + (t.boostCount || '') + '</span>' : ''}</div></div>
           </div></div>
 
@@ -10659,9 +10668,17 @@ async function fetchLiveTokens() {
     // If API is configured, use it (fast, 500+ tokens)
     if(MEMESCOPE_API) {
       try {
-        var resp = await fetch(MEMESCOPE_API);
-        if(resp.ok) {
-          var data = await resp.json();
+        // Use early fetch if available (started in <head>), otherwise fetch now
+        var data = null;
+        if(window._earlyTokens) {
+          data = await window._earlyTokens;
+          window._earlyTokens = null; // only use once
+        }
+        if(!data) {
+          var resp = await fetch(MEMESCOPE_API);
+          if(resp.ok) data = await resp.json();
+        }
+        if(data) {
           if(data.tokens && data.tokens.length > 0) {
             var isFirstLoad = !liveDataLoaded;
             liveDataLoaded = true;
