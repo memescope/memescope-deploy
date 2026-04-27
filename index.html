@@ -8499,6 +8499,7 @@ function searchXByCA(sym) {
   function sizeBubbleHero(){
     var hero = document.getElementById("bubbleHero");
     if(!hero) return;
+    if(window.innerWidth <= 768) return;
     var rect = hero.getBoundingClientRect();
     var available = window.innerHeight - rect.top;
     hero.style.height = available + "px";
@@ -9835,6 +9836,7 @@ document.addEventListener("keydown", function(e) {
   // Dynamically size bubble section to fit exactly
   function sizeBubbleHero(){
     var hero = document.getElementById("bubbleHero");
+    if(window.innerWidth <= 768) return;
     var header = document.querySelector(".top-header-bar");
     var filter = document.querySelector(".filter-bar");
     if(hero && header && filter){
