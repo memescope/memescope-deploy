@@ -2029,11 +2029,13 @@
     overflow: hidden;
     display: flex;
     flex-direction: column;
+  }
+  .search-overlay.open .search-modal {
     animation: searchDropDown 0.25s cubic-bezier(0.16,1,0.3,1);
   }
   @keyframes searchDropDown {
-    from { opacity: 0; transform: scaleY(0) translateY(0); }
-    to { opacity: 1; transform: scaleY(1) translateY(0); }
+    from { opacity: 0; transform: translateX(-50%) scaleY(0); }
+    to { opacity: 1; transform: translateX(-50%) scaleY(1); }
   }
 
   .search-modal-input-wrap {
@@ -7952,7 +7954,7 @@ function closeSearchModal() {
   var bar = document.getElementById('headerSearchBar');
   if (bar) bar.style.opacity = '';
   var modal = document.getElementById('search-modal');
-  if (modal) { modal.style.height = ''; modal.style.transition = ''; modal.style.transform = ''; modal.style.animation = ''; }
+  if (modal) { modal.style.height = ''; modal.style.transition = ''; }
 }
 
 // Wire up the header search bar to open modal
