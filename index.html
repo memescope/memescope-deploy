@@ -183,12 +183,10 @@
     -webkit-tap-highlight-color: transparent;
     -webkit-touch-callout: none;
   }
-  html, body {
+  body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overscroll-behavior: none;
-    overscroll-behavior-y: none;
-    -webkit-overflow-scrolling: auto;
   }
   
   /* Smooth momentum scrolling everywhere */
@@ -4536,9 +4534,11 @@
 
     /* === BUBBLES — tall, contained to screen === */
     #bubbleHero {
+      min-height: 54vh !important;
+      max-height: 62vh !important;
+      height: 58vh !important;
       width: 100% !important;
       max-width: 100vw !important;
-      height: calc(100svh - 220px) !important;
       overflow: hidden !important;
     }
     .bubble-hero {
@@ -4910,9 +4910,9 @@
     .memescope-logo { font-size: 26px !important; }
     .memescope-icon { height: 15px !important; width: 15px !important; vertical-align: -1px !important; margin: 0 1px !important; }
     #bubbleHero {
-      height: calc(100svh - 220px) !important;
-      min-height: auto !important;
-      max-height: none !important;
+      min-height: 50vh !important;
+      max-height: 58vh !important;
+      height: 54vh !important;
     }
     table { min-width: 550px; }
     .filter-btn, .tf-pill, .cat-pill, .filter-pill, .topbar-btn {
@@ -8501,20 +8501,12 @@ function searchXByCA(sym) {
   function sizeBubbleHero(){
     var hero = document.getElementById("bubbleHero");
     if(!hero) return;
-    if(window.innerWidth <= 768){
-      // Mobile: let CSS handle it, clear any inline height
-      hero.style.height = '';
-      return;
-    }
     var rect = hero.getBoundingClientRect();
     var available = window.innerHeight - rect.top;
     hero.style.height = available + "px";
   }
   sizeBubbleHero();
-  window.addEventListener("resize", function(){
-    if(window.innerWidth <= 768) return;
-    sizeBubbleHero();
-  });
+  window.addEventListener("resize", function(){ sizeBubbleHero(); });
 
 // ========== CRYPTO BUBBLES ==========
 function computeBubbleStyles(tfVal) {
@@ -8763,8 +8755,8 @@ var bubs = [];
         }
         
         b.x += b.vx; b.y += b.vy;
-        var padX = (window.innerWidth <= 768) ? 6 : 4;
-        var padY = 4;
+        var padX = (window.innerWidth <= 768) ? 14 : 4;
+        var padY = 10;
         if(b.x - b.r < padX){ b.x = b.r + padX; b.vx = Math.abs(b.vx); }
         if(b.x + b.r > W - padX){ b.x = W - b.r - padX; b.vx = -Math.abs(b.vx); }
         if(b.y - b.r < padY){ b.y = b.r + padY; b.vy = Math.abs(b.vy); }
@@ -8824,13 +8816,8 @@ var bubs = [];
   }
   waitAndInit();
   
-  var rt, lastW = window.innerWidth;
-  window.addEventListener("resize", function(){
-    // On mobile, URL bar hide/show fires resize — only re-init if width actually changed (rotation)
-    if(window.innerWidth <= 768 && window.innerWidth === lastW) return;
-    lastW = window.innerWidth;
-    clearTimeout(rt); rt = setTimeout(init, 250);
-  });
+  var rt;
+  window.addEventListener("resize", function(){ clearTimeout(rt); rt = setTimeout(init, 250); });
   
   // Mouse interaction - only push when swiping fast
   document.addEventListener("mousemove", function(e){
@@ -9847,7 +9834,18 @@ document.addEventListener("keydown", function(e) {
   if(e.key === "Escape") closeBubbleModal();
 });
 
-  // sizeBubbleHero is defined once above — no duplicate needed
+  // Dynamically size bubble section to fit exactly
+  function sizeBubbleHero(){
+    var hero = document.getElementById("bubbleHero");
+    var header = document.querySelector(".top-header-bar");
+    var filter = document.querySelector(".filter-bar");
+    if(hero && header && filter){
+      var usedHeight = header.offsetHeight + filter.offsetHeight;
+      hero.style.height = Math.floor(window.innerHeight - usedHeight - 1) + "px";
+    }
+  }
+  sizeBubbleHero();
+  window.addEventListener("resize", function(){ sizeBubbleHero(); });
   // Ensure page starts at top so bubbles fill the entire viewport
   if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
   window.addEventListener("load", function(){ window.scrollTo(0, 0); });
