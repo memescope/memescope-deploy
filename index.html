@@ -5297,9 +5297,7 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
   .ms-header-connect:hover svg { color: var(--phantom-purple); opacity: 1; }
   .ms-header-connect:active { transform: scale(0.97); }
 
-  /* Mobile overlay - visibility:hidden + display:none when closed so it can never block */
   .ms-mobile-overlay {
-    display: none;
     position: fixed;
     top: 0;
     left: 0;
@@ -5307,12 +5305,20 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
     bottom: 0;
     background: rgba(0,0,0,0.55);
     z-index: 1999;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.3s ease, visibility 0s linear 0.3s;
   }
-  .ms-mobile-overlay.open { display: block; }
+  .ms-mobile-overlay.open {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transition: opacity 0.3s ease, visibility 0s linear 0s;
+  }
 
-  /* Mobile menu - display:none when closed so it's completely out of the DOM layout */
   .ms-mobile-menu {
-    display: none;
+    display: flex;
     position: fixed;
     top: 0;
     left: 0;
@@ -5323,8 +5329,14 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
     flex-direction: column;
     z-index: 2000;
     box-shadow: 2px 0 16px rgba(0,0,0,0.4);
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    visibility: hidden;
   }
-  .ms-mobile-menu.open { display: flex; }
+  .ms-mobile-menu.open {
+    transform: translateX(0);
+    visibility: visible;
+  }
 
   .ms-mobile-header {
     height: 56px;
