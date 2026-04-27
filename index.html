@@ -8819,8 +8819,13 @@ var bubs = [];
   }
   waitAndInit();
   
-  var rt;
-  window.addEventListener("resize", function(){ clearTimeout(rt); rt = setTimeout(init, 250); });
+  var rt, lastW = window.innerWidth;
+  window.addEventListener("resize", function(){
+    // On mobile, URL bar hide/show fires resize — only re-init if width actually changed (rotation)
+    if(window.innerWidth <= 768 && window.innerWidth === lastW) return;
+    lastW = window.innerWidth;
+    clearTimeout(rt); rt = setTimeout(init, 250);
+  });
   
   // Mouse interaction - only push when swiping fast
   document.addEventListener("mousemove", function(e){
