@@ -2020,6 +2020,12 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
     opacity: 1;
     transition: opacity 0.35s ease, visibility 0s linear 0s;
   }
+  body.search-open .top-header-search {
+    border-radius: 10px 10px 0 0 !important;
+    border-bottom-color: transparent !important;
+    z-index: 1002;
+    position: relative;
+  }
 
   .search-modal {
     width: 560px;
@@ -7970,6 +7976,7 @@ function openSearchModal() {
     document.body.style.top = -window._scrollY + 'px';
   }
   overlay.classList.add('open');
+  if (!isMobile) document.body.classList.add('search-open');
   document.body.style.overflow = 'hidden';
   var input = document.getElementById('search-modal-input');
   input.value = '';
@@ -7981,6 +7988,7 @@ function openSearchModal() {
 
 function closeSearchModal() {
   document.getElementById('search-overlay').classList.remove('open');
+  document.body.classList.remove('search-open');
   document.body.style.overflow = '';
   if (document.body.classList.contains('modal-scroll-lock')) {
     document.body.classList.remove('modal-scroll-lock');
