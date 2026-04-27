@@ -8509,7 +8509,10 @@ function searchXByCA(sym) {
     hero.style.height = available + "px";
   }
   sizeBubbleHero();
-  window.addEventListener("resize", function(){ sizeBubbleHero(); });
+  window.addEventListener("resize", function(){
+    if(window.innerWidth <= 768) return;
+    sizeBubbleHero();
+  });
 
 // ========== CRYPTO BUBBLES ==========
 function computeBubbleStyles(tfVal) {
