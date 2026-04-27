@@ -8870,10 +8870,51 @@ var bubs = [];
       if(dragBubble){
         var dist = Math.hypot(dragLastX - dragStartX, dragLastY - dragStartY);
         if(dist < 5 && dragBubble.token) {
-          // It was a click, not a drag - open modal
           openBubbleModal(dragBubble.token);
         } else {
-          // Fling it
+          dragBubble.vx *= 1;
+          dragBubble.vy *= 1;
+        }
+        dragBubble = null;
+      }
+    });
+
+    // Touch handlers for mobile
+    bCanvas2.addEventListener("touchstart", function(e){
+      var touch = e.touches[0];
+      var rect = document.getElementById("bubbleHero").getBoundingClientRect();
+      var mx = touch.clientX - rect.left, my = touch.clientY - rect.top;
+      for(var i = bubs.length - 1; i >= 0; i--){
+        var b = bubs[i];
+        if(Math.hypot(mx - b.x, my - b.y) < b.r){
+          dragBubble = b;
+          dragStartX = mx; dragStartY = my;
+          dragLastX = mx; dragLastY = my;
+          e.preventDefault();
+          break;
+        }
+      }
+    }, {passive: false});
+
+    document.addEventListener("touchmove", function(e){
+      if(!dragBubble) return;
+      e.preventDefault();
+      var touch = e.touches[0];
+      var rect = document.getElementById("bubbleHero").getBoundingClientRect();
+      var mx = touch.clientX - rect.left, my = touch.clientY - rect.top;
+      dragBubble.x = mx;
+      dragBubble.y = my;
+      dragBubble.vx = (mx - dragLastX) * 0.3;
+      dragBubble.vy = (my - dragLastY) * 0.3;
+      dragLastX = mx; dragLastY = my;
+    }, {passive: false});
+
+    document.addEventListener("touchend", function(){
+      if(dragBubble){
+        var dist = Math.hypot(dragLastX - dragStartX, dragLastY - dragStartY);
+        if(dist < 5 && dragBubble.token) {
+          openBubbleModal(dragBubble.token);
+        } else {
           dragBubble.vx *= 1;
           dragBubble.vy *= 1;
         }
@@ -8884,7 +8925,7 @@ var bubs = [];
 
 
   ;
-  
+
   // Smoothly interpolate bubble radius toward target
   // Add this to the tick function by monkey-patching
   var origTick = null;
