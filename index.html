@@ -7901,25 +7901,25 @@ function openSearchModal() {
     modal.style.width = rect.width + 'px';
     modal.style.transform = 'none';
   } else if (isMobile && modal) {
-    // Mobile: bottom sheet — clear inline positioning
+    // Mobile: bottom sheet — pre-hide below screen
     modal.style.top = '';
     modal.style.left = '';
     modal.style.width = '';
-    modal.style.transform = '';
+    modal.style.animation = 'none';
+    modal.style.transform = 'translateY(100%)';
   }
-  overlay.classList.add('open');
-  document.body.style.overflow = 'hidden';
   if (isMobile) {
     window._scrollY = window.scrollY;
     document.body.classList.add('modal-scroll-lock');
     document.body.style.top = -window._scrollY + 'px';
-    // Force animation replay on mobile
-    var sm = document.getElementById('search-modal');
-    if (sm) {
-      sm.style.animation = 'none';
-      void sm.offsetHeight;
-      sm.style.animation = 'mobileSheetUp 0.7s cubic-bezier(0.05, 0.7, 0.1, 1)';
-    }
+  }
+  overlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  if (isMobile && modal) {
+    // Trigger animation now that overlay is visible
+    modal.style.transform = '';
+    void modal.offsetHeight;
+    modal.style.animation = 'mobileSheetUp 0.7s cubic-bezier(0.05, 0.7, 0.1, 1)';
   }
   var input = document.getElementById('search-modal-input');
   input.value = '';
@@ -9054,12 +9054,11 @@ function openBubbleModal(t) {
     window._scrollY = window.scrollY;
     document.body.classList.add('modal-scroll-lock');
     document.body.style.top = -window._scrollY + 'px';
-    // Force animation replay on mobile
+    // Pre-hide modal below screen, animation will be triggered when overlay opens
     var bm = document.querySelector('.bubble-modal');
     if (bm) {
       bm.style.animation = 'none';
-      void bm.offsetHeight;
-      bm.style.animation = 'mobileSheetUp 0.7s cubic-bezier(0.05, 0.7, 0.1, 1)';
+      bm.style.transform = 'translateY(100%)';
     }
   }
   window._modalToken = t;
@@ -9247,6 +9246,14 @@ function openBubbleModal(t) {
 
   // Show modal, then init TradingView chart
   ov.classList.add("open");
+  if (window.innerWidth <= 768) {
+    var bm2 = document.querySelector('.bubble-modal');
+    if (bm2) {
+      bm2.style.transform = '';
+      void bm2.offsetHeight;
+      bm2.style.animation = 'mobileSheetUp 0.7s cubic-bezier(0.05, 0.7, 0.1, 1)';
+    }
+  }
   setTimeout(function() { _initModalChart(t); }, 100);
 
   // Update URL
