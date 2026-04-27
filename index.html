@@ -9835,14 +9835,18 @@ document.addEventListener("keydown", function(e) {
   if(e.key === "Escape") closeBubbleModal();
 });
 
-  // Dynamically size bubble section to fit exactly
+  // Dynamically size bubble section — reserve space for table rows on mobile
   function sizeBubbleHero(){
     var hero = document.getElementById("bubbleHero");
     var header = document.querySelector(".top-header-bar");
     var filter = document.querySelector(".filter-bar");
     if(hero && header && filter){
       var usedHeight = header.offsetHeight + filter.offsetHeight;
-      hero.style.height = Math.floor(window.innerHeight - usedHeight - 1) + "px";
+      var available = Math.floor(window.innerHeight - usedHeight - 1);
+      if(window.innerWidth <= 768){
+        available = available - 140;
+      }
+      hero.style.height = available + "px";
     }
   }
   sizeBubbleHero();
