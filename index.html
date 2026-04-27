@@ -5565,11 +5565,8 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
 <div class="ms-mobile-overlay" id="msMobileOverlay" onclick="closeMsMenu()"></div>
 <div class="ms-mobile-menu" id="msMobileMenu">
   <div class="ms-mobile-header">
-    <div class="ms-mobile-brand">
-      <span class="memescope-logo">meme<span class="memescope-scope">sc<img src="/img/logo_scope.png" class="memescope-icon">pe</span></span>
-    </div>
     <button class="ms-mobile-close" onclick="closeMsMenu()" aria-label="Close menu">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
     </button>
   </div>
   <div class="ms-mobile-items">
@@ -5776,7 +5773,7 @@ if(window._embedMode) {
     <div class="sticky-nav-wrap">
     <!-- TOP HEADER BAR -->
     <div class="top-header-bar">
-      <div class="top-header-left"><span class="memescope-logo" style="cursor:pointer" onclick="if(document.getElementById('tokenPage')&&document.getElementById('tokenPage').style.display!=='none'){closeTokenPage();try{history.pushState({},'','/');} catch(e){}}else{window.scrollTo({top:0,behavior:'smooth'}); if(typeof fetchLiveTokens==='function') fetchLiveTokens();}">meme<span class="memescope-scope">sc<img src="/img/logo_scope.png" class="memescope-icon">pe</span></div>
+      <div class="top-header-left"><span class="memescope-logo" style="cursor:pointer" onclick="if(window.innerWidth<=768){if(typeof openMsMenu==='function')openMsMenu();return;}if(document.getElementById('tokenPage')&&document.getElementById('tokenPage').style.display!=='none'){closeTokenPage();try{history.pushState({},'','/');} catch(e){}}else{window.scrollTo({top:0,behavior:'smooth'}); if(typeof fetchLiveTokens==='function') fetchLiveTokens();}">meme<span class="memescope-scope">sc<img src="/img/logo_scope.png" class="memescope-icon">pe</span></div>
       <div class="top-header-search" id="headerSearchBar" onclick="openSearchModal()">
         <img src="/img/search_icon.png" width="15" height="15" class="search-mag-icon" style="opacity:0.5">
         <input type="text" placeholder="Search by token name, symbol or address" />
@@ -5786,9 +5783,6 @@ if(window._embedMode) {
         <button class="ms-header-connect" id="headerConnectBtn" onclick="handleHeaderWalletClick()" aria-label="Connect Wallet">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/></svg>
           <span>Connect</span>
-        </button>
-        <button class="ms-mobile-btn" onclick="openMsMenu()" aria-label="Open menu">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
         </button>
       </div>
     </div>
