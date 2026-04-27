@@ -8497,12 +8497,16 @@ function searchXByCA(sym) {
 
 
 
-  // Dynamically size bubble hero to fill remaining viewport
+  // Dynamically size bubble hero to fill remaining viewport (leave room for table rows on mobile)
   function sizeBubbleHero(){
     var hero = document.getElementById("bubbleHero");
     if(!hero) return;
     var rect = hero.getBoundingClientRect();
     var available = window.innerHeight - rect.top;
+    if(window.innerWidth <= 768){
+      // Reserve ~140px so table header + 2 coin rows peek below
+      available = available - 140;
+    }
     hero.style.height = available + "px";
   }
   sizeBubbleHero();
