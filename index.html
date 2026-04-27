@@ -2888,7 +2888,6 @@
     border-radius: 16px;
     overflow: hidden;
     overflow-y: auto;
-    animation: bmIn 0.2s ease-out;
     z-index: 2001;
     display: flex;
     flex-direction: column;
@@ -4760,7 +4759,6 @@
       -webkit-overflow-scrolling: touch;
       display: flex !important;
       flex-direction: column !important;
-      animation: mobileSheetUp 0.7s cubic-bezier(0.05, 0.7, 0.1, 1) !important;
     }
     @keyframes mobileSheetUp {
       0% { transform: translateY(100%); }
@@ -4791,7 +4789,6 @@
       border-top: 1px solid rgba(255,255,255,0.08) !important;
       padding-bottom: env(safe-area-inset-bottom) !important;
       box-shadow: 0 -4px 30px rgba(0,0,0,0.3) !important;
-      animation: mobileSheetUp 0.7s cubic-bezier(0.05, 0.7, 0.1, 1) !important;
     }
     .bm-header { padding: 10px 12px !important; gap: 8px !important; }
     .bm-sym { font-size: 14px !important; }
@@ -7901,12 +7898,12 @@ function openSearchModal() {
     modal.style.width = rect.width + 'px';
     modal.style.transform = 'none';
   } else if (isMobile && modal) {
-    // Mobile: bottom sheet — pre-hide below screen
+    // Mobile: bottom sheet — clear desktop positioning, pre-hide below
     modal.style.top = '';
     modal.style.left = '';
     modal.style.width = '';
-    modal.style.animation = 'none';
     modal.style.transform = 'translateY(100%)';
+    modal.style.animation = 'none';
   }
   if (isMobile) {
     window._scrollY = window.scrollY;
@@ -7916,10 +7913,12 @@ function openSearchModal() {
   overlay.classList.add('open');
   document.body.style.overflow = 'hidden';
   if (isMobile && modal) {
-    // Trigger animation now that overlay is visible
-    modal.style.transform = '';
-    void modal.offsetHeight;
-    modal.style.animation = 'mobileSheetUp 0.7s cubic-bezier(0.05, 0.7, 0.1, 1)';
+    requestAnimationFrame(function() {
+      requestAnimationFrame(function() {
+        modal.style.transform = '';
+        modal.style.animation = 'mobileSheetUp 0.7s cubic-bezier(0.05, 0.7, 0.1, 1) forwards';
+      });
+    });
   }
   var input = document.getElementById('search-modal-input');
   input.value = '';
@@ -9050,16 +9049,11 @@ function openBubbleModal(t) {
   try {
   var ov = document.getElementById("bubbleModalOverlay");
   document.body.style.overflow = 'hidden';
-  if (window.innerWidth <= 768) {
+  var _isMobile = window.innerWidth <= 768;
+  if (_isMobile) {
     window._scrollY = window.scrollY;
     document.body.classList.add('modal-scroll-lock');
     document.body.style.top = -window._scrollY + 'px';
-    // Pre-hide modal below screen, animation will be triggered when overlay opens
-    var bm = document.querySelector('.bubble-modal');
-    if (bm) {
-      bm.style.animation = 'none';
-      bm.style.transform = 'translateY(100%)';
-    }
   }
   window._modalToken = t;
 
@@ -9244,15 +9238,23 @@ function openBubbleModal(t) {
     }
   }
 
-  // Show modal, then init TradingView chart
+  // Show modal
+  var bm = document.querySelector('.bubble-modal');
+  if (_isMobile && bm) {
+    bm.style.transform = 'translateY(100%)';
+    bm.style.animation = 'none';
+  }
   ov.classList.add("open");
-  if (window.innerWidth <= 768) {
-    var bm2 = document.querySelector('.bubble-modal');
-    if (bm2) {
-      bm2.style.transform = '';
-      void bm2.offsetHeight;
-      bm2.style.animation = 'mobileSheetUp 0.7s cubic-bezier(0.05, 0.7, 0.1, 1)';
-    }
+  if (_isMobile && bm) {
+    // Trigger slide-up on next frame so browser registers the start position
+    requestAnimationFrame(function() {
+      requestAnimationFrame(function() {
+        bm.style.transform = '';
+        bm.style.animation = 'mobileSheetUp 0.7s cubic-bezier(0.05, 0.7, 0.1, 1) forwards';
+      });
+    });
+  } else if (bm) {
+    bm.style.animation = 'bmIn 0.2s ease-out';
   }
   setTimeout(function() { _initModalChart(t); }, 100);
 
