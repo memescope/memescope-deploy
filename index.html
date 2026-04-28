@@ -323,8 +323,8 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
   .topbar-btn {
     padding: 6px 14px;
     border-radius: 6px;
-    background: var(--bg-surface);
-    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.06);
+    border: none;
     color: var(--text-primary);
     font-family: 'Inter', sans-serif;
     font-size: 14px;
@@ -334,9 +334,8 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
   }
 
   .topbar-btn:hover {
-    border-color: var(--phantom-purple);
     color: var(--text-primary);
-    background: var(--bg-hover);
+    background: rgba(255,255,255,0.10);
     box-shadow: none;
   }
 
@@ -371,8 +370,8 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
     align-items: center;
     gap: 5px;
     padding: 4px 10px;
-    background: var(--bg-surface);
-    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.06);
+    border: none;
     border-radius: 10px;
     cursor: pointer;
     transition: all 0.15s;
@@ -380,8 +379,7 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
     flex-shrink: 0;
   }
   .x-trending-item:hover {
-    background: var(--bg-hover);
-    border-color: var(--border-strong);
+    background: rgba(255,255,255,0.10);
   }
   .x-trending-num {
     font-size: 11px;
@@ -431,10 +429,10 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
   .filter-group {
     display: flex;
     gap: 2px;
-    background: var(--bg-surface);
+    background: rgba(255,255,255,0.06);
     border-radius: 6px;
     padding: 2px;
-    border: 1px solid var(--border);
+    border: none;
   }
 
   .filter-btn {
@@ -465,8 +463,8 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
   .filter-pill {
     padding: 6px 14px;
     border-radius: 20px;
-    border: 1px solid var(--border);
-    background: var(--bg-surface);
+    border: none;
+    background: rgba(255,255,255,0.06);
     color: var(--text-primary);
     font-family: 'Inter', sans-serif;
     font-size: 14px;
@@ -476,13 +474,12 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
   }
 
   .filter-pill:hover {
-    border-color: var(--phantom-purple);
     color: var(--phantom-purple);
+    background: rgba(255,255,255,0.10);
     box-shadow: none;
   }
 
   .filter-pill.active-pill {
-    border-color: var(--phantom-purple);
     color: var(--phantom-purple);
     background: var(--phantom-purple-dim);
     box-shadow: none;
@@ -511,21 +508,19 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
     gap: 4px;
     padding: 4px 10px;
     border-radius: 6px;
-    border: 1px solid var(--border);
-    background: transparent;
+    border: none;
+    background: rgba(255,255,255,0.06);
     color: var(--text-primary);
     font-size: 12px;
     cursor: pointer;
     transition: all 0.15s;
   }
   .chain-filter-chip:hover {
-    border-color: var(--phantom-purple);
-    background: rgba(74, 158, 255, 0.08);
+    background: rgba(255,255,255,0.10);
     box-shadow: none;
   }
   .chain-filter-chip.active {
     background: rgba(74, 158, 255, 0.15);
-    border-color: var(--phantom-purple);
     color: var(--text-primary);
     box-shadow: none;
   }
@@ -1660,7 +1655,7 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
     gap: 8px;
     background: rgba(255,255,255,0.06);
     border: none;
-    border-radius: 24px;
+    border-radius: 10px;
     padding: 10px 18px;
     width: 700px;
     max-width: 700px;
