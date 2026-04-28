@@ -14,7 +14,7 @@
 window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/tokens').then(function(r){return r.json()}).catch(function(){return null});
 </script>
 <meta charset="UTF-8">
-<meta name="version" content="1.2.0">
+<meta name="version" content="1.2.1">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -5529,16 +5529,18 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
         <div class="ms-flag" data-lang="ko" onclick="setLanguage('ko')"><img src="https://flagcdn.com/w80/kr.png" alt="KR"></div>
         <div class="ms-flag" data-lang="es" onclick="setLanguage('es')"><img src="https://flagcdn.com/w80/es.png" alt="ES"></div>
       </div>
-      <button class="ms-theme-toggle" onclick="document.getElementById('msBrightnessSlider').focus()" title="Brightness">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-        </svg>
-      </button>
-      <input type="range" id="msBrightnessSlider" class="ms-brightness-slider" min="60" max="140" value="100" oninput="setBrightness(this.value)">
+      <div style="display:flex;align-items:center;gap:6px;margin-left:auto;">
+        <button class="ms-theme-toggle" onclick="document.getElementById('msBrightnessSlider').focus()" title="Brightness">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+          </svg>
+        </button>
+        <input type="range" id="msBrightnessSlider" class="ms-brightness-slider" min="60" max="140" value="100" oninput="setBrightness(this.value)">
+      </div>
     </div>
   </div>
 
-  <div class="ms-sidebar-version">v1.2.0</div>
+  <div class="ms-sidebar-version">v1.2.1</div>
 </aside>
 
 <!-- WATCHLIST MODAL -->
@@ -5666,7 +5668,7 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
       <input type="range" class="ms-brightness-slider" min="60" max="140" value="100" oninput="setBrightness(this.value)">
     </div>
   </div>
-  <div class="ms-mobile-version">v1.2.0</div>
+  <div class="ms-mobile-version">v1.2.1</div>
 </div>
 
 <!-- LOADING SCREEN -->
