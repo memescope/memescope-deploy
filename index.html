@@ -14,6 +14,7 @@
 window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/tokens').then(function(r){return r.json()}).catch(function(){return null});
 </script>
 <meta charset="UTF-8">
+<meta name="version" content="1.0.0">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -5180,6 +5181,17 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
   .ms-sidebar:hover .ms-utility-collapsed { display: none; }
   .ms-sidebar:hover .ms-utility-expanded { display: flex; opacity: 1; }
 
+  .ms-sidebar-version {
+    font-size: 11px;
+    color: rgba(167,180,198,0.3);
+    text-align: center;
+    padding: 8px 0 12px;
+    font-family: 'Inter', sans-serif;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+  }
+  .ms-sidebar:hover .ms-sidebar-version { opacity: 1; }
+
   .ms-flags { display: flex; gap: 8px; }
   .ms-flag {
     width: 24px;
@@ -5518,6 +5530,7 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
     </div>
   </div>
 
+  <div class="ms-sidebar-version">v1.0.0</div>
 </aside>
 
 <!-- WATCHLIST MODAL -->
