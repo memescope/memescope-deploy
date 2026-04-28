@@ -4787,16 +4787,6 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
       transition: transform 0.7s cubic-bezier(0.05, 0.7, 0.1, 1) !important;
       transform: translateY(130%) !important;
     }
-    .bubble-modal::before {
-      content: '';
-      display: block;
-      width: 36px;
-      height: 4px;
-      background: rgba(255,255,255,0.25);
-      border-radius: 2px;
-      margin: 10px auto 0;
-      flex-shrink: 0;
-    }
     .bubble-modal-overlay.open .bubble-modal {
       transform: translateY(0) !important;
     }
@@ -4826,16 +4816,6 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
       box-shadow: 0 -4px 30px rgba(0,0,0,0.3) !important;
       transition: transform 0.7s cubic-bezier(0.05, 0.7, 0.1, 1) !important;
       transform: translateY(130%) !important;
-    }
-    .search-modal::before {
-      content: '';
-      display: block;
-      width: 36px;
-      height: 4px;
-      background: rgba(255,255,255,0.25);
-      border-radius: 2px;
-      margin: 10px auto 0;
-      flex-shrink: 0;
     }
     .search-overlay.open .search-modal {
       transform: translateY(0) !important;
@@ -9600,44 +9580,6 @@ function closeBubbleModal() {
     try { history.replaceState({}, '', '/'); } catch(e) {}
   }
 }
-
-// Drag handle to close mobile bottom sheets
-(function() {
-  function setupDrag(modalSel, closeFn) {
-    var modal = document.querySelector(modalSel);
-    if (!modal) return;
-    var startY = 0, dy = 0, dragging = false;
-    modal.addEventListener('touchstart', function(e) {
-      if (modal.scrollTop > 5) return;
-      if (window.innerWidth > 768) return;
-      startY = e.touches[0].clientY;
-      dy = 0;
-      dragging = true;
-      modal.style.transition = 'none';
-    }, {passive: true});
-    modal.addEventListener('touchmove', function(e) {
-      if (!dragging) return;
-      dy = e.touches[0].clientY - startY;
-      if (dy < 0) dy = 0;
-      modal.style.transform = 'translateY(' + dy + 'px)';
-    }, {passive: true});
-    modal.addEventListener('touchend', function() {
-      if (!dragging) return;
-      dragging = false;
-      modal.style.transition = 'transform 0.3s cubic-bezier(0.2, 0, 0, 1)';
-      if (dy > 100) {
-        modal.style.transform = 'translateY(100%)';
-        setTimeout(closeFn, 300);
-      } else {
-        modal.style.transform = 'translateY(0)';
-      }
-    }, {passive: true});
-  }
-  setTimeout(function() {
-    setupDrag('.bubble-modal', function() { if (typeof closeBubbleModal === 'function') closeBubbleModal(); });
-    setupDrag('.search-modal', function() { if (typeof closeSearchModal === 'function') closeSearchModal(); });
-  }, 500);
-})();
 
 // Close modal on browser back / swipe back
 window.addEventListener('popstate', function() {
