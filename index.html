@@ -14,7 +14,7 @@
 window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/tokens').then(function(r){return r.json()}).catch(function(){return null});
 </script>
 <meta charset="UTF-8">
-<meta name="version" content="1.2.8">
+<meta name="version" content="1.2.7">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -2006,20 +2006,20 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0,0,0,0.55);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     z-index: 1000;
     visibility: hidden;
     pointer-events: none;
     opacity: 0;
-    transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), visibility 0s linear 0.3s;
+    transition: opacity 0.35s ease, visibility 0s linear 0.35s;
   }
   .search-overlay.open {
     visibility: visible;
     pointer-events: auto;
     opacity: 1;
-    transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), visibility 0s linear 0s;
+    transition: opacity 0.35s ease, visibility 0s linear 0s;
   }
   .search-modal {
     width: 560px;
@@ -2040,44 +2040,12 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
   }
   @media (min-width: 769px) {
     .search-overlay.open .search-modal {
-      animation: searchExpandIn 0.35s cubic-bezier(0.2, 0.9, 0.3, 1) forwards;
+      animation: searchDropDown 0.25s cubic-bezier(0.16,1,0.3,1);
     }
   }
-  @keyframes searchExpandIn {
-    0% { opacity: 0; transform: translateX(-50%) translateY(-8px) scale(0.97); }
-    100% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
-  }
-
-  /* Staggered item fade-in — desktop only */
-  @media (min-width: 769px) {
-    .search-modal-item,
-    .recent-chip {
-      opacity: 0;
-      transform: translateY(6px);
-      animation: searchItemFadeIn 0.25s ease forwards;
-    }
-    .search-modal-item:nth-child(1), .recent-chip:nth-child(1) { animation-delay: 0.04s; }
-    .search-modal-item:nth-child(2), .recent-chip:nth-child(2) { animation-delay: 0.08s; }
-    .search-modal-item:nth-child(3), .recent-chip:nth-child(3) { animation-delay: 0.12s; }
-    .search-modal-item:nth-child(4), .recent-chip:nth-child(4) { animation-delay: 0.16s; }
-    .search-modal-item:nth-child(5), .recent-chip:nth-child(5) { animation-delay: 0.20s; }
-    .search-modal-item:nth-child(6), .recent-chip:nth-child(6) { animation-delay: 0.24s; }
-    .search-modal-item:nth-child(7), .recent-chip:nth-child(7) { animation-delay: 0.28s; }
-    .search-modal-item:nth-child(8), .recent-chip:nth-child(8) { animation-delay: 0.30s; }
-    .search-modal-item:nth-child(n+9), .recent-chip:nth-child(n+9) { animation-delay: 0.32s; }
-
-    .search-modal-section-title {
-      opacity: 0;
-      animation: searchSectionIn 0.3s ease 0.05s forwards;
-    }
-  }
-
-  @keyframes searchItemFadeIn {
-    to { opacity: 1; transform: translateY(0); }
-  }
-  @keyframes searchSectionIn {
-    from { opacity: 0; transform: translateY(4px); }
-    to { opacity: 1; transform: translateY(0); }
+  @keyframes searchDropDown {
+    from { opacity: 0; transform: translateX(-50%) scaleY(0); }
+    to { opacity: 1; transform: translateX(-50%) scaleY(1); }
   }
 
   .search-modal-input-wrap {
@@ -5539,7 +5507,7 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
       <span class="ms-nav-text">X (Twitter)</span>
     </a>
     <a class="ms-nav-link" href="#" target="_blank" rel="noopener" title="GitHub">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .3a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2c-3.3.7-4-1.6-4-1.6-.5-1.4-1.3-1.8-1.3-1.8-1.1-.7.1-.7.1-.7 1.2.8 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.8-1.6-2.7-.3-5.5-1.3-5.5-6 0-1.3.5-2.3 1.2-3.2-.1-.3-.5-1.5.1-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0c2.3-1.5 3.3-1.2 3.3-1.2.8 1.7.2 2.9.1 3.2.8.9 1.2 2 1.2 3.2 0 4.6-2.8 5.6-5.5 5.9.5.4.9 1.2.9 2.4v3.5c0 .3.2.7.8.6A12 12 0 0 0 12 .3"/></svg>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .3a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2c-3.3.7-4-1.6-4-1.6-.5-1.4-1.3-1.8-1.3-1.8-1.1-.7.1-.7.1-.7 1.2.7 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.8-1.6-2.7-.3-5.5-1.3-5.5-6 0-1.3.5-2.3 1.2-3.2-.1-.3-.5-1.5.1-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0c2.3-1.5 3.3-1.2 3.3-1.2.7 1.7.2 2.9.1 3.2.8.9 1.2 2 1.2 3.2 0 4.6-2.8 5.6-5.5 5.9.5.4.9 1.2.9 2.4v3.5c0 .3.2.7.8.6A12 12 0 0 0 12 .3"/></svg>
       <span class="ms-nav-text">GitHub</span>
     </a>
     <a class="ms-nav-link" href="#" onclick="event.preventDefault();openBugReportModal();" title="Report Bug">
@@ -5576,7 +5544,7 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
     </div>
   </div>
 
-  <div class="ms-sidebar-version">v1.2.8</div>
+  <div class="ms-sidebar-version">v1.2.7</div>
 </aside>
 
 <!-- WATCHLIST MODAL -->
@@ -5679,7 +5647,7 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
       <span>X (Twitter)</span>
     </a>
     <a class="ms-mobile-item" href="#" target="_blank" rel="noopener">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .3a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2c-3.3.7-4-1.6-4-1.6-.5-1.4-1.3-1.8-1.3-1.8-1.1-.7.1-.7.1-.7 1.2.8 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.8-1.6-2.7-.3-5.5-1.3-5.5-6 0-1.3.5-2.3 1.2-3.2-.1-.3-.5-1.5.1-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0c2.3-1.5 3.3-1.2 3.3-1.2.8 1.7.2 2.9.1 3.2.8.9 1.2 2 1.2 3.2 0 4.6-2.8 5.6-5.5 5.9.5.4.9 1.2.9 2.4v3.5c0 .3.2.7.8.6A12 12 0 0 0 12 .3"/></svg>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .3a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2c-3.3.7-4-1.6-4-1.6-.5-1.4-1.3-1.8-1.3-1.8-1.1-.7.1-.7.1-.7 1.2.7 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.8-1.6-2.7-.3-5.5-1.3-5.5-6 0-1.3.5-2.3 1.2-3.2-.1-.3-.5-1.5.1-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0c2.3-1.5 3.3-1.2 3.3-1.2.7 1.7.2 2.9.1 3.2.8.9 1.2 2 1.2 3.2 0 4.6-2.8 5.6-5.5 5.9.5.4.9 1.2.9 2.4v3.5c0 .3.2.7.8.6A12 12 0 0 0 12 .3"/></svg>
       <span>GitHub</span>
     </a>
     <a class="ms-mobile-item" href="#" onclick="event.preventDefault();closeMsMenu();openContactModal();">
@@ -5704,7 +5672,7 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
       <input type="range" class="ms-brightness-slider" min="60" max="140" value="100" oninput="setBrightness(this.value)">
     </div>
   </div>
-  <div class="ms-mobile-version">v1.2.8</div>
+  <div class="ms-mobile-version">v1.2.7</div>
 </div>
 
 <!-- LOADING SCREEN -->
@@ -9102,7 +9070,7 @@ function showRowMenu(dotsEl, idx) {
   menu.className = 'row-chrome-menu';
   var html = '';
   html += '<span onclick="event.stopPropagation();navigator.clipboard.writeText(\''+t.ca+'\');var s=this;var o=s.childNodes[1];o.nodeValue=\' Copied!\';setTimeout(function(){o.nodeValue=\' Copy CA\';},1200)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Copy CA</span>';
-  html += '<a href="https://x.com/search?q=$'+t.sym+'" target="_blank" onclick="event.stopPropagation()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Search on X</a>';
+  html += '<a href="https://x.com/search?q='+encodeURIComponent('$'+t.sym+' OR '+t.ca)+'&src=typed_query&f=live" target="_blank" onclick="event.stopPropagation()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Search on X</a>';
   if(t.twitter) html += '<a href="'+t.twitter+'" target="_blank" onclick="event.stopPropagation()"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>Community</a>';
   if(t.website) html += '<a href="'+t.website+'" target="_blank" onclick="event.stopPropagation()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>Website</a>';
   html += '<a href="'+exp.url+'" target="_blank" onclick="event.stopPropagation()"><img src="'+expIcon+'" onerror="this.style.display=\'none\'">'+exp.name+'</a>';
@@ -9541,7 +9509,7 @@ function toggleModalMenu() {
   dd.className = 'bm-dropdown';
   var html = '';
   html += '<span onclick="event.stopPropagation();navigator.clipboard.writeText(\''+t.ca+'\');var s=this;s.childNodes[1].nodeValue=\' Copied!\';setTimeout(function(){s.childNodes[1].nodeValue=\' Copy CA\'},1200)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Copy CA</span>';
-  html += '<a href="https://x.com/search?q=$'+t.sym+'" target="_blank" onclick="event.stopPropagation()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Search on X</a>';
+  html += '<a href="https://x.com/search?q='+encodeURIComponent('$'+t.sym+' OR '+t.ca)+'&src=typed_query&f=live" target="_blank" onclick="event.stopPropagation()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Search on X</a>';
   if (t.twitter) html += '<a href="'+t.twitter+'" target="_blank" onclick="event.stopPropagation()"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>Community</a>';
   if (t.website) html += '<a href="'+t.website+'" target="_blank" onclick="event.stopPropagation()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>Website</a>';
   html += '<a href="'+exp.url+'" target="_blank" onclick="event.stopPropagation()"><img src="'+expIcon+'" onerror="this.style.display=\'none\'">'+exp.name+'</a>';
