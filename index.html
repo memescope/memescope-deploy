@@ -5410,8 +5410,14 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
     padding: 14px 20px;
     display: flex;
     align-items: center;
-    justify-content: space-between;
     flex-shrink: 0;
+  }
+  .ms-mobile-version {
+    font-size: 11px;
+    color: rgba(167,180,198,0.3);
+    text-align: center;
+    padding: 0 0 12px;
+    font-family: 'Inter', sans-serif;
   }
 
   @media (max-width: 1024px) {
@@ -5656,6 +5662,7 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
     </button>
     <input type="range" class="ms-brightness-slider" min="60" max="140" value="100" oninput="setBrightness(this.value)">
   </div>
+  <div class="ms-mobile-version">v1.0.0</div>
 </div>
 
 <!-- LOADING SCREEN -->
