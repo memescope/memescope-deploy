@@ -14,7 +14,7 @@
 window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/tokens').then(function(r){return r.json()}).catch(function(){return null});
 </script>
 <meta charset="UTF-8">
-<meta name="version" content="1.2.6">
+<meta name="version" content="1.2.7">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -5507,14 +5507,14 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
       <span class="ms-nav-text">X (Twitter)</span>
     </a>
     <a class="ms-nav-link" href="#" target="_blank" rel="noopener" title="GitHub">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .3a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2c-3.3.7-4-1.6-4-1.6-.5-1.4-1.3-1.8-1.3-1.8-1.1-.7.1-.7.1-.7 1.2.6 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.8-1.6-2.7-.3-5.5-1.3-5.5-6 0-1.3.5-2.3 1.2-3.2-.1-.3-.5-1.5.1-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0c2.3-1.5 3.3-1.2 3.3-1.2.6 1.7.2 2.9.1 3.2.8.9 1.2 2 1.2 3.2 0 4.6-2.8 5.6-5.5 5.9.5.4.9 1.2.9 2.4v3.5c0 .3.2.7.8.6A12 12 0 0 0 12 .3"/></svg>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .3a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2c-3.3.7-4-1.6-4-1.6-.5-1.4-1.3-1.8-1.3-1.8-1.1-.7.1-.7.1-.7 1.2.7 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.8-1.6-2.7-.3-5.5-1.3-5.5-6 0-1.3.5-2.3 1.2-3.2-.1-.3-.5-1.5.1-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0c2.3-1.5 3.3-1.2 3.3-1.2.7 1.7.2 2.9.1 3.2.8.9 1.2 2 1.2 3.2 0 4.6-2.8 5.6-5.5 5.9.5.4.9 1.2.9 2.4v3.5c0 .3.2.7.8.6A12 12 0 0 0 12 .3"/></svg>
       <span class="ms-nav-text">GitHub</span>
     </a>
     <a class="ms-nav-link" href="#" onclick="event.preventDefault();openBugReportModal();" title="Report Bug">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.91" stroke-miterlimit="10"><line x1="17.73" y1="14.86" x2="14.86" y2="14.86"/><line x1="9.14" y1="14.86" x2="6.27" y2="14.86"/><polygon points="20.59 6.27 20.59 22.5 3.41 22.5 3.41 1.5 15.82 1.5 20.59 6.27"/><polygon points="20.59 6.27 20.59 7.23 14.86 7.23 14.86 1.5 15.82 1.5 20.59 6.27"/><path d="M7.23,10.09v1A1.91,1.91,0,0,0,9.14,13"/><path d="M16.77,10.09v1A1.91,1.91,0,0,1,14.86,13"/><path d="M7.23,19.64v-1a1.92,1.92,0,0,1,1.91-1.91"/><path d="M16.77,19.64v-1a1.92,1.92,0,0,0-1.91-1.91"/><rect x="9.14" y="11.05" width="5.73" height="7.64" rx="2.86"/></svg>
       <span class="ms-nav-text">Report Bug</span>
     </a>
-    <a class="ms-nav-link" href="mailto:contact@memescope.io" title="Contact">
+    <a class="ms-nav-link" href="#" onclick="event.preventDefault();openContactModal();" title="Contact">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
       <span class="ms-nav-text">Contact</span>
     </a>
@@ -5544,7 +5544,7 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
     </div>
   </div>
 
-  <div class="ms-sidebar-version">v1.2.6</div>
+  <div class="ms-sidebar-version">v1.2.7</div>
 </aside>
 
 <!-- WATCHLIST MODAL -->
@@ -5647,10 +5647,10 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
       <span>X (Twitter)</span>
     </a>
     <a class="ms-mobile-item" href="#" target="_blank" rel="noopener">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .3a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2c-3.3.7-4-1.6-4-1.6-.5-1.4-1.3-1.8-1.3-1.8-1.1-.7.1-.7.1-.7 1.2.6 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.8-1.6-2.7-.3-5.5-1.3-5.5-6 0-1.3.5-2.3 1.2-3.2-.1-.3-.5-1.5.1-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0c2.3-1.5 3.3-1.2 3.3-1.2.6 1.7.2 2.9.1 3.2.8.9 1.2 2 1.2 3.2 0 4.6-2.8 5.6-5.5 5.9.5.4.9 1.2.9 2.4v3.5c0 .3.2.7.8.6A12 12 0 0 0 12 .3"/></svg>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .3a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2c-3.3.7-4-1.6-4-1.6-.5-1.4-1.3-1.8-1.3-1.8-1.1-.7.1-.7.1-.7 1.2.7 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.8-1.6-2.7-.3-5.5-1.3-5.5-6 0-1.3.5-2.3 1.2-3.2-.1-.3-.5-1.5.1-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0c2.3-1.5 3.3-1.2 3.3-1.2.7 1.7.2 2.9.1 3.2.8.9 1.2 2 1.2 3.2 0 4.6-2.8 5.6-5.5 5.9.5.4.9 1.2.9 2.4v3.5c0 .3.2.7.8.6A12 12 0 0 0 12 .3"/></svg>
       <span>GitHub</span>
     </a>
-    <a class="ms-mobile-item" href="mailto:contact@memescope.io">
+    <a class="ms-mobile-item" href="#" onclick="event.preventDefault();closeMsMenu();openContactModal();">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
       <span>Contact</span>
     </a>
@@ -5672,7 +5672,7 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
       <input type="range" class="ms-brightness-slider" min="60" max="140" value="100" oninput="setBrightness(this.value)">
     </div>
   </div>
-  <div class="ms-mobile-version">v1.2.6</div>
+  <div class="ms-mobile-version">v1.2.7</div>
 </div>
 
 <!-- LOADING SCREEN -->
@@ -11121,6 +11121,38 @@ setTimeout(startRefreshProgress, 100);
   </div>
 </div>
 
+<!-- CONTACT MODAL -->
+<div class="bugreport-overlay" id="contactOverlay" onclick="if(event.target===this)closeContactModal()">
+  <div class="bugreport-modal" onclick="event.stopPropagation()">
+    <div class="bugreport-header">
+      <div class="bugreport-title">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        Contact Us
+      </div>
+      <button class="bugreport-close" onclick="closeContactModal()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="bugreport-body">
+      <div class="bugreport-desc">Have a question, suggestion, or partnership inquiry? Send us a message and we'll get back to you.</div>
+      <div class="bugreport-field">
+        <label class="bugreport-label">Your Email</label>
+        <input type="email" class="bugreport-input" id="contactEmail" placeholder="you@example.com">
+      </div>
+      <div class="bugreport-field">
+        <label class="bugreport-label">Subject</label>
+        <input type="text" class="bugreport-input" id="contactSubject" placeholder="What's this about?">
+      </div>
+      <div class="bugreport-field">
+        <label class="bugreport-label">Message</label>
+        <textarea class="bugreport-textarea" id="contactMessage" placeholder="Write your message here..."></textarea>
+      </div>
+      <button class="bugreport-submit" id="contactSubmitBtn" onclick="submitContact()">Send Message</button>
+      <div class="bugreport-status" id="contactStatus"></div>
+    </div>
+  </div>
+</div>
+
 <!-- WALLET CONNECT MODAL -->
 <div class="wc-overlay" id="wcOverlay" onclick="closeWalletModal()">
   <div class="wc-modal" onclick="event.stopPropagation()">
@@ -11514,7 +11546,7 @@ function handleHeaderWalletClick() {
 
 // Close wallet modal on ESC
 document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape') { closeWalletModal(); closeWatchlistModal(); }
+  if (e.key === 'Escape') { closeWalletModal(); closeWatchlistModal(); closeContactModal(); }
 });
 
 // Auto-reconnect wallet on page load (only if user was connected before)
@@ -11653,6 +11685,55 @@ function openBoostModal() {
 
 function closeBoostModal() {
   document.getElementById('boostModalOverlay').classList.remove('open');
+}
+
+/* ── Contact Modal ── */
+function openContactModal() {
+  document.getElementById('contactOverlay').classList.add('open');
+  document.getElementById('contactEmail').value = '';
+  document.getElementById('contactSubject').value = '';
+  document.getElementById('contactMessage').value = '';
+  document.getElementById('contactStatus').textContent = '';
+  document.getElementById('contactStatus').className = 'bugreport-status';
+  document.getElementById('contactSubmitBtn').disabled = false;
+}
+function closeContactModal() {
+  document.getElementById('contactOverlay').classList.remove('open');
+}
+function submitContact() {
+  var email = document.getElementById('contactEmail').value.trim();
+  var subject = document.getElementById('contactSubject').value.trim();
+  var message = document.getElementById('contactMessage').value.trim();
+  var statusEl = document.getElementById('contactStatus');
+  var btn = document.getElementById('contactSubmitBtn');
+  if (!message) {
+    statusEl.textContent = 'Please write a message before sending.';
+    statusEl.className = 'bugreport-status error';
+    return;
+  }
+  btn.disabled = true;
+  statusEl.textContent = 'Sending...';
+  statusEl.className = 'bugreport-status';
+  var body = { message: message, type: 'contact' };
+  if (email) body.email = email;
+  if (subject) body.subject = subject;
+  body.url = window.location.href;
+  body.ua = navigator.userAgent;
+  fetch('https://memescope-scraper.memescope-io.workers.dev/bug-report', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  }).then(function(r) {
+    if (!r.ok) throw new Error('Server error');
+    statusEl.textContent = 'Message sent! We\'ll get back to you soon.';
+    statusEl.className = 'bugreport-status success';
+    btn.disabled = true;
+    setTimeout(closeContactModal, 2500);
+  }).catch(function() {
+    statusEl.textContent = 'Failed to send. Please try again later.';
+    statusEl.className = 'bugreport-status error';
+    btn.disabled = false;
+  });
 }
 
 /* ── Bug Report Modal ── */
