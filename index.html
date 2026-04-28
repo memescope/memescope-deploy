@@ -4763,48 +4763,32 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
       padding: 8px 10px !important;
     }
 
-    /* === TOKEN MODAL — iOS-style bottom sheet === */
+    /* === TOKEN MODAL — full screen === */
     .bubble-modal-overlay {
       backdrop-filter: blur(4px) !important;
       -webkit-backdrop-filter: blur(4px) !important;
-      background: rgba(0,0,0,0.4) !important;
-      transition: opacity 0.3s ease, visibility 0s linear 0.3s !important;
-    }
-    .bubble-modal-overlay.open {
-      transition: opacity 0.3s ease, visibility 0s linear 0s !important;
+      background: rgba(0,0,0,0.5) !important;
     }
     .bubble-modal {
-      width: calc(100vw - 16px) !important;
-      max-width: calc(100vw - 16px) !important;
-      height: calc(100% - 40px) !important;
-      max-height: calc(100% - 40px) !important;
-      border-radius: 20px 20px 0 0 !important;
+      width: 100vw !important;
+      max-width: 100vw !important;
+      height: calc(100% - 28px) !important;
+      max-height: calc(100% - 28px) !important;
+      border-radius: 28px 28px 0 0 !important;
       bottom: 0 !important;
-      left: 8px !important;
-      right: 8px !important;
+      left: 0 !important;
+      right: 0 !important;
       top: auto !important;
       padding-bottom: env(safe-area-inset-bottom) !important;
       overflow-y: auto !important;
       -webkit-overflow-scrolling: touch;
       display: flex !important;
       flex-direction: column !important;
-      transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1) !important;
-      transform: translateY(100%) !important;
-      box-shadow: 0 -8px 40px rgba(0,0,0,0.4) !important;
+      transition: transform 0.7s cubic-bezier(0.05, 0.7, 0.1, 1) !important;
+      transform: translateY(130%) !important;
     }
     .bubble-modal-overlay.open .bubble-modal {
       transform: translateY(0) !important;
-    }
-    /* Drag handle pill */
-    .bubble-modal::before {
-      content: '';
-      display: block;
-      width: 36px;
-      height: 4px;
-      background: rgba(255,255,255,0.2);
-      border-radius: 2px;
-      margin: 10px auto 4px;
-      flex-shrink: 0;
     }
     /* Lock background scroll when modal is open on iOS */
     body.modal-scroll-lock {
@@ -4814,37 +4798,27 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
       touch-action: none !important;
     }
 
-    /* Search modal — iOS-style bottom sheet */
+    /* Search modal — full bottom sheet like coin modal */
     .search-modal {
-      width: calc(100vw - 16px) !important;
-      max-width: calc(100vw - 16px) !important;
-      height: calc(100% - 40px) !important;
+      width: 100vw !important;
+      max-width: 100vw !important;
+      height: calc(100% - 28px) !important;
       max-height: none !important;
       position: fixed !important;
       top: auto !important;
       bottom: 0 !important;
-      left: 8px !important;
-      right: 8px !important;
-      border-radius: 20px 20px 0 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      border-radius: 28px 28px 0 0 !important;
       border: none !important;
+      border-top: 1px solid rgba(255,255,255,0.08) !important;
       padding-bottom: env(safe-area-inset-bottom) !important;
-      box-shadow: 0 -8px 40px rgba(0,0,0,0.4) !important;
-      transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1) !important;
-      transform: translateY(100%) !important;
+      box-shadow: 0 -4px 30px rgba(0,0,0,0.3) !important;
+      transition: transform 0.7s cubic-bezier(0.05, 0.7, 0.1, 1) !important;
+      transform: translateY(130%) !important;
     }
     .search-overlay.open .search-modal {
       transform: translateY(0) !important;
-    }
-    /* Drag handle pill for search */
-    .search-modal::before {
-      content: '';
-      display: block;
-      width: 36px;
-      height: 4px;
-      background: rgba(255,255,255,0.2);
-      border-radius: 2px;
-      margin: 10px auto 4px;
-      flex-shrink: 0;
     }
     .bm-header { padding: 10px 12px !important; gap: 8px !important; }
     .bm-sym { font-size: 14px !important; }
@@ -9606,47 +9580,6 @@ function closeBubbleModal() {
     try { history.replaceState({}, '', '/'); } catch(e) {}
   }
 }
-
-// Drag-to-close for mobile bottom sheets
-(function() {
-  if (window.innerWidth > 768) return;
-  function setupDragClose(modalSel, closeFn) {
-    var modal = document.querySelector(modalSel);
-    if (!modal) return;
-    var startY = 0, currentY = 0, dragging = false;
-    modal.addEventListener('touchstart', function(e) {
-      if (modal.scrollTop > 5) return;
-      var t = e.touches[0];
-      startY = t.clientY;
-      currentY = startY;
-      dragging = true;
-      modal.style.transition = 'none';
-    }, {passive: true});
-    modal.addEventListener('touchmove', function(e) {
-      if (!dragging) return;
-      currentY = e.touches[0].clientY;
-      var dy = currentY - startY;
-      if (dy < 0) dy = 0;
-      modal.style.transform = 'translateY(' + dy + 'px)';
-    }, {passive: true});
-    modal.addEventListener('touchend', function() {
-      if (!dragging) return;
-      dragging = false;
-      var dy = currentY - startY;
-      modal.style.transition = 'transform 0.3s cubic-bezier(0.22, 1, 0.36, 1)';
-      if (dy > 120) {
-        modal.style.transform = 'translateY(100%)';
-        setTimeout(closeFn, 300);
-      } else {
-        modal.style.transform = 'translateY(0)';
-      }
-    }, {passive: true});
-  }
-  setTimeout(function() {
-    setupDragClose('.bubble-modal', function() { if (typeof closeBubbleModal === 'function') closeBubbleModal(); });
-    setupDragClose('.search-modal', function() { if (typeof closeSearchModal === 'function') closeSearchModal(); });
-  }, 500);
-})();
 
 // Close modal on browser back / swipe back
 window.addEventListener('popstate', function() {
