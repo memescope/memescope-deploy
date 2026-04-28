@@ -14,7 +14,7 @@
 window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/tokens').then(function(r){return r.json()}).catch(function(){return null});
 </script>
 <meta charset="UTF-8">
-<meta name="version" content="1.1.5">
+<meta name="version" content="1.1.6">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -1037,7 +1037,7 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
     background: #2D2C31;
     border: 1px solid rgba(230,220,210,0.1);
     border-radius: 8px;
-    padding: 6px;
+    padding: 6px 6px 0;
     box-shadow: 0 8px 24px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3);
     z-index: 10000;
     opacity: 0;
@@ -5538,7 +5538,7 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
     </div>
   </div>
 
-  <div class="ms-sidebar-version">v1.1.5</div>
+  <div class="ms-sidebar-version">v1.1.6</div>
 </aside>
 
 <!-- WATCHLIST MODAL -->
@@ -5666,7 +5666,7 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
       <input type="range" class="ms-brightness-slider" min="60" max="140" value="100" oninput="setBrightness(this.value)">
     </div>
   </div>
-  <div class="ms-mobile-version">v1.1.5</div>
+  <div class="ms-mobile-version">v1.1.6</div>
 </div>
 
 <!-- LOADING SCREEN -->
@@ -9026,8 +9026,9 @@ function showRowMenu(dotsEl, idx) {
   if(t.twitter) html += '<a href="'+t.twitter+'" target="_blank" onclick="event.stopPropagation()"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>Community</a>';
   if(t.website) html += '<a href="'+t.website+'" target="_blank" onclick="event.stopPropagation()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>Website</a>';
   html += '<a href="'+exp.url+'" target="_blank" onclick="event.stopPropagation()"><img src="'+expIcon+'" onerror="this.style.display=\'none\'">'+exp.name+'</a>';
+  html += '<span onclick="event.stopPropagation();closeRowMenu();if(typeof openBoostModal===\'function\')openBoostModal()" style="background:rgba(234,179,8,0.15);color:#eab308;border-radius:0 0 8px 8px;margin:0;padding:10px 14px;box-sizing:border-box"><svg viewBox="0 0 24 24" fill="none" stroke="#eab308" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg> Boost Token</span>';
   menu.innerHTML = html;
-  
+
   document.body.appendChild(menu);
   _activeRowMenu = menu;
   
