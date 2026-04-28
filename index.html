@@ -14,7 +14,7 @@
 window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/tokens').then(function(r){return r.json()}).catch(function(){return null});
 </script>
 <meta charset="UTF-8">
-<meta name="version" content="1.0.9">
+<meta name="version" content="1.1.0">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -5537,7 +5537,7 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
     </div>
   </div>
 
-  <div class="ms-sidebar-version">v1.0.9</div>
+  <div class="ms-sidebar-version">v1.1.0</div>
 </aside>
 
 <!-- WATCHLIST MODAL -->
@@ -5665,7 +5665,7 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
       <input type="range" class="ms-brightness-slider" min="60" max="140" value="100" oninput="setBrightness(this.value)">
     </div>
   </div>
-  <div class="ms-mobile-version">v1.0.9</div>
+  <div class="ms-mobile-version">v1.1.0</div>
 </div>
 
 <!-- LOADING SCREEN -->
@@ -9580,6 +9580,53 @@ function closeBubbleModal() {
     try { history.replaceState({}, '', '/'); } catch(e) {}
   }
 }
+
+// Drag down to dismiss mobile bottom sheets
+(function() {
+  function setupDrag(modalSel, closeFn) {
+    var modal = document.querySelector(modalSel);
+    if (!modal) return;
+    var startY = 0, dy = 0, dragging = false;
+
+    modal.addEventListener('touchstart', function(e) {
+      if (window.innerWidth > 768) return;
+      if (modal.scrollTop > 5) return;
+      startY = e.touches[0].clientY;
+      dy = 0;
+      dragging = true;
+      modal.style.transition = 'none';
+    }, {passive: true});
+
+    modal.addEventListener('touchmove', function(e) {
+      if (!dragging) return;
+      dy = e.touches[0].clientY - startY;
+      if (dy < 0) { dy = 0; return; }
+      modal.style.transform = 'translateY(' + dy + 'px)';
+    }, {passive: true});
+
+    modal.addEventListener('touchend', function() {
+      if (!dragging) return;
+      dragging = false;
+      var threshold = window.innerHeight * 0.3;
+      modal.style.transition = 'transform 0.3s cubic-bezier(0.2, 0, 0, 1)';
+      if (dy > threshold) {
+        modal.style.transform = 'translateY(100%)';
+        setTimeout(function() {
+          closeFn();
+          modal.style.transition = '';
+          modal.style.transform = '';
+        }, 300);
+      } else {
+        modal.style.transform = 'translateY(0)';
+      }
+    }, {passive: true});
+  }
+
+  setTimeout(function() {
+    setupDrag('.bubble-modal', function() { if (typeof closeBubbleModal === 'function') closeBubbleModal(); });
+    setupDrag('.search-modal', function() { if (typeof closeSearchModal === 'function') closeSearchModal(); });
+  }, 500);
+})();
 
 // Close modal on browser back / swipe back
 window.addEventListener('popstate', function() {
