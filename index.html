@@ -1,20 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://memescope-scraper.memescope-io.workers.dev">
-<link rel="preconnect" href="https://api.dexscreener.com">
 <link rel="preconnect" href="https://dd.dexscreener.com" crossorigin>
-<link rel="dns-prefetch" href="https://memescope-scraper.memescope-io.workers.dev">
 <link rel="dns-prefetch" href="https://api.dexscreener.com">
-<link rel="dns-prefetch" href="https://dd.dexscreener.com">
+<link rel="dns-prefetch" href="https://fonts.googleapis.com">
+<link rel="dns-prefetch" href="https://fonts.gstatic.com">
 <script>
 // Early fetch — start API call while HTML is still parsing
 window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/tokens').then(function(r){return r.json()}).catch(function(){return null});
 </script>
 <meta charset="UTF-8">
-<meta name="version" content="1.4.2">
+<meta name="version" content="1.4.3">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -39,7 +36,8 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
 <meta name="twitter:description" content="Track trending meme coins in real-time across Solana, Ethereum, Base & more. Live prices, interactive scope charts, and detailed token analytics.">
 <meta name="twitter:image" content="https://memescope.io/og-image.png">
 <link rel="canonical" href="https://memescope.io">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Saira+Stencil+One&display=swap" rel="stylesheet">
+<link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Saira+Stencil+One&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Saira+Stencil+One&display=swap" rel="stylesheet"></noscript>
 <style>
   @font-face {
     font-family: 'Saira Stencil';
@@ -6014,7 +6012,7 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
       <span class="ms-nav-text">X (Twitter)</span>
     </a>
     <a class="ms-nav-link" href="#" target="_blank" rel="noopener" title="GitHub">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .3a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2c-3.3.7-4-1.6-4-1.6-.5-1.4-1.3-1.8-1.3-1.8-1.1-.7.1-.7.1-.7 1.4.2 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.4.2-1.6-2.7-.3-5.5-1.3-5.5-6 0-1.4.2-2.3 1.2-3.2-.1-.3-.5-1.5.1-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0c2.3-1.5 3.3-1.2 3.3-1.4.2 1.7.2 2.9.1 3.2.8.9 1.2 2 1.2 3.2 0 4.6-2.8 5.6-5.5 5.9.5.4.9 1.4.2 2.4v3.5c0 .3.2.7.8.6A12 12 0 0 0 12 .3"/></svg>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .3a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2c-3.3.7-4-1.6-4-1.6-.5-1.4-1.3-1.8-1.3-1.8-1.1-.7.1-.7.1-.7 1.4.3 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.4.3-1.6-2.7-.3-5.5-1.3-5.5-6 0-1.4.3-2.3 1.2-3.2-.1-.3-.5-1.5.1-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0c2.3-1.5 3.3-1.2 3.3-1.4.3 1.7.2 2.9.1 3.2.8.9 1.2 2 1.2 3.2 0 4.6-2.8 5.6-5.5 5.9.5.4.9 1.4.3 2.4v3.5c0 .3.2.7.8.6A12 12 0 0 0 12 .3"/></svg>
       <span class="ms-nav-text">GitHub</span>
     </a>
     <a class="ms-nav-link" href="#" onclick="event.preventDefault();openBugReportModal();" title="Report Bug">
@@ -6051,7 +6049,7 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
     </div>
   </div>
 
-  <div class="ms-sidebar-version">v1.4.2</div>
+  <div class="ms-sidebar-version">v1.4.3</div>
 </aside>
 
 <!-- WATCHLIST MODAL -->
@@ -6150,7 +6148,7 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
       <span>X (Twitter)</span>
     </a>
     <a class="ms-mobile-item" href="#" target="_blank" rel="noopener">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .3a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2c-3.3.7-4-1.6-4-1.6-.5-1.4-1.3-1.8-1.3-1.8-1.1-.7.1-.7.1-.7 1.4.2 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.4.2-1.6-2.7-.3-5.5-1.3-5.5-6 0-1.4.2-2.3 1.2-3.2-.1-.3-.5-1.5.1-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0c2.3-1.5 3.3-1.2 3.3-1.4.2 1.7.2 2.9.1 3.2.8.9 1.2 2 1.2 3.2 0 4.6-2.8 5.6-5.5 5.9.5.4.9 1.4.2 2.4v3.5c0 .3.2.7.8.6A12 12 0 0 0 12 .3"/></svg>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .3a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2c-3.3.7-4-1.6-4-1.6-.5-1.4-1.3-1.8-1.3-1.8-1.1-.7.1-.7.1-.7 1.4.3 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.4.3-1.6-2.7-.3-5.5-1.3-5.5-6 0-1.4.3-2.3 1.2-3.2-.1-.3-.5-1.5.1-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0c2.3-1.5 3.3-1.2 3.3-1.4.3 1.7.2 2.9.1 3.2.8.9 1.2 2 1.2 3.2 0 4.6-2.8 5.6-5.5 5.9.5.4.9 1.4.3 2.4v3.5c0 .3.2.7.8.6A12 12 0 0 0 12 .3"/></svg>
       <span>GitHub</span>
     </a>
     <a class="ms-mobile-item" href="#" onclick="event.preventDefault();closeMsMenu();openContactModal();">
@@ -6175,7 +6173,7 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
       <input type="range" class="ms-brightness-slider" min="60" max="140" value="100" oninput="setBrightness(this.value)">
     </div>
   </div>
-  <div class="ms-mobile-version">v1.4.2</div>
+  <div class="ms-mobile-version">v1.4.3</div>
 </div>
 
 <!-- LOADING SCREEN -->
@@ -7382,7 +7380,7 @@ function loadData() {
         <td><div class="token-cell">
           <span class="token-dots" onclick="event.stopPropagation();showRowMenu(this, ${startIdx + i})"><svg width="18" height="18" viewBox="0 -960 960 960" fill="currentColor"><path d="M480-160q-33 0-56.5-23.5T400-240q0-33 23.5-56.5T480-320q33 0 56.5 23.5T560-240q0 33-23.5 56.5T480-160Zm0-240q-33 0-56.5-23.5T400-480q0-33 23.5-56.5T480-560q33 0 56.5 23.5T560-480q0 33-23.5 56.5T480-400Zm0-240q-33 0-56.5-23.5T400-720q0-33 23.5-56.5T480-800q33 0 56.5 23.5T560-720q0 33-23.5 56.5T480-640Z"/></svg></span>
           <div class="token-badges"><img class="token-badge-icon" src="${chainImg}"></div>
-          <div class="token-avatar-wrap"><img class="token-avatar-img" loading="lazy" src="${t.img || ''}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="token-avatar" style="display:${t.img ? 'none' : 'flex'};background:linear-gradient(135deg,${grad})">${letter}</div></div>
+          <div class="token-avatar-wrap"><img class="token-avatar-img" loading="lazy" decoding="async" src="${t.img || ''}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="token-avatar" style="display:${t.img ? 'none' : 'flex'};background:linear-gradient(135deg,${grad})">${letter}</div></div>
           <div class="token-info"><div class="token-top-row"><span class="token-symbol">${t.sym}</span><span class="token-pair" style="color:rgba(255,255,255,0.3);font-size:14px;font-weight:400">/${t.pair||t.quoteSymbol||({solana:'SOL',eth:'WETH',base:'WETH',bsc:'BNB',sui:'SUI',tron:'TRX',arbitrum:'WETH',avalanche:'WAVAX',polygon:'WMATIC',optimism:'WETH',blast:'WETH',ton:'TON'}[t.net])||'SOL'}</span>${t.boosted ? '<span class="boost-badge">⚡' + (t.boostCount || '') + '</span>' : ''}</div></div>
           </div></div>
 
