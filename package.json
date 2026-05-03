@@ -1,0 +1,13 @@
+{
+  "name": "memescope-deploy",
+  "version": "1.8.7",
+  "private": true,
+  "description": "MemeScope — The Meme Coin Scope & Scanner",
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev"
+  },
+  "dependencies": {
+    "@resvg/resvg-wasm": "^2.6.2"
+  }
+}

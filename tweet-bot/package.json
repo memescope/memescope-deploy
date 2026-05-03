@@ -1,0 +1,11 @@
+{
+  "name": "memescope-tweet-bot",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Memescope auto-tweet bot — posts token alerts to @memescope_io",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "test": "curl -s http://localhost:8787/test | jq ."
+  }
+}

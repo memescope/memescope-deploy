@@ -1,0 +1,27 @@
+name = "memescope-tweet-bot"
+main = "src/index.js"
+compatibility_date = "2026-04-25"
+compatibility_flags = ["nodejs_compat"]
+
+[observability]
+enabled = true
+
+# KV namespace for tracking tweeted tokens & state
+[[kv_namespaces]]
+binding = "TWEET_STATE"
+id = "37fe65e22cbd42da9602f133d86ad020"
+
+# Cron triggers — every 5 min for alerts, daily for winners
+[triggers]
+crons = ["*/5 * * * *", "0 3 * * *"]  # 3 UTC = 11pm EST
+
+# Service binding to the scraper worker (avoids worker-to-worker 404)
+[[services]]
+binding = "SCRAPER"
+service = "memescope-scraper"
+
+# Secrets (set via `wrangler secret put`):
+# TWITTER_CONSUMER_KEY
+# TWITTER_CONSUMER_SECRET
+# TWITTER_ACCESS_TOKEN
+# TWITTER_ACCESS_SECRET

@@ -1,0 +1,12 @@
+node_modules/
+fonts/
+.wrangler/
+.claude/
+.git
+package.json
+package-lock.json
+wrangler.jsonc
+card-worker.js
+worker-updated.js
+.assetsignore
+.gitignore
