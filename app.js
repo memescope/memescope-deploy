@@ -4008,7 +4008,7 @@ var _candlePollTimer = null;
 
 // Close on ESC
 document.addEventListener("keydown", function(e) {
-  if(e.key === "Escape") closeBubbleModal();
+  if(e.key === "Escape") { closeBubbleModal(); closeBubbleFilter(); }
 });
 
   // Dynamically size bubble section to fit exactly on desktop
@@ -4991,3 +4991,171 @@ var refreshTimer = null;
 function startRefreshProgress() {}
 function showFetchingProgress() {}
 function resetRefreshProgress() {}
+
+// ─── BUBBLE FILTER MODAL ───
+var bubbleFilters = {
+  chain: 'all',
+  mcap: 'all',
+  age: 'all',
+  volume: 'all',
+  perf: 'all',
+  liq: 'all',
+  count: '50',
+  category: 'all'
+};
+
+function toggleBubbleFilter() {
+  var ov = document.getElementById('bubbleFilterOverlay');
+  if (ov.classList.contains('open')) {
+    closeBubbleFilter();
+  } else {
+    ov.classList.add('open');
+  }
+}
+
+function closeBubbleFilter() {
+  document.getElementById('bubbleFilterOverlay').classList.remove('open');
+}
+
+function toggleBFChip(el, group, value) {
+  var section = el.closest('.bf-section');
+  var chips = section.querySelectorAll('.bf-chip');
+  chips.forEach(function(c) { c.classList.remove('active'); });
+  el.classList.add('active');
+  bubbleFilters[group] = value;
+}
+
+function resetBubbleFilters() {
+  bubbleFilters = { chain:'all', mcap:'all', age:'all', volume:'all', perf:'all', liq:'all', count:'50', category:'all' };
+  var sections = document.querySelectorAll('.bf-section');
+  sections.forEach(function(sec) {
+    var chips = sec.querySelectorAll('.bf-chip');
+    chips.forEach(function(c) { c.classList.remove('active'); });
+    var allChip = sec.querySelector('.bf-chip[data-value="all"]');
+    if (allChip) allChip.classList.add('active');
+    else {
+      // For bubble count, default is 50
+      var def = sec.querySelector('.bf-chip[data-value="50"]');
+      if (def) def.classList.add('active');
+    }
+  });
+}
+
+function applyBubbleFilters() {
+  closeBubbleFilter();
+  // Update the filter button to show active state
+  var btn = document.getElementById('bubbleFilterBtn');
+  var hasFilter = Object.keys(bubbleFilters).some(function(k) {
+    if (k === 'count') return bubbleFilters[k] !== '50';
+    return bubbleFilters[k] !== 'all';
+  });
+  if (hasFilter) {
+    btn.style.background = '#2D3F7A';
+    btn.style.color = 'var(--md-sys-color-primary)';
+  } else {
+    btn.style.background = '';
+    btn.style.color = '';
+  }
+  // Trigger re-render
+  if (typeof updateBubblesSmooth === 'function') updateBubblesSmooth();
+  if (typeof loadData === 'function') loadData();
+}
+
+// Patch getFilteredTokens to apply bubble filters
+var _origGetFilteredTokens = typeof getFilteredTokens === 'function' ? getFilteredTokens : null;
+
+getFilteredTokens = function() {
+  var tokens = _origGetFilteredTokens ? _origGetFilteredTokens() : [...LIVE_TOKENS];
+  var bf = bubbleFilters;
+
+  // Chain filter
+  if (bf.chain !== 'all') {
+    tokens = tokens.filter(function(t) { return t.net === bf.chain; });
+  }
+
+  // Market cap filter
+  if (bf.mcap !== 'all') {
+    tokens = tokens.filter(function(t) {
+      var m = t.mcap || 0;
+      switch(bf.mcap) {
+        case 'micro': return m < 100000;
+        case 'small': return m >= 100000 && m < 1000000;
+        case 'mid': return m >= 1000000 && m < 10000000;
+        case 'large': return m >= 10000000;
+        default: return true;
+      }
+    });
+  }
+
+  // Age filter
+  if (bf.age !== 'all') {
+    tokens = tokens.filter(function(t) {
+      var hrs = ageToHours(t.age || '999y');
+      switch(bf.age) {
+        case '1h': return hrs <= 1;
+        case '24h': return hrs <= 24;
+        case '7d': return hrs <= 168;
+        case 'older': return hrs > 168;
+        default: return true;
+      }
+    });
+  }
+
+  // Volume filter
+  if (bf.volume !== 'all') {
+    tokens = tokens.filter(function(t) {
+      var v = t.vol || 0;
+      switch(bf.volume) {
+        case '10k': return v >= 10000;
+        case '50k': return v >= 50000;
+        case '100k': return v >= 100000;
+        case '1m': return v >= 1000000;
+        default: return true;
+      }
+    });
+  }
+
+  // Performance filter (based on current timeframe)
+  if (bf.perf !== 'all') {
+    var tf = getTimeframeField();
+    tokens = tokens.filter(function(t) {
+      var pct = t[tf] || 0;
+      switch(bf.perf) {
+        case 'pumping': return pct > 10;
+        case 'dumping': return pct < -10;
+        case 'stable': return pct >= -10 && pct <= 10;
+        default: return true;
+      }
+    });
+  }
+
+  // Liquidity filter
+  if (bf.liq !== 'all') {
+    tokens = tokens.filter(function(t) {
+      var l = t.liq || 0;
+      switch(bf.liq) {
+        case '5k': return l >= 5000;
+        case '25k': return l >= 25000;
+        case '100k': return l >= 100000;
+        case '500k': return l >= 500000;
+        default: return true;
+      }
+    });
+  }
+
+  // Category filter
+  if (bf.category !== 'all') {
+    var tf2 = getTimeframeField();
+    switch(bf.category) {
+      case 'trending': tokens.sort(function(a,b) { return Math.abs(b[tf2]) - Math.abs(a[tf2]); }); break;
+      case 'gainers': tokens = tokens.filter(function(t) { return (t[tf2] || 0) > 0; }); tokens.sort(function(a,b) { return b[tf2] - a[tf2]; }); break;
+      case 'losers': tokens = tokens.filter(function(t) { return (t[tf2] || 0) < 0; }); tokens.sort(function(a,b) { return a[tf2] - b[tf2]; }); break;
+    }
+  }
+
+  // Bubble count limit
+  var limit = parseInt(bf.count) || 50;
+  if (tokens.length > limit) tokens = tokens.slice(0, limit);
+
+  return tokens;
+};

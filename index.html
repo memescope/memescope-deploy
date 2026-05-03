@@ -17,7 +17,7 @@
 window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/tokens').then(function(r){return r.json()}).catch(function(){return null});
 </script>
 <meta charset="UTF-8">
-<meta name="version" content="1.8.5">
+<meta name="version" content="1.8.7">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -153,7 +153,7 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
     </div>
   </div>
 
-  <div class="ms-sidebar-version">v1.8.5</div>
+  <div class="ms-sidebar-version">v1.8.7</div>
 </aside>
 
 <!-- WATCHLIST MODAL -->
@@ -273,7 +273,7 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
       <input type="range" class="ms-brightness-slider" min="60" max="140" value="100" oninput="setBrightness(this.value)">
     </div>
   </div>
-  <div class="ms-mobile-version">v1.8.5</div>
+  <div class="ms-mobile-version">v1.8.7</div>
 </div>
 
 <!-- LOADING SCREEN -->
@@ -349,6 +349,8 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
             <button class="dropdown-item" onclick="toggleChain(this,'sui')"><img src="https://dd.dexscreener.com/ds-data/chains/sui.png" width="16" height="16" style="border-radius:50%"> Sui</button>
           </div>
         </div>
+
+        <button class="topbar-btn" id="bubbleFilterBtn" onclick="toggleBubbleFilter()"><svg width="16" height="16" viewBox="0 -960 960 960" fill="currentColor" style="vertical-align:-2px;margin-right:4px;transform:rotate(90deg)"><path d="M200-160v-280h-80v-80h240v80h-80v280h-80Zm0-440v-200h80v200h-80Zm160 0v-80h80v-120h80v120h80v80H360Zm80 440v-360h80v360h-80Zm240 0v-120h-80v-80h240v80h-80v120h-80Zm0-280v-360h80v360h-80Z"/></svg>Filters</button>
       </div>
     </div>
 <!-- BUBBLE SECTION -->
@@ -731,6 +733,111 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
       </div>
       <button class="bugreport-submit" id="bugreportSubmitBtn" onclick="submitBugReport()">Send Report</button>
       <div class="bugreport-status" id="bugreportStatus"></div>
+    </div>
+  </div>
+</div>
+
+<!-- BUBBLE FILTER MODAL -->
+<div class="bf-overlay" id="bubbleFilterOverlay" onclick="if(event.target===this)closeBubbleFilter()">
+  <div class="bf-modal">
+    <div class="bf-header">
+      <div class="bf-title"><svg width="20" height="20" viewBox="0 -960 960 960" fill="currentColor" style="vertical-align:-4px;margin-right:8px;transform:rotate(90deg)"><path d="M200-160v-280h-80v-80h240v80h-80v280h-80Zm0-440v-200h80v200h-80Zm160 0v-80h80v-120h80v120h80v80H360Zm80 440v-360h80v360h-80Zm240 0v-120h-80v-80h240v80h-80v120h-80Zm0-280v-360h80v360h-80Z"/></svg>Scope Filters</div>
+      <div class="bf-header-actions">
+        <button class="bf-reset-btn" onclick="resetBubbleFilters()">Reset All</button>
+        <button class="bf-close-btn" onclick="closeBubbleFilter()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+      </div>
+    </div>
+    <div class="bf-body">
+
+      <div class="bf-section">
+        <div class="bf-section-title">Chain</div>
+        <div class="bf-chip-group">
+          <button class="bf-chip active" onclick="toggleBFChip(this,'chain','all')" data-value="all">All</button>
+          <button class="bf-chip" onclick="toggleBFChip(this,'chain','solana')" data-value="solana"><img src="https://dd.dexscreener.com/ds-data/chains/solana.png" width="14" height="14" style="border-radius:50%;vertical-align:-2px;margin-right:4px">Solana</button>
+          <button class="bf-chip" onclick="toggleBFChip(this,'chain','eth')" data-value="eth"><img src="https://dd.dexscreener.com/ds-data/chains/ethereum.png" width="14" height="14" style="border-radius:50%;vertical-align:-2px;margin-right:4px">Ethereum</button>
+          <button class="bf-chip" onclick="toggleBFChip(this,'chain','base')" data-value="base"><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='264' height='264' viewBox='0 0 264 264' fill='none'%3E%3Cpath d='M131.706 263.876C204.705 263.876 263.876 204.81 263.876 131.938C263.876 59.066 204.705 0 131.706 0C62.4541 0 5.64694 53.1764 0 120.845H174.697V143.032H0C5.64694 210.7 62.4541 263.876 131.706 263.876Z' fill='%230052FF'/%3E%3C/svg%3E" width="14" height="14" style="border-radius:50%;vertical-align:-2px;margin-right:4px">Base</button>
+          <button class="bf-chip" onclick="toggleBFChip(this,'chain','bsc')" data-value="bsc"><img src="https://dd.dexscreener.com/ds-data/chains/bsc.png" width="14" height="14" style="border-radius:50%;vertical-align:-2px;margin-right:4px">BSC</button>
+          <button class="bf-chip" onclick="toggleBFChip(this,'chain','sui')" data-value="sui"><img src="https://dd.dexscreener.com/ds-data/chains/sui.png" width="14" height="14" style="border-radius:50%;vertical-align:-2px;margin-right:4px">Sui</button>
+        </div>
+      </div>
+
+      <div class="bf-section">
+        <div class="bf-section-title">Market Cap</div>
+        <div class="bf-chip-group">
+          <button class="bf-chip active" onclick="toggleBFChip(this,'mcap','all')" data-value="all">All</button>
+          <button class="bf-chip" onclick="toggleBFChip(this,'mcap','micro')" data-value="micro">Micro &lt;$100K</button>
+          <button class="bf-chip" onclick="toggleBFChip(this,'mcap','small')" data-value="small">$100K – $1M</button>
+          <button class="bf-chip" onclick="toggleBFChip(this,'mcap','mid')" data-value="mid">$1M – $10M</button>
+          <button class="bf-chip" onclick="toggleBFChip(this,'mcap','large')" data-value="large">$10M+</button>
+        </div>
+      </div>
+
+      <div class="bf-section">
+        <div class="bf-section-title">Age</div>
+        <div class="bf-chip-group">
+          <button class="bf-chip active" onclick="toggleBFChip(this,'age','all')" data-value="all">All</button>
+          <button class="bf-chip" onclick="toggleBFChip(this,'age','1h')" data-value="1h">&lt; 1 Hour</button>
+          <button class="bf-chip" onclick="toggleBFChip(this,'age','24h')" data-value="24h">&lt; 24 Hours</button>
+          <button class="bf-chip" onclick="toggleBFChip(this,'age','7d')" data-value="7d">&lt; 7 Days</button>
+          <button class="bf-chip" onclick="toggleBFChip(this,'age','older')" data-value="older">7+ Days</button>
+        </div>
+      </div>
+
+      <div class="bf-section">
+        <div class="bf-section-title">Volume (24h)</div>
+        <div class="bf-chip-group">
+          <button class="bf-chip active" onclick="toggleBFChip(this,'volume','all')" data-value="all">All</button>
+          <button class="bf-chip" onclick="toggleBFChip(this,'volume','10k')" data-value="10k">&gt;$10K</button>
+          <button class="bf-chip" onclick="toggleBFChip(this,'volume','50k')" data-value="50k">&gt;$50K</button>
+          <button class="bf-chip" onclick="toggleBFChip(this,'volume','100k')" data-value="100k">&gt;$100K</button>
+          <button class="bf-chip" onclick="toggleBFChip(this,'volume','1m')" data-value="1m">&gt;$1M</button>
+        </div>
+      </div>
+
+      <div class="bf-section">
+        <div class="bf-section-title">Performance</div>
+        <div class="bf-chip-group">
+          <button class="bf-chip active" onclick="toggleBFChip(this,'perf','all')" data-value="all">All</button>
+          <button class="bf-chip bf-chip-green" onclick="toggleBFChip(this,'perf','pumping')" data-value="pumping">Pumping &gt;10%</button>
+          <button class="bf-chip bf-chip-red" onclick="toggleBFChip(this,'perf','dumping')" data-value="dumping">Dumping &lt;-10%</button>
+          <button class="bf-chip" onclick="toggleBFChip(this,'perf','stable')" data-value="stable">Stable</button>
+        </div>
+      </div>
+
+      <div class="bf-section">
+        <div class="bf-section-title">Liquidity</div>
+        <div class="bf-chip-group">
+          <button class="bf-chip active" onclick="toggleBFChip(this,'liq','all')" data-value="all">All</button>
+          <button class="bf-chip" onclick="toggleBFChip(this,'liq','5k')" data-value="5k">&gt;$5K</button>
+          <button class="bf-chip" onclick="toggleBFChip(this,'liq','25k')" data-value="25k">&gt;$25K</button>
+          <button class="bf-chip" onclick="toggleBFChip(this,'liq','100k')" data-value="100k">&gt;$100K</button>
+          <button class="bf-chip" onclick="toggleBFChip(this,'liq','500k')" data-value="500k">&gt;$500K</button>
+        </div>
+      </div>
+
+      <div class="bf-section">
+        <div class="bf-section-title">Bubble Count</div>
+        <div class="bf-chip-group">
+          <button class="bf-chip" onclick="toggleBFChip(this,'count','10')" data-value="10">Top 10</button>
+          <button class="bf-chip" onclick="toggleBFChip(this,'count','25')" data-value="25">Top 25</button>
+          <button class="bf-chip active" onclick="toggleBFChip(this,'count','50')" data-value="50">Top 50</button>
+          <button class="bf-chip" onclick="toggleBFChip(this,'count','100')" data-value="100">Top 100</button>
+        </div>
+      </div>
+
+      <div class="bf-section">
+        <div class="bf-section-title">Category</div>
+        <div class="bf-chip-group">
+          <button class="bf-chip active" onclick="toggleBFChip(this,'category','all')" data-value="all">All</button>
+          <button class="bf-chip" onclick="toggleBFChip(this,'category','trending')" data-value="trending">🔥 Trending</button>
+          <button class="bf-chip" onclick="toggleBFChip(this,'category','gainers')" data-value="gainers">📈 Gainers</button>
+          <button class="bf-chip" onclick="toggleBFChip(this,'category','losers')" data-value="losers">📉 Losers</button>
+        </div>
+      </div>
+
+    </div>
+    <div class="bf-footer">
+      <button class="bf-apply-btn" onclick="applyBubbleFilters()">Apply Filters</button>
     </div>
   </div>
 </div>
