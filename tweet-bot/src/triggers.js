@@ -31,15 +31,25 @@ function isOnCooldown(token, tweetHistory, cooldownHours) {
   return hoursSince < cooldownHours;
 }
 
+// Rug check — fake or rug-pull tokens often have liquidity << mcap
+function failsRugCheck(t) {
+  const mcap = t.mcap || 0;
+  const liq = t.liq || 0;
+  if (mcap <= 0) return true;
+  return (liq / mcap) < CONFIG.MIN_LIQ_MCAP_RATIO;
+}
+
 // Trigger A: Fast Momentum
 export function checkTriggerA(tokens, tweetHistory) {
   if (!CONFIG.TRIGGER_A.enabled) return [];
-  const { minP5m, minVol, minLiq, minAgeHours, cooldownHours } = CONFIG.TRIGGER_A;
+  const { minP5m, minVol, minLiq, minMcap, minAgeHours, cooldownHours } = CONFIG.TRIGGER_A;
 
   return tokens.filter(t => {
     if (t.p5m < minP5m) return false;
     if ((t.vol || 0) < minVol) return false;
     if ((t.liq || 0) < minLiq) return false;
+    if ((t.mcap || 0) < minMcap) return false;
+    if (failsRugCheck(t)) return false;
     if (ageToHours(t.age) < minAgeHours) return false;
     if (isOnCooldown(t, tweetHistory, cooldownHours)) return false;
     return true;
@@ -49,11 +59,13 @@ export function checkTriggerA(tokens, tweetHistory) {
 // Trigger B: Early Bird
 export function checkTriggerB(tokens, tweetHistory) {
   if (!CONFIG.TRIGGER_B.enabled) return [];
-  const { maxAgeMin, minVol, cooldownHours } = CONFIG.TRIGGER_B;
+  const { maxAgeMin, minVol, minMcap, cooldownHours } = CONFIG.TRIGGER_B;
 
   return tokens.filter(t => {
     if (ageToMinutes(t.age) > maxAgeMin) return false;
     if ((t.vol || 0) < minVol) return false;
+    if ((t.mcap || 0) < minMcap) return false;
+    if (failsRugCheck(t)) return false;
     if (isOnCooldown(t, tweetHistory, cooldownHours)) return false;
     return true;
   }).map(t => ({ type: 'B', token: t }));
@@ -62,7 +74,7 @@ export function checkTriggerB(tokens, tweetHistory) {
 // Trigger E: Follow-up on previously tweeted tokens
 export function checkTriggerE(tokens, tweetHistory) {
   if (!CONFIG.TRIGGER_E.enabled) return [];
-  const { minAdditionalGain, minTimeSinceTweetMin, maxFollowUps } = CONFIG.TRIGGER_E;
+  const { minAdditionalGain, minTimeSinceTweetMin, maxFollowUps, minMcap } = CONFIG.TRIGGER_E;
 
   const results = [];
 
@@ -70,6 +82,10 @@ export function checkTriggerE(tokens, tweetHistory) {
     const key = t.ca || t.sym;
     const history = tweetHistory[key];
     if (!history) continue;
+
+    // Mcap floor + rug check
+    if ((t.mcap || 0) < minMcap) continue;
+    if (failsRugCheck(t)) continue;
 
     // Check time since last tweet
     const minSince = (Date.now() - history.timestamp) / (1000 * 60);
@@ -94,7 +110,7 @@ export function checkTriggerE(tokens, tweetHistory) {
 // Trigger G: Winners of the Day
 export function checkTriggerG(tokens) {
   if (!CONFIG.TRIGGER_G.enabled) return [];
-  const { topN, minP24h, minVol } = CONFIG.TRIGGER_G;
+  const { topN, minP24h, minVol, minMcap } = CONFIG.TRIGGER_G;
 
   // Dedup by symbol (keep highest p24h per symbol)
   const symBest = {};
@@ -106,7 +122,10 @@ export function checkTriggerG(tokens) {
   }
 
   const winners = Object.values(symBest)
-    .filter(t => (t.p24h || 0) >= minP24h && (t.vol || 0) >= minVol)
+    .filter(t => (t.p24h || 0) >= minP24h)
+    .filter(t => (t.vol || 0) >= minVol)
+    .filter(t => (t.mcap || 0) >= minMcap)
+    .filter(t => !failsRugCheck(t))
     .sort((a, b) => (b.p24h || 0) - (a.p24h || 0))
     .slice(0, topN);
 

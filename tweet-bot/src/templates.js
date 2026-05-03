@@ -58,7 +58,7 @@ Pair: ${chainName(t.net)} on ${dexName(t.dex)}
 Track it live → ${tokenUrl(t)}
 ${chainTag(t.net)} #memecoin`,
 
-  (t) => `\u{1F525} $${ticker(t.sym)} is moving — ${fmtPct(t.p5m)} in 5 min
+  (t) => `\u{1F525} $${ticker(t.sym)} is cooking — ${fmtPct(t.p5m)} in 5 min
 
 MCap: ${fmtNum(t.mcap)} | Vol: ${fmtNum(t.vol)} | Liq: ${fmtNum(t.liq)}
 ${chainName(t.net)} on ${dexName(t.dex)}
@@ -73,11 +73,43 @@ ${chainName(t.net)} • ${dexName(t.dex)} • ${t.age} old
 
 Live data → ${tokenUrl(t)}
 ${chainTag(t.net)} #memecoin`,
+
+  (t) => `\u{1F4C8} $${ticker(t.sym)} going vertical — ${fmtPct(t.p5m)} in 5m
+
+Vol: ${fmtNum(t.vol)} | MCap: ${fmtNum(t.mcap)} | Liq: ${fmtNum(t.liq)}
+${chainName(t.net)} on ${dexName(t.dex)}
+
+Eyes on this → ${tokenUrl(t)}
+${chainTag(t.net)} #memecoin`,
+
+  (t) => `\u{1F4A5} $${ticker(t.sym)} exploding ${fmtPct(t.p5m)} in 5 min
+
+MCap: ${fmtNum(t.mcap)} | Vol: ${fmtNum(t.vol)}
+${chainName(t.net)} • ${dexName(t.dex)}
+
+Chart's printing → ${tokenUrl(t)}
+${chainTag(t.net)} #memecoin`,
+
+  (t) => `\u{1F30A} Wave incoming on $${ticker(t.sym)} — ${fmtPct(t.p5m)} in 5m
+
+Vol: ${fmtNum(t.vol)} | MCap: ${fmtNum(t.mcap)} | Age: ${t.age}
+${chainName(t.net)} on ${dexName(t.dex)}
+
+→ ${tokenUrl(t)}
+${chainTag(t.net)} #memecoin`,
+
+  (t) => `\u{1F440} Eyes on $${ticker(t.sym)} — ${fmtPct(t.p5m)} in 5m
+
+MCap: ${fmtNum(t.mcap)} | Vol: ${fmtNum(t.vol)} | Liq: ${fmtNum(t.liq)}
+${chainName(t.net)} • ${dexName(t.dex)}
+
+This is moving → ${tokenUrl(t)}
+${chainTag(t.net)} #memecoin`,
 ];
 
-// Trigger B: Early Bird
+// Trigger B: Early Bird (sprout-only branding)
 const TRIGGER_B_TEMPLATES = [
-  (t) => `\u{1F423} Early Bird: $${ticker(t.sym)}
+  (t) => `\u{1F331} Early Bird: $${ticker(t.sym)}
 
 ${t.age} old | Vol: ${fmtNum(t.vol)} | ${fmtPct(t.p5m)} in 5m
 MCap: ${fmtNum(t.mcap)} | Liq: ${fmtNum(t.liq)}
@@ -85,7 +117,7 @@ MCap: ${fmtNum(t.mcap)} | Liq: ${fmtNum(t.liq)}
 Watch it → ${tokenUrl(t)}
 ${chainTag(t.net)} #newtoken`,
 
-  (t) => `\u{1F424} Early Bird alert: $${ticker(t.sym)} just hatched
+  (t) => `\u{1F331} Fresh launch: $${ticker(t.sym)}
 
 Only ${t.age} old and already doing ${fmtNum(t.vol)} vol
 MCap: ${fmtNum(t.mcap)} | ${chainName(t.net)} on ${dexName(t.dex)}
@@ -93,13 +125,29 @@ MCap: ${fmtNum(t.mcap)} | ${chainName(t.net)} on ${dexName(t.dex)}
 → ${tokenUrl(t)}
 ${chainTag(t.net)} #newtoken`,
 
-  (t) => `\u{1F95A} Fresh token: $${ticker(t.sym)}
+  (t) => `\u{1F331} New on the radar: $${ticker(t.sym)}
 
 Age: ${t.age} | Vol: ${fmtNum(t.vol)} | MCap: ${fmtNum(t.mcap)}
 Liq: ${fmtNum(t.liq)} | ${chainName(t.net)}
 
 Track it → ${tokenUrl(t)}
 ${chainTag(t.net)} #earlybird`,
+
+  (t) => `\u{1F331} Just dropped: $${ticker(t.sym)}
+
+${t.age} old • ${fmtNum(t.vol)} vol • ${fmtNum(t.mcap)} mcap
+${chainName(t.net)} on ${dexName(t.dex)}
+
+Curtain just opened → ${tokenUrl(t)}
+${chainTag(t.net)} #newtoken`,
+
+  (t) => `\u{1F331} Sprouting: $${ticker(t.sym)}
+
+Age: ${t.age} | ${fmtPct(t.p5m)} in 5m | Vol: ${fmtNum(t.vol)}
+MCap: ${fmtNum(t.mcap)} | ${chainName(t.net)}
+
+Catch it early → ${tokenUrl(t)}
+${chainTag(t.net)} #newtoken`,
 ];
 
 // Trigger E: Follow-up
@@ -118,6 +166,32 @@ Earlier: ${fmtPct(prev.p1h)} → Now: ${fmtPct(t.p1h)}
 MCap: ${fmtNum(t.mcap)} | Vol: ${fmtNum(t.vol)}
 
 → ${tokenUrl(t)}
+${chainTag(t.net)} #memecoin`,
+
+  (t, prev) => `\u{1F3C3} $${ticker(t.sym)} doesn't stop
+
+${fmtPct(prev.p1h)} → ${fmtPct(t.p1h)} (1h)
+MCap: ${fmtNum(t.mcap)} | Vol: ${fmtNum(t.vol)}
+${chainName(t.net)} on ${dexName(t.dex)}
+
+Marathon mode → ${tokenUrl(t)}
+${chainTag(t.net)} #memecoin`,
+
+  (t, prev) => `\u{1F501} Round 2 — $${ticker(t.sym)}
+
+Earlier: ${fmtPct(prev.p1h)} → Now: ${fmtPct(t.p1h)}
+Vol: ${fmtNum(t.vol)} | MCap: ${fmtNum(t.mcap)}
+
+Coming back for more → ${tokenUrl(t)}
+${chainTag(t.net)} #memecoin`,
+
+  (t, prev) => `\u{1F4AA} $${ticker(t.sym)} showing strength
+
+${fmtPct(prev.p1h)} → ${fmtPct(t.p1h)} in 1h
+MCap: ${fmtNum(t.mcap)} | Vol: ${fmtNum(t.vol)}
+${chainName(t.net)}
+
+Holding momentum → ${tokenUrl(t)}
 ${chainTag(t.net)} #memecoin`,
 ];
 
@@ -139,6 +213,33 @@ const TRIGGER_G_TEMPLATES = [
       text += `${i + 1}. $${ticker(t.sym)} — ${fmtPct(t.p24h)} (24h) | ${fmtNum(t.vol)} vol\n`;
     });
     text += `\nTrack them all → ${CONFIG.SITE_URL}\n#crypto #memecoin`;
+    return text;
+  },
+
+  (winners) => {
+    let text = `\u{1F947} Champions of the day\n\n`;
+    winners.forEach((t, i) => {
+      text += `${i + 1}. $${ticker(t.sym)} ${fmtPct(t.p24h)} | ${fmtNum(t.mcap)} mcap\n`;
+    });
+    text += `\nFull leaderboard → ${CONFIG.SITE_URL}\n#crypto #memecoin`;
+    return text;
+  },
+
+  (winners) => {
+    let text = `\u{1F3AF} Best plays of the day\n\n`;
+    winners.forEach((t, i) => {
+      text += `${i + 1}. $${ticker(t.sym)} → ${fmtPct(t.p24h)} (24h)\n`;
+    });
+    text += `\nTrack the action → ${CONFIG.SITE_URL}\n#crypto #memecoin`;
+    return text;
+  },
+
+  (winners) => {
+    let text = `\u{1F4AF} 24h scoreboard\n\n`;
+    winners.forEach((t, i) => {
+      text += `${i + 1}. $${ticker(t.sym)} ${fmtPct(t.p24h)} | ${fmtNum(t.vol)} vol\n`;
+    });
+    text += `\nLive at ${CONFIG.SITE_URL}\n#crypto #memecoin`;
     return text;
   },
 ];
