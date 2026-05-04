@@ -252,6 +252,7 @@ function generateJazzicon(address, size) {
 function updateHeaderWallet() {
   var wrap = document.getElementById('headerConnectBtn');
   if (!wrap) return;
+  var outerWrap = wrap.parentElement; // .ms-header-connect-wrap
   var iconBtn = wrap.querySelector('.connect-split-icon');
   var labelBtn = wrap.querySelector('.connect-split-label');
   if (!iconBtn || !labelBtn) return;
@@ -262,22 +263,147 @@ function updateHeaderWallet() {
     iconBtn.innerHTML = '<span class="wc-jazzicon">' + jazz + '</span>';
     labelBtn.innerHTML = '<span class="wc-addr">' + short + '</span>';
     wrap.classList.add('connected');
+    if (outerWrap) outerWrap.classList.add('connected');
     wrap.title = _wcState.address;
   } else {
     iconBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M10.5 13C10.5 13.5523 10.9477 14 11.5 14H12.5C13.0523 14 13.5 13.5523 13.5 13V3C13.5 2.44772 13.0523 2 12.5 2H11.5C10.9477 2 10.5 2.44772 10.5 3V13Z"/><path d="M5.97584 7.81301C6.31036 7.37356 6.31677 6.74398 5.92623 6.35348L5.21909 5.6464C4.82855 5.2559 4.19112 5.25312 3.8398 5.67926C2.37973 7.4503 1.5 9.71165 1.5 12.1764C1.5 17.9058 6.22915 22.4999 12 22.4999C17.7709 22.4999 22.5 17.9058 22.5 12.1764C22.5 9.71165 21.6203 7.4503 20.1602 5.67926C19.8089 5.25312 19.1715 5.2559 18.7809 5.6464L18.0738 6.35348C17.6832 6.74398 17.6896 7.37356 18.0242 7.81301C18.9539 9.03438 19.5 10.5437 19.5 12.1764C19.5 16.1932 16.1703 19.4999 12 19.4999C7.82973 19.4999 4.5 16.1932 4.5 12.1764C4.5 10.5437 5.04606 9.03438 5.97584 7.81301Z"/></svg>';
     labelBtn.innerHTML = '<span>Connect</span>';
     wrap.classList.remove('connected');
+    if (outerWrap) outerWrap.classList.remove('connected');
     wrap.title = '';
+    closeWalletDropdown();
   }
 }
 
 function handleHeaderWalletClick() {
-  if (_wcState.connected) {
-    disconnectWallet();
+  openWalletModal();
+}
+
+function buildWalletDropdownContent() {
+  var dropdown = document.getElementById('walletDropdown');
+  if (!dropdown) return;
+
+  if (_wcState.connected && _wcState.address) {
+    dropdown.innerHTML =
+      '<button class="wallet-dropdown-item" onclick="walletAction(\'copy\')" role="menuitem">' +
+        '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>' +
+        '<span>Copy address</span>' +
+      '</button>' +
+      '<button class="wallet-dropdown-item" onclick="walletAction(\'explorer\')" role="menuitem">' +
+        '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>' +
+        '<span>View on explorer</span>' +
+      '</button>' +
+      '<div class="wallet-dropdown-divider"></div>' +
+      '<button class="wallet-dropdown-item wallet-dropdown-danger" onclick="walletAction(\'disconnect\')" role="menuitem">' +
+        '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg>' +
+        '<span>Disconnect</span>' +
+      '</button>';
   } else {
-    openWalletModal();
+    // Only show detected/installed wallets
+    var detected = [];
+    for (var i = 0; i < WALLETS.length; i++) {
+      var w = WALLETS[i];
+      try { if (w.detect()) detected.push(w); } catch(e) {}
+    }
+
+    if (detected.length === 0) {
+      dropdown.innerHTML =
+        '<div class="wallet-dropdown-empty">No wallets detected</div>' +
+        '<div class="wallet-dropdown-divider"></div>' +
+        '<button class="wallet-dropdown-item" onclick="walletAction(\'allWallets\')" role="menuitem">' +
+          '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>' +
+          '<span>Browse all wallets</span>' +
+        '</button>';
+    } else {
+      var html = '<div class="wallet-dropdown-label">Detected wallets</div>';
+      for (var j = 0; j < detected.length; j++) {
+        var dw = detected[j];
+        html += '<button class="wallet-dropdown-item" onclick="quickConnect(\'' + dw.id + '\')" role="menuitem">' +
+          '<img src="' + dw.icon + '" width="18" height="18" style="border-radius:4px;flex-shrink:0">' +
+          '<span>' + dw.name + '</span>' +
+        '</button>';
+      }
+      dropdown.innerHTML = html;
+    }
   }
 }
+
+function quickConnect(walletId) {
+  closeWalletDropdown();
+  if (typeof connectWallet === 'function') {
+    connectWallet(walletId);
+  }
+}
+
+function toggleWalletDropdown(event) {
+  if (event) { event.preventDefault(); event.stopPropagation(); }
+  var dropdown = document.getElementById('walletDropdown');
+  var chevron = document.getElementById('headerConnectChevron');
+  if (!dropdown) return;
+  var isOpen = dropdown.classList.contains('open');
+  if (isOpen) {
+    closeWalletDropdown();
+  } else {
+    buildWalletDropdownContent();
+    dropdown.classList.add('open');
+    if (chevron) chevron.classList.add('open');
+  }
+}
+
+function closeWalletDropdown() {
+  var dropdown = document.getElementById('walletDropdown');
+  var chevron = document.getElementById('headerConnectChevron');
+  if (dropdown) dropdown.classList.remove('open');
+  if (chevron) chevron.classList.remove('open');
+}
+
+function walletAction(action) {
+  closeWalletDropdown();
+
+  // "allWallets" works regardless of connection state
+  if (action === 'allWallets') {
+    openWalletModal();
+    return;
+  }
+
+  // All other actions require an active connection
+  if (!_wcState.connected || !_wcState.address) return;
+
+  if (action === 'copy') {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(_wcState.address).catch(function(){});
+    } else {
+      var ta = document.createElement('textarea');
+      ta.value = _wcState.address;
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); } catch(e) {}
+      document.body.removeChild(ta);
+    }
+  } else if (action === 'explorer') {
+    var url;
+    if (_wcState.chainType === 'solana') {
+      url = 'https://solscan.io/account/' + _wcState.address;
+    } else {
+      url = 'https://etherscan.io/address/' + _wcState.address;
+    }
+    window.open(url, '_blank', 'noopener');
+  } else if (action === 'disconnect') {
+    disconnectWallet();
+  }
+}
+
+document.addEventListener('click', function(e) {
+  var dropdown = document.getElementById('walletDropdown');
+  var chevron = document.getElementById('headerConnectChevron');
+  if (!dropdown || !dropdown.classList.contains('open')) return;
+  if (dropdown.contains(e.target) || (chevron && chevron.contains(e.target))) return;
+  closeWalletDropdown();
+});
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeWalletDropdown();
+});
 
 // Close wallet modal on ESC
 document.addEventListener('keydown', function(e) {
