@@ -4972,6 +4972,17 @@ var _mainRefreshTimer = setInterval(function(){
   fetchLiveTokens();
 }, 30000);
 
+// Browsers throttle setInterval on inactive tabs; without this, after a long
+// idle the token list goes stale, bubbles drop out, and the remaining few
+// scale up to fill the screen.
+document.addEventListener('visibilitychange', function(){
+  if (document.visibilityState !== 'visible') return;
+  if (!LIVE_MODE) return;
+  var tp = document.getElementById('tokenPage');
+  if (tp && tp.style.display !== 'none') return;
+  fetchLiveTokens();
+});
+
 
 function copyTokenCA(btn, ca) {
   if(!ca) return;
@@ -5152,10 +5163,6 @@ getFilteredTokens = function() {
       case 'losers': tokens = tokens.filter(function(t) { return (t[tf2] || 0) < 0; }); tokens.sort(function(a,b) { return a[tf2] - b[tf2]; }); break;
     }
   }
-
-  // Bubble count limit
-  var limit = parseInt(bf.count) || 50;
-  if (tokens.length > limit) tokens = tokens.slice(0, limit);
 
   return tokens;
 };
