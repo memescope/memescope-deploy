@@ -269,17 +269,38 @@ function buildCardSvg(token) {
     <clipPath id="avatarClip">
       <circle cx="152" cy="130" r="80"/>
     </clipPath>
+    <radialGradient id="meshA" cx="20%" cy="30%" r="60%">
+      <stop offset="0%" stop-color="#3a2a52" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#1c1b1d" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="meshB" cx="85%" cy="20%" r="55%">
+      <stop offset="0%" stop-color="#2a3a52" stop-opacity="0.7"/>
+      <stop offset="100%" stop-color="#1c1b1d" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="meshC" cx="60%" cy="100%" r="70%">
+      <stop offset="0%" stop-color="#522a3a" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#1c1b1d" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="glassFill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="white" stop-opacity="0.08"/>
+      <stop offset="50%" stop-color="white" stop-opacity="0.02"/>
+      <stop offset="100%" stop-color="white" stop-opacity="0.05"/>
+    </linearGradient>
+    <linearGradient id="glassBorder" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="white" stop-opacity="0.25"/>
+      <stop offset="50%" stop-color="white" stop-opacity="0.05"/>
+      <stop offset="100%" stop-color="white" stop-opacity="0.15"/>
+    </linearGradient>
   </defs>
 
-  <!-- Background -->
+  <!-- Background: layered gradient mesh -->
   <rect width="${W}" height="${H}" fill="#1c1b1d"/>
+  <rect width="${W}" height="${H}" fill="url(#meshA)"/>
+  <rect width="${W}" height="${H}" fill="url(#meshB)"/>
+  <rect width="${W}" height="${H}" fill="url(#meshC)"/>
 
-  <!-- Top section -->
-  <rect width="${W}" height="${TOP_H}" fill="#211f21"/>
-
-  <!-- Top section bottom border -->
-  <line x1="0" y1="${TOP_H}" x2="${W}" y2="${TOP_H}" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
-  <line x1="0" y1="${TOP_H + 1}" x2="${W}" y2="${TOP_H + 1}" stroke="rgba(0,0,0,0.5)" stroke-width="1"/>
+  <!-- Faint section divider -->
+  <line x1="0" y1="${TOP_H}" x2="${W}" y2="${TOP_H}" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
 
   <!-- Watermark: top-left scope -->
   <g transform="translate(70, 70)" opacity="0.05">
@@ -291,11 +312,13 @@ function buildCardSvg(token) {
     ${scopeWatermark(200)}
   </g>
 
-  <!-- Token avatar (circle clipped) -->
+  <!-- Token avatar (circle clipped) with white-alpha ring -->
   ${avatarHref ? `
   <image href="${escXml(avatarHref)}" x="72" y="50" width="160" height="160" clip-path="url(#avatarClip)" preserveAspectRatio="xMidYMid slice"/>
+  <circle cx="152" cy="130" r="80" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="2"/>
   ` : `
   <circle cx="152" cy="130" r="80" fill="#333"/>
+  <circle cx="152" cy="130" r="80" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="2"/>
   <text x="152" y="140" fill="#666" font-family="'Inter', sans-serif" font-size="48" font-weight="500" text-anchor="middle">?</text>
   `}
 
@@ -306,14 +329,22 @@ function buildCardSvg(token) {
   <text x="264" y="${nameFontSize <= 44 ? 174 : 184}" fill="rgba(255,255,255,0.45)" font-family="'Inter', sans-serif" font-size="28" font-weight="500">${tickerText}</text>
 
   <!-- Scope icon (top-right) -->
-  <image href="${SCOPE_LOGO_DATA}" x="${W - 110}" y="20" width="80" height="80" opacity="0.9"/>
+  <image href="${SCOPE_LOGO_DATA}" x="${W - 150}" y="20" width="120" height="120" opacity="0.95"/>
 
-  <!-- Bottom section: Stats -->
+  <!-- Glass stats panel: drop shadow, translucent fill, gradient border, top highlight, vertical dividers -->
+  <rect x="72" y="312" width="${W - 144}" height="160" rx="20" fill="rgba(0,0,0,0.35)"/>
+  <rect x="72" y="308" width="${W - 144}" height="160" rx="20" fill="url(#glassFill)"/>
+  <rect x="72.5" y="308.5" width="${W - 145}" height="159" rx="19.5" fill="none" stroke="url(#glassBorder)" stroke-width="1"/>
+  <line x1="92" y1="309" x2="${W - 92}" y2="309" stroke="rgba(255,255,255,0.18)" stroke-width="1"/>
+  <line x1="${statsLeft + colW}" y1="328" x2="${statsLeft + colW}" y2="448" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+  <line x1="${statsLeft + colW * 2}" y1="328" x2="${statsLeft + colW * 2}" y2="448" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+  <line x1="${statsLeft + colW * 3}" y1="328" x2="${statsLeft + colW * 3}" y2="448" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+
   <!-- Stat labels -->
-  <text x="${statsLeft + 24}" y="${labelY}" fill="rgba(255,255,255,0.55)" font-family="'Inter', sans-serif" font-size="15" letter-spacing="1.5">MARKET CAP</text>
-  <text x="${statsLeft + colW + 24}" y="${labelY}" fill="rgba(255,255,255,0.55)" font-family="'Inter', sans-serif" font-size="15" letter-spacing="1.5">VOLUME 24H</text>
-  <text x="${statsLeft + colW * 2 + 24}" y="${labelY}" fill="rgba(255,255,255,0.55)" font-family="'Inter', sans-serif" font-size="15" letter-spacing="1.5">LIQUIDITY</text>
-  <text x="${statsLeft + colW * 3 + 24}" y="${labelY}" fill="rgba(255,255,255,0.55)" font-family="'Inter', sans-serif" font-size="15" letter-spacing="1.5">AGE</text>
+  <text x="${statsLeft + 24}" y="${labelY}" fill="rgba(255,255,255,0.6)" font-family="'Inter', sans-serif" font-size="15" letter-spacing="1.5">MARKET CAP</text>
+  <text x="${statsLeft + colW + 24}" y="${labelY}" fill="rgba(255,255,255,0.6)" font-family="'Inter', sans-serif" font-size="15" letter-spacing="1.5">VOLUME 24H</text>
+  <text x="${statsLeft + colW * 2 + 24}" y="${labelY}" fill="rgba(255,255,255,0.6)" font-family="'Inter', sans-serif" font-size="15" letter-spacing="1.5">LIQUIDITY</text>
+  <text x="${statsLeft + colW * 3 + 24}" y="${labelY}" fill="rgba(255,255,255,0.6)" font-family="'Inter', sans-serif" font-size="15" letter-spacing="1.5">AGE</text>
 
   <!-- Stat values -->
   <text x="${statsLeft + 24}" y="${valueY}" fill="#f2f1f4" font-family="'Inter', sans-serif" font-size="38" font-weight="500">$${escXml(mcap.value)}${escXml(mcap.unit)}</text>
@@ -323,7 +354,7 @@ function buildCardSvg(token) {
   <text x="${statsLeft + colW * 3 + 24}" y="${valueY}" fill="#f2f1f4" font-family="'Inter', sans-serif" font-size="38" font-weight="500">${escXml(age)}</text>
 
   <!-- Bottom-right branding (above Twitter's title overlay zone) -->
-  <text x="${W - 36}" y="${H - 56}" fill="rgba(255,255,255,0.85)" font-family="'Inter', sans-serif" font-size="14" text-anchor="end" letter-spacing="1">MEMESCOPE.IO</text>
+  <text x="${W - 36}" y="${H - 50}" fill="rgba(255,255,255,0.92)" font-family="'Inter', sans-serif" font-size="20" font-weight="500" text-anchor="end" letter-spacing="1.5">MEMESCOPE.IO</text>
 
 </svg>`;
 
