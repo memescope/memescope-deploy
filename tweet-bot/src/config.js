@@ -13,7 +13,7 @@ export const CONFIG = {
     minP5m: 40,        // +40% in 5 min
     minVol: 50000,     // $50K volume
     minLiq: 30000,     // $30K liquidity
-    minMcap: 75000,    // $75K market cap floor
+    minMcap: 150000,   // $150K market cap floor
     minAgeHours: 1,    // at least 1 hour old
     cooldownHours: 6,  // don't re-tweet same token within 6h
   },
@@ -23,7 +23,7 @@ export const CONFIG = {
     enabled: true,
     maxAgeMin: 30,     // 30 min or younger
     minVol: 20000,     // $20K volume
-    minMcap: 75000,    // $75K market cap floor
+    minMcap: 150000,   // $150K market cap floor
     cooldownHours: 6,
   },
 
@@ -33,7 +33,7 @@ export const CONFIG = {
     minAdditionalGain: 100,    // +100% more since we tweeted
     minTimeSinceTweetMin: 30,  // wait at least 30 min before follow-up
     maxFollowUps: 2,           // max 2 follow-ups per token
-    minMcap: 75000,            // $75K market cap floor
+    minMcap: 150000,           // $150K market cap floor
   },
 
   // Trigger G: Winners of the Day
@@ -49,7 +49,7 @@ export const CONFIG = {
   MIN_LIQ_MCAP_RATIO: 0.05,  // 5%
 
   // Global
-  MAX_TWEETS_PER_HOUR: 4,   // safety cap
+  MAX_TWEETS_PER_HOUR: 1,   // safety cap
   SITE_URL: 'memescope.io',
 
   // Chain display names
