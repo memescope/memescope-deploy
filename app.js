@@ -36,6 +36,8 @@ const CHAIN_ICONS = {
   'optimism': 'https://dd.dexscreener.com/ds-data/chains/optimism.png',
   'blast': 'https://dd.dexscreener.com/ds-data/chains/blast.png',
   'ton': 'https://dd.dexscreener.com/ds-data/chains/ton.png',
+  'pulsechain': 'https://dd.dexscreener.com/ds-data/chains/pulsechain.png',
+  'seiv2': 'https://dd.dexscreener.com/ds-data/chains/seiv2.png',
 };
 const DEX_ICONS = {
   'raydium': 'https://dd.dexscreener.com/ds-data/dexes/raydium.png',
@@ -454,7 +456,9 @@ var SCANNER_URLS = {
   'polygon': 'https://polygonscan.com/token/',
   'optimism': 'https://optimistic.etherscan.io/token/',
   'blast': 'https://blastscan.io/token/',
-  'ton': 'https://tonviewer.com/'
+  'ton': 'https://tonviewer.com/',
+  'pulsechain': 'https://scan.pulsechain.com/token/',
+  'seiv2': 'https://seitrace.com/token/'
 };
 
 
@@ -3081,7 +3085,9 @@ function showRowMenu(dotsEl, idx) {
     polygon: { url:'https://polygonscan.com/token/'+t.ca, name:'Polygonscan' },
     optimism: { url:'https://optimistic.etherscan.io/token/'+t.ca, name:'Optimism Explorer' },
     blast: { url:'https://blastscan.io/token/'+t.ca, name:'Blastscan' },
-    ton: { url:'https://tonviewer.com/'+t.ca, name:'TON Viewer' }
+    ton: { url:'https://tonviewer.com/'+t.ca, name:'TON Viewer' },
+    pulsechain: { url:'https://scan.pulsechain.com/token/'+t.ca, name:'PulseScan' },
+    seiv2: { url:'https://seitrace.com/token/'+t.ca, name:'Seitrace' }
   };
   var exp = explorers[net] || explorers.solana;
   var expIcon = '';
