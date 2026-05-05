@@ -64,6 +64,8 @@ export const CONFIG = {
     optimism: 'OP',
     blast: 'BLAST',
     ton: 'TON',
+    pulsechain: 'PLS',
+    seiv2: 'SEI',
   },
 
   // Chain hashtags
@@ -78,5 +80,7 @@ export const CONFIG = {
     optimism: '#optimism',
     blast: '#blast',
     ton: '#ton',
+    pulsechain: '#pulsechain',
+    seiv2: '#sei',
   },
 };
