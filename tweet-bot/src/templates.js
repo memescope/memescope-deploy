@@ -202,7 +202,7 @@ const TRIGGER_G_TEMPLATES = [
     winners.forEach((t, i) => {
       text += `${i + 1}. $${ticker(t.sym)} → ${fmtPct(t.p24h)} | ${fmtNum(t.mcap)} mcap\n`;
     });
-    text += `\nPowered by ${CONFIG.SITE_URL}\n#crypto #memecoin`;
+    text += `\n#crypto #memecoin`;
 
     return text;
   },
@@ -212,7 +212,7 @@ const TRIGGER_G_TEMPLATES = [
     winners.forEach((t, i) => {
       text += `${i + 1}. $${ticker(t.sym)} — ${fmtPct(t.p24h)} (24h) | ${fmtNum(t.vol)} vol\n`;
     });
-    text += `\nTrack them all → ${CONFIG.SITE_URL}\n#crypto #memecoin`;
+    text += `\n#crypto #memecoin`;
     return text;
   },
 
@@ -221,7 +221,7 @@ const TRIGGER_G_TEMPLATES = [
     winners.forEach((t, i) => {
       text += `${i + 1}. $${ticker(t.sym)} ${fmtPct(t.p24h)} | ${fmtNum(t.mcap)} mcap\n`;
     });
-    text += `\nFull leaderboard → ${CONFIG.SITE_URL}\n#crypto #memecoin`;
+    text += `\n#crypto #memecoin`;
     return text;
   },
 
@@ -230,7 +230,7 @@ const TRIGGER_G_TEMPLATES = [
     winners.forEach((t, i) => {
       text += `${i + 1}. $${ticker(t.sym)} → ${fmtPct(t.p24h)} (24h)\n`;
     });
-    text += `\nTrack the action → ${CONFIG.SITE_URL}\n#crypto #memecoin`;
+    text += `\n#crypto #memecoin`;
     return text;
   },
 
@@ -239,7 +239,7 @@ const TRIGGER_G_TEMPLATES = [
     winners.forEach((t, i) => {
       text += `${i + 1}. $${ticker(t.sym)} ${fmtPct(t.p24h)} | ${fmtNum(t.vol)} vol\n`;
     });
-    text += `\nLive at ${CONFIG.SITE_URL}\n#crypto #memecoin`;
+    text += `\n#crypto #memecoin`;
     return text;
   },
 ];
