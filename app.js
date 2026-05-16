@@ -1,8 +1,185 @@
 
-// --- DexScreener API cache layer (10s TTL, deduplicates in-flight requests) ---
+// --- Admin Boost Check (server-side via Cloudflare KV) ---
+var _serverBoosts = {}; // { ca_lowercase: { ca, sym, count, expiresAt } }
+var _boostsFetched = false;
+
+function _getAdminBoosts() {
+  return _serverBoosts;
+}
+
+function _applyAdminBoosts(tokens) {
+  var adminBoosts = _getAdminBoosts();
+  for (var i = 0; i < tokens.length; i++) {
+    var ca = (tokens[i].ca || '').toLowerCase();
+    if (adminBoosts[ca]) {
+      tokens[i].boosted = true;
+      tokens[i].boostCount = adminBoosts[ca].count;
+      tokens[i].boostCreatedAt = adminBoosts[ca].createdAt || 0;
+    } else {
+      tokens[i].boosted = false;
+      tokens[i].boostCount = 0;
+      tokens[i].boostCreatedAt = 0;
+    }
+  }
+}
+
+// Check if a specific token is admin-boosted (used at render time)
+function _isAdminBoosted(ca) {
+  var boosts = _getAdminBoosts();
+  return boosts[(ca || '').toLowerCase()] || null;
+}
+
+// Fetch boosts from server API
+function _fetchServerBoosts() {
+  return fetch('/api/boosts')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      var active = {};
+      var boosts = data.boosts || [];
+      var now = Date.now();
+      for (var i = 0; i < boosts.length; i++) {
+        if (boosts[i].expiresAt > now) {
+          active[boosts[i].ca.toLowerCase()] = boosts[i];
+        }
+      }
+      _serverBoosts = active;
+      _boostsFetched = true;
+      // Re-apply to current tokens if any loaded
+      if (typeof LIVE_TOKENS !== 'undefined' && LIVE_TOKENS.length > 0) {
+        _applyAdminBoosts(LIVE_TOKENS);
+        _injectMissingBoostedTokens();
+      }
+      return active;
+    })
+    .catch(function(e) {
+      console.log('MemeScope: Boost fetch error', e);
+      return _serverBoosts;
+    });
+}
+
+// Inject boosted tokens that aren't in LIVE_TOKENS by fetching from DexScreener
+function _injectMissingBoostedTokens() {
+  var boosts = _getAdminBoosts();
+  var cas = Object.keys(boosts);
+  if (!cas.length || typeof LIVE_TOKENS === 'undefined') return Promise.resolve();
+
+  var missing = [];
+  for (var i = 0; i < cas.length; i++) {
+    var found = false;
+    for (var j = 0; j < LIVE_TOKENS.length; j++) {
+      if ((LIVE_TOKENS[j].ca || '').toLowerCase() === cas[i]) { found = true; break; }
+    }
+    if (!found) missing.push(boosts[cas[i]]);
+  }
+
+  if (!missing.length) return Promise.resolve();
+
+  var fetches = missing.map(function(b) {
+    var chain = b.chain || 'solana';
+    return fetch('https://api.dexscreener.com/tokens/v1/' + chain + '/' + b.ca)
+      .then(function(r) { return r.json(); })
+      .then(function(pairs) {
+        if (!pairs || !pairs.length) return null;
+        // Pick the pair with highest liquidity
+        var pair = pairs[0];
+        for (var k = 1; k < pairs.length; k++) {
+          if ((pairs[k].liquidity && pairs[k].liquidity.usd || 0) > (pair.liquidity && pair.liquidity.usd || 0)) {
+            pair = pairs[k];
+          }
+        }
+        var pc = pair.priceChange || {};
+        var vol = pair.volume || {};
+        var netMap = { solana: 'solana', ethereum: 'eth', base: 'base', bsc: 'bsc', sui: 'sui', tron: 'tron', arbitrum: 'arbitrum', avalanche: 'avalanche', polygon: 'polygon', optimism: 'optimism', blast: 'blast', ton: 'ton', seiv2: 'seiv2', pulsechain: 'pulsechain' };
+        var token = {
+          sym: pair.baseToken ? pair.baseToken.symbol : (b.sym || ''),
+          name: pair.baseToken ? pair.baseToken.name : '',
+          img: pair.info && pair.info.imageUrl ? pair.info.imageUrl : '',
+          price: parseFloat(pair.priceUsd) || 0,
+          mcap: pair.marketCap || pair.fdv || 0,
+          vol: vol.h24 || 0,
+          liq: pair.liquidity ? pair.liquidity.usd : 0,
+          p5m: pc.m5 || 0,
+          p1h: pc.h1 || 0,
+          p6h: pc.h6 || 0,
+          p24h: pc.h24 || 0,
+          age: pair.pairCreatedAt ? _calcAge(pair.pairCreatedAt) : '?',
+          txn: pair.txns ? (pair.txns.h24 ? pair.txns.h24.buys + pair.txns.h24.sells : 0) : 0,
+          net: netMap[pair.chainId] || pair.chainId || 'solana',
+          dex: pair.dexId || '',
+          ca: pair.baseToken ? pair.baseToken.address : b.ca,
+          pairAddress: pair.pairAddress || '',
+          boosted: true,
+          boostCount: b.count,
+          social: 0,
+          website: pair.info && pair.info.websites && pair.info.websites.length ? pair.info.websites[0].url : '',
+          twitter: pair.info && pair.info.socials ? (pair.info.socials.find(function(s) { return s.type === 'twitter'; }) || {}).url || '' : ''
+        };
+        return token;
+      })
+      .catch(function(e) {
+        console.log('MemeScope: Failed to fetch boosted token', b.ca, e);
+        return null;
+      });
+  });
+
+  return Promise.all(fetches).then(function(results) {
+    var injected = 0;
+    for (var i = 0; i < results.length; i++) {
+      if (results[i]) {
+        LIVE_TOKENS.push(results[i]);
+        injected++;
+      }
+    }
+    if (injected > 0) {
+      console.log('MemeScope: Injected ' + injected + ' boosted token(s)');
+      if (typeof loadData === 'function') loadData();
+      if (typeof init === 'function') init();
+    }
+  });
+}
+
+// Helper to calc age string from timestamp
+function _calcAge(ts) {
+  var diff = Date.now() - ts;
+  var mins = Math.floor(diff / 60000);
+  if (mins < 60) return mins + 'm';
+  var hrs = Math.floor(mins / 60);
+  if (hrs < 24) return hrs + 'h';
+  var days = Math.floor(hrs / 24);
+  if (days < 365) return days + 'd';
+  return Math.floor(days / 365) + 'y';
+}
+
+// Fetch boosts on page load
+_fetchServerBoosts();
+
+// --- GeckoTerminal Pro API via server proxy (key stays server-side) ---
+var _geckoQueue = [];
+var _geckoRunning = 0;
+var _geckoMaxConcurrent = 8; // Pro plan: 300 req/min — safe to run 8 concurrent
+function geckoFetch(url, opts) {
+  // Rewrite api.geckoterminal.com/api/v2/ → /api/gecko/ (our proxy)
+  var proxyUrl = url.replace('https://api.geckoterminal.com/api/v2/', '/api/gecko/');
+  return new Promise(function(resolve, reject) {
+    _geckoQueue.push({ url: proxyUrl, opts: opts, resolve: resolve, reject: reject });
+    _drainGeckoQueue();
+  });
+}
+function _drainGeckoQueue() {
+  while (_geckoRunning < _geckoMaxConcurrent && _geckoQueue.length > 0) {
+    var item = _geckoQueue.shift();
+    _geckoRunning++;
+    fetch(item.url, item.opts).then(item.resolve).catch(item.reject).finally(function() {
+      _geckoRunning--;
+      _drainGeckoQueue();
+    });
+  }
+}
+
+// --- DexScreener API cache layer (3s TTL, deduplicates in-flight requests) ---
 var _dexCache = {};
 var _dexInflight = {};
-var DEX_CACHE_TTL = 10000;
+var DEX_CACHE_TTL = 3000;
 function fetchDexToken(ca) {
   var now = Date.now();
   if (_dexCache[ca] && (now - _dexCache[ca].ts) < DEX_CACHE_TTL) {
@@ -187,18 +364,11 @@ document.addEventListener('click', function(e) {
   function initScrollHint() {
     var bar = document.querySelector('.filter-bar');
     if (!bar || window.innerWidth > 768) return;
+
     bar.addEventListener('scroll', function() {
       var atEnd = bar.scrollLeft + bar.clientWidth >= bar.scrollWidth - 10;
       bar.classList.toggle('scrolled-end', atEnd);
     });
-    // Bounce hint on first load
-    setTimeout(function() {
-      bar.style.transition = 'none';
-      bar.scrollTo({ left: 60, behavior: 'smooth' });
-      setTimeout(function() {
-        bar.scrollTo({ left: 0, behavior: 'smooth' });
-      }, 400);
-    }, 1500);
   }
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initScrollHint);
@@ -213,8 +383,44 @@ function setCategory(el, cat) {
   _lastRowOrder = null;
   document.querySelectorAll('.filter-chip').forEach(function(b) { b.classList.remove('active-chip'); });
   el.classList.add('active-chip');
+  // Sync leaf icon active state
+  var leaf = document.getElementById('navNewPairs');
+  if (leaf) leaf.classList.toggle('active', cat === 'new');
   loadData();
   if(typeof init === 'function') init();
+}
+
+function toggleNewPairs() {
+  var leaf = document.getElementById('navNewPairs');
+  var mobileLeaf = document.getElementById('mobileNavNewPairs');
+  if (currentCategory === 'new') {
+    // Turn off — go back to trending
+    currentCategory = 'trending';
+    if (leaf) leaf.classList.remove('active');
+    if (mobileLeaf) mobileLeaf.classList.remove('active');
+    // Re-activate the Top chip
+    var chips = document.querySelectorAll('.filter-chip');
+    chips.forEach(function(c) {
+      c.classList.remove('active-chip');
+      if (c.textContent.trim().indexOf('Top') !== -1 || c.getAttribute('onclick')?.includes("'trending'")) c.classList.add('active-chip');
+    });
+  } else {
+    // Turn on — filter to new pairs (< 1h old)
+    currentCategory = 'new';
+    if (leaf) leaf.classList.add('active');
+    if (mobileLeaf) mobileLeaf.classList.add('active');
+    // Remove active from filter chips
+    document.querySelectorAll('.filter-chip').forEach(function(b) { b.classList.remove('active-chip'); });
+    // Reset chain to all and deactivate chain icons
+    currentChain = 'all';
+    document.querySelectorAll('.ms-nav-link[onclick*="toggleChain"], .ms-mobile-item[onclick*="toggleChain"]').forEach(function(b) { b.classList.remove('active'); });
+    var btn = document.querySelector('.topbar-btn[onclick*="toggleChainFilter"]');
+    if (btn) btn.innerHTML = _chainLinkSvg + 'Hot Chains ▾';
+  }
+  currentPage = 1;
+  _lastRowOrder = null;
+  loadData();
+  if (typeof init === 'function') init();
 }
 
 function toggleChainFilter() {
@@ -227,9 +433,9 @@ function toggleChainFilter() {
       if (t.net) activeChains[t.net] = (activeChains[t.net] || 0) + 1;
     });
   }
-  var chainOrder = ['solana','eth','base','bsc','sui','tron','arbitrum','avalanche','polygon','optimism','blast','ton'];
-  var chainNames = {'solana':'Solana','eth':'Ethereum','base':'Base','bsc':'BSC','sui':'Sui','tron':'Tron','arbitrum':'Arbitrum','avalanche':'Avalanche','polygon':'Polygon','optimism':'Optimism','blast':'Blast','ton':'TON'};
-  var chainDexImg = {'solana':'solana','eth':'ethereum','base':'base','bsc':'bsc','sui':'sui','tron':'tron','arbitrum':'arbitrum','avalanche':'avalanche','polygon':'polygon','optimism':'optimism','blast':'blast','ton':'ton'};
+  var chainOrder = ['solana','eth','base','bsc','sui','tron','arbitrum','avalanche','polygon','optimism','blast','ton','pulsechain','seiv2'];
+  var chainNames = {'solana':'Solana','eth':'Ethereum','base':'Base','bsc':'BSC','sui':'Sui','tron':'Tron','arbitrum':'Arbitrum','avalanche':'Avalanche','polygon':'Polygon','optimism':'Optimism','blast':'Blast','ton':'TON','pulsechain':'Pulsechain','seiv2':'Sei'};
+  var chainDexImg = {'solana':'solana','eth':'ethereum','base':'base','bsc':'bsc','sui':'sui','tron':'tron','arbitrum':'arbitrum','avalanche':'avalanche','polygon':'polygon','optimism':'optimism','blast':'blast','ton':'ton','pulsechain':'pulsechain','seiv2':'seiv2'};
   var html = '<button class="dropdown-item' + (currentChain === 'all' ? ' active' : '') + '" onclick="toggleChain(this,\'all\')">All Chains</button>';
   var baseLogoSvg = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='264' height='264' viewBox='0 0 264 264' fill='none'%3E%3Cpath d='M131.706 263.876C204.705 263.876 263.876 204.81 263.876 131.938C263.876 59.066 204.705 0 131.706 0C62.4541 0 5.64694 53.1764 0 120.845H174.697V143.032H0C5.64694 210.7 62.4541 263.876 131.706 263.876Z' fill='%230052FF'/%3E%3C/svg%3E";
   chainOrder.forEach(function(c) {
@@ -241,7 +447,7 @@ function toggleChainFilter() {
   });
   dd.innerHTML = html;
   dd.classList.toggle('open');
-  ldd.classList.remove('open');
+  if (ldd) ldd.classList.remove('open');
 }
 
 // On mobile, move chain dropdown to document.body so it escapes all overflow clipping
@@ -263,9 +469,9 @@ if (window.innerWidth <= 768) {
         if (typeof LIVE_TOKENS !== 'undefined') {
           LIVE_TOKENS.forEach(function(t) { if (t.net) activeChains[t.net] = (activeChains[t.net] || 0) + 1; });
         }
-        var chainOrder = ['solana','eth','base','bsc','sui','tron','arbitrum','avalanche','polygon','optimism','blast','ton'];
-        var chainNames = {'solana':'Solana','eth':'Ethereum','base':'Base','bsc':'BSC','sui':'Sui','tron':'Tron','arbitrum':'Arbitrum','avalanche':'Avalanche','polygon':'Polygon','optimism':'Optimism','blast':'Blast','ton':'TON'};
-        var chainDexImg = {'solana':'solana','eth':'ethereum','base':'base','bsc':'bsc','sui':'sui','tron':'tron','arbitrum':'arbitrum','avalanche':'avalanche','polygon':'polygon','optimism':'optimism','blast':'blast','ton':'ton'};
+        var chainOrder = ['solana','eth','base','bsc','sui','tron','arbitrum','avalanche','polygon','optimism','blast','ton','pulsechain','seiv2'];
+        var chainNames = {'solana':'Solana','eth':'Ethereum','base':'Base','bsc':'BSC','sui':'Sui','tron':'Tron','arbitrum':'Arbitrum','avalanche':'Avalanche','polygon':'Polygon','optimism':'Optimism','blast':'Blast','ton':'TON','pulsechain':'Pulsechain','seiv2':'Sei'};
+        var chainDexImg = {'solana':'solana','eth':'ethereum','base':'base','bsc':'bsc','sui':'sui','tron':'tron','arbitrum':'arbitrum','avalanche':'avalanche','polygon':'polygon','optimism':'optimism','blast':'blast','ton':'ton','pulsechain':'pulsechain','seiv2':'seiv2'};
         var baseLogoSvg = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='264' height='264' viewBox='0 0 264 264' fill='none'%3E%3Cpath d='M131.706 263.876C204.705 263.876 263.876 204.81 263.876 131.938C263.876 59.066 204.705 0 131.706 0C62.4541 0 5.64694 53.1764 0 120.845H174.697V143.032H0C5.64694 210.7 62.4541 263.876 131.706 263.876Z' fill='%230052FF'/%3E%3C/svg%3E";
         var html = '<button class="dropdown-item' + (currentChain === 'all' ? ' active' : '') + '" onclick="toggleChain(this,\'all\')">All Chains</button>';
         chainOrder.forEach(function(c) {
@@ -288,6 +494,13 @@ if (window.innerWidth <= 768) {
           dd.style.flexDirection = 'column';
           var ldd = document.getElementById('launchpad-dropdown-menu');
           if (ldd) ldd.classList.remove('open');
+          // Close on scroll
+          var scrollHandler = function() {
+            dd.classList.remove('open');
+            dd.style.display = 'none';
+            window.removeEventListener('scroll', scrollHandler);
+          };
+          window.addEventListener('scroll', scrollHandler, { passive: true });
         } else {
           dd.classList.remove('open');
           dd.style.display = 'none';
@@ -309,25 +522,41 @@ var _chainLinkSvg = '<svg width="14" height="14" viewBox="0 -960 960 960" fill="
 function toggleChain(el, chain) {
   currentChain = chain;
   _lastRowOrder = null;
+  // Deactivate leaf if active
+  if (currentCategory === 'new') {
+    currentCategory = 'trending';
+    var leaf = document.getElementById('navNewPairs');
+    if (leaf) leaf.classList.remove('active');
+    var chips = document.querySelectorAll('.filter-chip');
+    chips.forEach(function(c) {
+      c.classList.remove('active-chip');
+      if (c.getAttribute('onclick')?.includes("'trending'") || c.textContent.trim().indexOf('Top') !== -1) c.classList.add('active-chip');
+    });
+  }
   document.getElementById('chain-dropdown-menu').querySelectorAll('.dropdown-item').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('.ms-nav-link[onclick*="toggleChain"]').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.ms-nav-link[onclick*="toggleChain"], .ms-mobile-item[onclick*="toggleChain"]').forEach(b => b.classList.remove('active'));
   el.classList.add('active');
-  document.getElementById('chain-dropdown-menu').classList.remove('open');
+  var ddEl = document.getElementById('chain-dropdown-menu');
+  ddEl.classList.remove('open');
+  ddEl.style.display = '';
   // Update button label to show selected chain with logo
-  var chainNames = {'all':'Hot Chains','solana':'Solana','eth':'Ethereum','base':'Base','bsc':'BSC','sui':'Sui','arbitrum':'Arbitrum','avalanche':'Avalanche','polygon':'Polygon','optimism':'Optimism','blast':'Blast','ton':'TON'};
+  var chainNames = {'all':'Hot Chains','solana':'Solana','eth':'Ethereum','base':'Base','bsc':'BSC','sui':'Sui','arbitrum':'Arbitrum','avalanche':'Avalanche','polygon':'Polygon','optimism':'Optimism','blast':'Blast','ton':'TON','tron':'Tron','pulsechain':'Pulsechain','seiv2':'Sei'};
   var _clogo = function(c){ return '<img src="https://dd.dexscreener.com/ds-data/chains/'+c+'.png" width="14" height="14" style="border-radius:50%;vertical-align:-2px;margin-right:4px">'; };
   var chainLogos = {
     'solana':_clogo('solana'),'eth':_clogo('ethereum'),'base':'<img src="data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'264\' height=\'264\' viewBox=\'0 0 264 264\' fill=\'none\'%3E%3Cpath d=\'M131.706 263.876C204.705 263.876 263.876 204.81 263.876 131.938C263.876 59.066 204.705 0 131.706 0C62.4541 0 5.64694 53.1764 0 120.845H174.697V143.032H0C5.64694 210.7 62.4541 263.876 131.706 263.876Z\' fill=\'%230052FF\'/%3E%3C/svg%3E" width="14" height="14" style="border-radius:50%;vertical-align:-2px;margin-right:4px">',
     'bsc':_clogo('bsc'),'sui':_clogo('sui'),
     'arbitrum':_clogo('arbitrum'),'avalanche':_clogo('avalanche'),
     'polygon':_clogo('polygon'),'optimism':_clogo('optimism'),
-    'blast':_clogo('blast'),'ton':_clogo('ton')
+    'blast':_clogo('blast'),'ton':_clogo('ton'),
+    'tron':_clogo('tron'),'pulsechain':_clogo('pulsechain'),'seiv2':_clogo('seiv2')
   };
   var btn = document.querySelector('.topbar-btn[onclick*="toggleChainFilter"]');
   if(btn) {
     var prefix = chain === 'all' ? _chainLinkSvg : (chainLogos[chain] || '');
     btn.innerHTML = prefix + (chainNames[chain] || 'Hot Chains') + ' ▾';
   }
+  currentPage = 1;
+  loadData();
   if(typeof init === 'function') init();
 }
 
@@ -407,11 +636,11 @@ function getTfVal(token, tfField) {
 
 function calcBubbleWeight(absPct) {
   if (absPct <= 100) {
-    // sqrt gives good spread: 5%→1.85, 25%→2.5, 50%→2.96, 100%→3.5
-    return 1.5 + 2.0 * Math.sqrt(absPct / 100);
+    // sqrt curve: 0%→1.8, 5%→2.18, 25%→2.65, 50%→3.0, 100%→3.5
+    return 1.8 + 1.7 * Math.sqrt(absPct / 100);
   } else {
-    // gentler log growth capped at 4.5 so outliers don't crush other bubbles
-    return Math.min(4.5, 3.5 + 0.75 * Math.log2(absPct / 100));
+    // log growth capped at 4.3 so outliers don't crush other bubbles
+    return Math.min(4.3, 3.5 + 0.6 * Math.log2(absPct / 100));
   }
 }
 
@@ -429,14 +658,37 @@ function calcBubbleSizes(items, W, H, tfField, getToken) {
   weights.forEach(function(w) { totalW2 += w * w; });
   var scaleFactor = Math.sqrt(0.70 * screenArea / (Math.PI * totalW2));
   var mobShrink = (W <= 768) ? 0.95 : 1;
+  var maxCap = (W <= 768) ? minDim * 0.13 : minDim * 0.16;
+  // Clamp scaleFactor using median weight so one outlier (e.g. 1700%)
+  // doesn't shrink every other bubble. Outliers still get individually
+  // capped at maxCap on the per-bubble line below.
+  var sorted = weights.slice().sort(function(a, b) { return a - b; });
+  var medianW = sorted[Math.floor(sorted.length / 2)] || 1;
+  if (medianW > 0) scaleFactor = Math.min(scaleFactor, maxCap / medianW);
   var radii = weights.map(function(w) {
     var r = w * scaleFactor;
-    var maxCap = (W <= 768) ? minDim * 0.13 : minDim * 0.16;
     return Math.max(minDim * 0.032, Math.min(r, maxCap)) * mobShrink;
   });
   return radii;
 }
 
+
+var _CHAIN_LABELS = {'all':'this filter','solana':'Solana','eth':'Ethereum','base':'Base','bsc':'BSC','sui':'Sui','tron':'Tron','arbitrum':'Arbitrum','avalanche':'Avalanche','polygon':'Polygon','optimism':'Optimism','blast':'Blast','ton':'TON','pulsechain':'Pulsechain','seiv2':'Sei'};
+function showEmptyBubbleState() {
+  var world = document.getElementById('bubbleWorld');
+  if (!world) return;
+  bubs = [];
+  var label = _CHAIN_LABELS[currentChain] || currentChain || 'this chain';
+  world.innerHTML = '<div class="bubble-empty-state">' +
+    '<div class="bubble-empty-shrug">' +
+      '<span class="shrug-arm shrug-left">¯\\_</span>' +
+      '<span class="shrug-face">(ツ)</span>' +
+      '<span class="shrug-arm shrug-right">_/¯</span>' +
+    '</div>' +
+    '<div class="bubble-empty-text">No trending scopes detected</div>' +
+    '<div class="bubble-empty-sub">Try another chain or filter</div>' +
+    '</div>';
+}
 
 var SCANNER_ICONS = {
   'solana': "/img/scan_solana.svg",
@@ -579,14 +831,27 @@ function updateBubblesSmooth() {
           (showCrosshair2 ? '<div class="hm-crosshair"></div>' : '') +
           (showScopeRing2 ? '<div class="hm-scope-ring"></div>' : '') +
           (showTicks2 ? '<div class="hm-ticks"></div>' : '') +
-          (nt.boosted && newR > 25 ? '<div class="hm-boosted-badge">⚡' + (nt.boostCount || '') + ' BOOSTED</div>' : '') +
           '<div class="hm-content">' +
             (nt.img ? '<img src="' + nt.img + '" style="width:' + (emojiSize2 + 4) + 'px;height:' + (emojiSize2 + 4) + 'px;border-radius:50%;object-fit:cover;margin-bottom:-1px;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5))" onerror="this.style.display=\'none\'">' : '') +
             '<div class="hm-ticker" style="font-size:' + fsTicker2 + 'px">' + nt.sym + '</div>' +
             '<div class="hm-pct" style="font-size:' + fsPct2 + 'px;color:' + styles2.pctColor + '">' + (styles2.isUp ? '+' : '') + tfVal2.toFixed(1) + '%</div>' +
+            (nt.boosted && newR > 25 ? '<div class="hm-boosted-badge">⚡' + (nt.boostCount || '') + '</div>' : '') +
           '</div>';
         el2.onclick = (function(t) { return function(e) { e.stopPropagation(); openBubbleModal(t); }; })(nt);
         bubbleWorld.appendChild(el2);
+
+        // Push existing bubbles away from the new one's spawn point
+        for (var pi = 0; pi < bubs.length; pi++) {
+          var pb = bubs[pi];
+          var pdx = pb.x - px, pdy = pb.y - py;
+          var pDist = Math.sqrt(pdx * pdx + pdy * pdy);
+          var pushZone = pb.r + newR + 20;
+          if (pDist < pushZone && pDist > 0.1) {
+            var pushForce = (pushZone - pDist) * 0.05;
+            pb.vx += (pdx / pDist) * pushForce;
+            pb.vy += (pdy / pDist) * pushForce;
+          }
+        }
 
         var spd2 = 0.03 + Math.random() * 0.05;
         var ang2 = Math.random() * Math.PI * 2;
@@ -601,6 +866,7 @@ function updateBubblesSmooth() {
 
   // Recalculate sizes based on new data
   resizeBubbles();
+  if(typeof wakeBubbles === 'function') wakeBubbles();
 }
 
 function resizeBubbles() {
@@ -612,11 +878,24 @@ function resizeBubbles() {
   
   for(var i = 0; i < bubs.length; i++) {
     var newR = radii[i];
-    bubs[i].r = newR;
+    var growDelta = newR - bubs[i].r;
     bubs[i].targetR = newR;
+    // If bubble is growing, push neighbors away
+    if(growDelta > 2) {
+      for(var gi = 0; gi < bubs.length; gi++) {
+        if(gi === i) continue;
+        var gb = bubs[gi];
+        var gdx = gb.x - bubs[i].x, gdy = gb.y - bubs[i].y;
+        var gDist = Math.sqrt(gdx * gdx + gdy * gdy);
+        var gZone = gb.r + newR + 10;
+        if(gDist < gZone && gDist > 0.1) {
+          var gForce = (gZone - gDist) * 0.04;
+          gb.vx += (gdx / gDist) * gForce;
+          gb.vy += (gdy / gDist) * gForce;
+        }
+      }
+    }
     if(bubs[i].el) {
-      bubs[i].el.style.width = (newR * 2) + 'px';
-      bubs[i].el.style.height = (newR * 2) + 'px';
       var t = bubs[i].token;
       var tfVal = getTfVal(t, tfField);
       var styles = computeBubbleStyles(tfVal);
@@ -743,7 +1022,15 @@ function loadData() {
     for (var nk in tokenByCa) {
       if (tokenByCa.hasOwnProperty(nk)) reordered.push(tokenByCa[nk]);
     }
-    pagedTokens = reordered;
+    // Always keep boosted tokens at the top even with stable ordering
+    var stableBoosted = reordered.filter(function(t){ return t.boosted; });
+    var stableNotBoosted = reordered.filter(function(t){ return !t.boosted; });
+    stableBoosted.sort(function(a, b) {
+      var countDiff = (b.boostCount || 0) - (a.boostCount || 0);
+      if (countDiff !== 0) return countDiff;
+      return (b.boostCreatedAt || 0) - (a.boostCreatedAt || 0);
+    });
+    pagedTokens = stableBoosted.concat(stableNotBoosted);
   }
   window._userSortTriggered = false;
 
@@ -783,6 +1070,16 @@ function loadData() {
         var imgEl = tr.querySelector('.token-avatar-img');
         if (imgEl && t.img) imgEl.src = t.img;
       }
+      var pairEl = tr.querySelector('.token-pair');
+      if (pairEl) {
+        var pairText = '/' + (t.pair||t.quoteSymbol||({solana:'SOL',eth:'WETH',base:'WETH',bsc:'BNB',sui:'SUI',tron:'TRX',arbitrum:'WETH',avalanche:'WAVAX',polygon:'WMATIC',optimism:'WETH',blast:'WETH',ton:'TON'}[t.net])||'SOL');
+        if (pairEl.textContent !== pairText) pairEl.textContent = pairText;
+      }
+      var badgeImg = tr.querySelector('.token-badge-icon');
+      if (badgeImg) {
+        var correctChainImg = CHAIN_ICONS[t.net] || CHAIN_ICONS['solana'];
+        if (badgeImg.src !== correctChainImg) badgeImg.src = correctChainImg;
+      }
       if (tds[1]) { var newPrice = window._priceColMode === 'mcap' ? fmt(t.mcap) : fmtPrice(t.price); flashCell(tds[1], tds[1].textContent, newPrice); }
       if (tds[2]) { tds[2].textContent = fmtAge(t.age); }
       if (tds[3]) { var newVol = fmt(t.vol); flashCell(tds[3], tds[3].textContent, newVol); }
@@ -795,6 +1092,25 @@ function loadData() {
         flashPctCell(ptd, ptd.textContent, newPct, pv);
       }
       if (tds[9]) { var newMcap = window._priceColMode === 'mcap' ? fmtPrice(t.price) : fmt(t.mcap); flashCell(tds[9], tds[9].textContent, newMcap); }
+      // --- Sync boosted visual state on every in-place update ---
+      var _rab = _isAdminBoosted(t.ca);
+      t.boosted = !!_rab;
+      t.boostCount = _rab ? _rab.count : 0;
+      if (tds[0]) {
+        if (t.boosted) { tds[0].classList.add('boosted-cell'); } else { tds[0].classList.remove('boosted-cell'); }
+      }
+      if (t.boosted) { tr.classList.add('boosted-row'); } else { tr.classList.remove('boosted-row'); }
+      var existingBadge = tr.querySelector('.boost-badge');
+      if (t.boosted && !existingBadge) {
+        var topRow = tr.querySelector('.token-top-row');
+        if (topRow) topRow.insertAdjacentHTML('beforeend', '<span class="boost-badge"><svg class="boost-badge-icon" viewBox="0 0 500 500" fill="none" stroke-linecap="round" stroke-linejoin="round"><g class="boost-bob"><g transform="translate(312.32 204.14) rotate(45) translate(-116.42 -151.35)"><g transform="translate(116.78 283.83) translate(-54.13 -30)"><g class="boost-fire"><g transform="translate(54.13 64.96)"><path d="M24.13-10.83C24.13 2.5 0 34.96 0 34.96S-24.13 2.5-24.13-10.83C-24.13-24.15-13.33-34.96 0-34.96 13.33-34.96 24.13-24.15 24.13-10.83Z" stroke="#ffb627" stroke-width="12"/></g></g></g><g transform="translate(47.31 232.35)"><path d="M14.22-40.34L-17.31-18.18-14.58 40.34 17.31 18.66Z" stroke="#ffb627" stroke-width="12"/></g><g transform="translate(185.53 232.35)"><path d="M-14.22-40.34L17.31-18.18 14.58 40.34-17.31 18.66Z" stroke="#ffb627" stroke-width="12"/></g><g transform="translate(116.56 146.22)"><path d="M0-116.22C3.97-116.22 7.83-114.81 10.84-112.22 23.12-101.62 53.64-69.63 55.4-12.18 57.09 43.31 51.08 116.22 51.08 116.22H-51.08S-57.09 43.31-55.4-12.18C-53.64-69.63-23.12-101.62-10.84-112.22-7.83-114.81-3.97-116.22 0-116.22Z" stroke="#ffd539" stroke-width="12"/><path class="boost-shine" d="M0-116.22C3.97-116.22 7.83-114.81 10.84-112.22 23.12-101.62 53.64-69.63 55.4-12.18 57.09 43.31 51.08 116.22 51.08 116.22H-51.08S-57.09 43.31-55.4-12.18C-53.64-69.63-23.12-101.62-10.84-112.22-7.83-114.81-3.97-116.22 0-116.22Z"/><g transform="translate(0 -116.22)"><g class="boost-sparkle"><path d="M0,-22 L4,-4 L22,0 L4,4 L0,22 L-4,4 L-22,0 L-4,-4 Z" fill="#fff8d1"/><path d="M0,-12 L2,-2 L12,0 L2,2 L0,12 L-2,2 L-12,0 L-2,-2 Z" fill="#fff"/></g></g></g><g transform="translate(116.56 273.13)"><path d="M32.09 10.7H-32.09V-10.7H32.09Z" stroke="#ffd539" stroke-width="12"/></g><circle cx="116.56" cy="105.92" r="23.48" stroke="#ffb627" stroke-width="12"/></g></g></svg>' + (t.boostCount || '') + '</span>');
+      } else if (t.boosted && existingBadge) {
+        // Update count text if it changed
+        var badgeText = existingBadge.lastChild;
+        if (badgeText && badgeText.nodeType === 3) badgeText.textContent = t.boostCount || '';
+      } else if (!t.boosted && existingBadge) {
+        existingBadge.remove();
+      }
     }
     // Remove extra rows if we have more rows than tokens
     for (var ri = existingRows.length - 1; ri >= pagedTokens.length; ri--) {
@@ -803,19 +1119,25 @@ function loadData() {
     // Add new rows if we have more tokens than rows
     for (var ai = existingRows.length; ai < pagedTokens.length; ai++) {
       var at = pagedTokens[ai];
+      var _ab = _isAdminBoosted(at.ca);
+      at.boosted = !!_ab;
+      at.boostCount = _ab ? _ab.count : 0;
       var aIdx = startIdx + ai;
       var aGrad = GRADIENTS[aIdx % GRADIENTS.length];
       var aLetter = at.sym.charAt(0).toUpperCase();
       var aChainImg = CHAIN_ICONS[at.net] || CHAIN_ICONS['solana'];
       var aCa = (at.ca || '').replace(/'/g, "\\'");
       var aRowNum = aIdx + 1;
-      var aRow = '<tr style="cursor:pointer" onclick="openTokenModal(\'' + aCa + '\')"><td><div class="token-cell"><span class="row-num">' + aRowNum + '</span><div class="token-badges"><img class="token-badge-icon" src="' + aChainImg + '"></div><div class="token-avatar-wrap"><img class="token-avatar-img" src="' + (at.img || '') + '" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'"><div class="token-avatar" style="display:' + (at.img ? 'none' : 'flex') + ';background:linear-gradient(135deg,' + aGrad + ')">' + aLetter + '</div></div><div class="token-info"><div class="token-top-row"><span class="token-symbol">' + at.sym + '</span><span class="token-pair" style="color:rgba(255,255,255,0.3);font-size:14px;font-weight:400">/' + (at.pair||at.quoteSymbol||({solana:'SOL',eth:'WETH',base:'WETH',bsc:'BNB',sui:'SUI',tron:'TRX',arbitrum:'WETH',avalanche:'WAVAX',polygon:'WMATIC',optimism:'WETH',blast:'WETH',ton:'TON'}[at.net])||'SOL') + '</span>' + (at.boosted ? '<span class="boost-badge">⚡' + (at.boostCount || '') + '</span>' : '') + '</div></div></div></div></div></td><td class="price-col">' + (window._priceColMode === 'mcap' ? fmt(at.mcap) : fmtPrice(at.price)) + '</td><td class="age-col">' + fmtAge(at.age) + '</td><td class="vol-col">' + fmt(at.vol) + '</td>' + pctTd(at.p5m) + pctTd(at.p5m) + pctTd(at.p1h) + pctTd(at.p6h) + pctTd(at.p24h) + '<td class="mcap-col">' + (window._priceColMode === 'mcap' ? fmtPrice(at.price) : fmt(at.mcap)) + '</td><td class="row-dots-col"><span class="token-dots" onclick="event.stopPropagation();showRowMenu(this, ' + aIdx + ')"><svg width="18" height="18" viewBox="0 -960 960 960" fill="currentColor"><path d="M480-160q-33 0-56.5-23.5T400-240q0-33 23.5-56.5T480-320q33 0 56.5 23.5T560-240q0 33-23.5 56.5T480-160Zm0-240q-33 0-56.5-23.5T400-480q0-33 23.5-56.5T480-560q33 0 56.5 23.5T560-480q0 33-23.5 56.5T480-400Zm0-240q-33 0-56.5-23.5T400-720q0-33 23.5-56.5T480-800q33 0 56.5 23.5T560-720q0 33-23.5 56.5T480-640Z"/></svg></span></td></tr>';
+      var aRow = '<tr' + (at.boosted ? ' class="boosted-row"' : '') + ' style="cursor:pointer" onclick="openTokenModal(\'' + aCa + '\')"><td' + (at.boosted ? ' class="boosted-cell"' : '') + '><div class="token-cell"><span class="row-num">' + aRowNum + '</span><div class="token-badges"><img class="token-badge-icon" src="' + aChainImg + '"></div><div class="token-avatar-wrap"><img class="token-avatar-img" src="' + (at.img || '') + '" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'"><div class="token-avatar" style="display:' + (at.img ? 'none' : 'flex') + ';background:linear-gradient(135deg,' + aGrad + ')">' + aLetter + '</div></div><div class="token-info"><div class="token-top-row"><span class="token-symbol">' + at.sym + '</span><span class="token-pair" style="color:rgba(255,255,255,0.3);font-size:14px;font-weight:400">/' + (at.pair||at.quoteSymbol||({solana:'SOL',eth:'WETH',base:'WETH',bsc:'BNB',sui:'SUI',tron:'TRX',arbitrum:'WETH',avalanche:'WAVAX',polygon:'WMATIC',optimism:'WETH',blast:'WETH',ton:'TON'}[at.net])||'SOL') + '</span>' + (at.boosted ? '<span class="boost-badge"><svg class="boost-badge-icon" viewBox="0 0 500 500" fill="none" stroke-linecap="round" stroke-linejoin="round"><g class="boost-bob"><g transform="translate(312.32 204.14) rotate(45) translate(-116.42 -151.35)"><g transform="translate(116.78 283.83) translate(-54.13 -30)"><g class="boost-fire"><g transform="translate(54.13 64.96)"><path d="M24.13-10.83C24.13 2.5 0 34.96 0 34.96S-24.13 2.5-24.13-10.83C-24.13-24.15-13.33-34.96 0-34.96 13.33-34.96 24.13-24.15 24.13-10.83Z" stroke="#ffb627" stroke-width="12"/></g></g></g><g transform="translate(47.31 232.35)"><path d="M14.22-40.34L-17.31-18.18-14.58 40.34 17.31 18.66Z" stroke="#ffb627" stroke-width="12"/></g><g transform="translate(185.53 232.35)"><path d="M-14.22-40.34L17.31-18.18 14.58 40.34-17.31 18.66Z" stroke="#ffb627" stroke-width="12"/></g><g transform="translate(116.56 146.22)"><path d="M0-116.22C3.97-116.22 7.83-114.81 10.84-112.22 23.12-101.62 53.64-69.63 55.4-12.18 57.09 43.31 51.08 116.22 51.08 116.22H-51.08S-57.09 43.31-55.4-12.18C-53.64-69.63-23.12-101.62-10.84-112.22-7.83-114.81-3.97-116.22 0-116.22Z" stroke="#ffd539" stroke-width="12"/><path class="boost-shine" d="M0-116.22C3.97-116.22 7.83-114.81 10.84-112.22 23.12-101.62 53.64-69.63 55.4-12.18 57.09 43.31 51.08 116.22 51.08 116.22H-51.08S-57.09 43.31-55.4-12.18C-53.64-69.63-23.12-101.62-10.84-112.22-7.83-114.81-3.97-116.22 0-116.22Z"/><g transform="translate(0 -116.22)"><g class="boost-sparkle"><path d="M0,-22 L4,-4 L22,0 L4,4 L0,22 L-4,4 L-22,0 L-4,-4 Z" fill="#fff8d1"/><path d="M0,-12 L2,-2 L12,0 L2,2 L0,12 L-2,2 L-12,0 L-2,-2 Z" fill="#fff"/></g></g></g><g transform="translate(116.56 273.13)"><path d="M32.09 10.7H-32.09V-10.7H32.09Z" stroke="#ffd539" stroke-width="12"/></g><circle cx="116.56" cy="105.92" r="23.48" stroke="#ffb627" stroke-width="12"/></g></g></svg>' + (at.boostCount || '') + '</span>' : '') + '</div></div></div></div></div></td><td class="price-col">' + (window._priceColMode === 'mcap' ? fmt(at.mcap) : fmtPrice(at.price)) + '</td><td class="age-col">' + fmtAge(at.age) + '</td><td class="vol-col">' + fmt(at.vol) + '</td>' + pctTd(at.p5m) + pctTd(at.p5m) + pctTd(at.p1h) + pctTd(at.p6h) + pctTd(at.p24h) + '<td class="mcap-col">' + (window._priceColMode === 'mcap' ? fmtPrice(at.price) : fmt(at.mcap)) + '</td><td class="row-dots-col"><span class="token-dots" onclick="event.stopPropagation();showRowMenu(this, ' + aIdx + ')"><svg width="18" height="18" viewBox="0 -960 960 960" fill="currentColor"><path d="M480-160q-33 0-56.5-23.5T400-240q0-33 23.5-56.5T480-320q33 0 56.5 23.5T560-240q0 33-23.5 56.5T480-160Zm0-240q-33 0-56.5-23.5T400-480q0-33 23.5-56.5T480-560q33 0 56.5 23.5T560-480q0 33-23.5 56.5T480-400Zm0-240q-33 0-56.5-23.5T400-720q0-33 23.5-56.5T480-800q33 0 56.5 23.5T560-720q0 33-23.5 56.5T480-640Z"/></svg></span></td></tr>';
       tbody.insertAdjacentHTML('beforeend', aRow);
     }
   } else {
     // Full rebuild (first load or page change)
     tbody.innerHTML = '';
     pagedTokens.forEach((t, i) => {
+      const _ab2 = _isAdminBoosted(t.ca);
+      t.boosted = !!_ab2;
+      t.boostCount = _ab2 ? _ab2.count : 0;
       const globalIdx = startIdx + i;
       const grad = GRADIENTS[globalIdx % GRADIENTS.length];
       const letter = t.sym.charAt(0).toUpperCase();
@@ -823,12 +1145,12 @@ function loadData() {
 
       const tCa = (t.ca || '').replace(/'/g, "\\'");
       const rowNum = startIdx + i + 1;
-      const row = `<tr style="animation-delay:${i * 15}ms;cursor:pointer" onclick="openTokenModal('${tCa}')">
-        <td><div class="token-cell">
+      const row = `<tr${t.boosted ? ' class="boosted-row"' : ''} style="animation-delay:${i * 15}ms;cursor:pointer" onclick="openTokenModal('${tCa}')">
+        <td${t.boosted ? ' class="boosted-cell"' : ''}><div class="token-cell">
           <span class="row-num">${rowNum}</span>
           <div class="token-badges"><img class="token-badge-icon" src="${chainImg}"></div>
           <div class="token-avatar-wrap"><img class="token-avatar-img" loading="lazy" src="${t.img || ''}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="token-avatar" style="display:${t.img ? 'none' : 'flex'};background:linear-gradient(135deg,${grad})">${letter}</div></div>
-          <div class="token-info"><div class="token-top-row"><span class="token-symbol">${t.sym}</span><span class="token-pair" style="color:rgba(255,255,255,0.3);font-size:14px;font-weight:400">/${t.pair||t.quoteSymbol||({solana:'SOL',eth:'WETH',base:'WETH',bsc:'BNB',sui:'SUI',tron:'TRX',arbitrum:'WETH',avalanche:'WAVAX',polygon:'WMATIC',optimism:'WETH',blast:'WETH',ton:'TON'}[t.net])||'SOL'}</span>${t.boosted ? '<span class="boost-badge">⚡' + (t.boostCount || '') + '</span>' : ''}</div></div>
+          <div class="token-info"><div class="token-top-row"><span class="token-symbol">${t.sym}</span><span class="token-pair" style="color:rgba(255,255,255,0.3);font-size:14px;font-weight:400">/${t.pair||t.quoteSymbol||({solana:'SOL',eth:'WETH',base:'WETH',bsc:'BNB',sui:'SUI',tron:'TRX',arbitrum:'WETH',avalanche:'WAVAX',polygon:'WMATIC',optimism:'WETH',blast:'WETH',ton:'TON'}[t.net])||'SOL'}</span>${t.boosted ? '<span class="boost-badge"><svg class="boost-badge-icon" viewBox="0 0 500 500" fill="none" stroke-linecap="round" stroke-linejoin="round"><g class="boost-bob"><g transform="translate(312.32 204.14) rotate(45) translate(-116.42 -151.35)"><g transform="translate(116.78 283.83) translate(-54.13 -30)"><g class="boost-fire"><g transform="translate(54.13 64.96)"><path d="M24.13-10.83C24.13 2.5 0 34.96 0 34.96S-24.13 2.5-24.13-10.83C-24.13-24.15-13.33-34.96 0-34.96 13.33-34.96 24.13-24.15 24.13-10.83Z" stroke="#ffb627" stroke-width="12"/></g></g></g><g transform="translate(47.31 232.35)"><path d="M14.22-40.34L-17.31-18.18-14.58 40.34 17.31 18.66Z" stroke="#ffb627" stroke-width="12"/></g><g transform="translate(185.53 232.35)"><path d="M-14.22-40.34L17.31-18.18 14.58 40.34-17.31 18.66Z" stroke="#ffb627" stroke-width="12"/></g><g transform="translate(116.56 146.22)"><path d="M0-116.22C3.97-116.22 7.83-114.81 10.84-112.22 23.12-101.62 53.64-69.63 55.4-12.18 57.09 43.31 51.08 116.22 51.08 116.22H-51.08S-57.09 43.31-55.4-12.18C-53.64-69.63-23.12-101.62-10.84-112.22-7.83-114.81-3.97-116.22 0-116.22Z" stroke="#ffd539" stroke-width="12"/><path class="boost-shine" d="M0-116.22C3.97-116.22 7.83-114.81 10.84-112.22 23.12-101.62 53.64-69.63 55.4-12.18 57.09 43.31 51.08 116.22 51.08 116.22H-51.08S-57.09 43.31-55.4-12.18C-53.64-69.63-23.12-101.62-10.84-112.22-7.83-114.81-3.97-116.22 0-116.22Z"/><g transform="translate(0 -116.22)"><g class="boost-sparkle"><path d="M0,-22 L4,-4 L22,0 L4,4 L0,22 L-4,4 L-22,0 L-4,-4 Z" fill="#fff8d1"/><path d="M0,-12 L2,-2 L12,0 L2,2 L0,12 L-2,2 L-12,0 L-2,-2 Z" fill="#fff"/></g></g></g><g transform="translate(116.56 273.13)"><path d="M32.09 10.7H-32.09V-10.7H32.09Z" stroke="#ffd539" stroke-width="12"/></g><circle cx="116.56" cy="105.92" r="23.48" stroke="#ffb627" stroke-width="12"/></g></g></svg>' + (t.boostCount || '') + '</span>' : ''}</div></div>
           </div></div>
         </td>
         <td class="price-col">${window._priceColMode === 'mcap' ? fmt(t.mcap) : fmtPrice(t.price)}</td>
@@ -1039,6 +1361,87 @@ setTimeout(function() {
 
 function toggleWatchlistPanel() {}
 
+function animateWatchlistRemove(el, sym) {
+  var row = el.closest('.wl-modal-row');
+  if (!row) return toggleWatchlist(sym);
+  var rect = row.getBoundingClientRect();
+  var parent = row.parentElement;
+  var parentRect = parent.getBoundingClientRect();
+  // Create burn overlay
+  var overlay = document.createElement('div');
+  overlay.style.cssText = 'position:absolute;top:' + (rect.top - parentRect.top + parent.scrollTop) + 'px;left:0;width:' + rect.width + 'px;height:' + rect.height + 'px;pointer-events:none;z-index:99;overflow:visible;';
+  parent.style.position = 'relative';
+  parent.appendChild(overlay);
+  // Burn edge sweep — faster
+  var burn = document.createElement('div');
+  burn.style.cssText = 'position:absolute;top:-2px;left:-10px;width:6px;height:' + (rect.height + 4) + 'px;' +
+    'background:linear-gradient(90deg,transparent,#ff6600,#ff3300,#ff6600,transparent);' +
+    'box-shadow:0 0 12px 4px rgba(255,80,0,0.6),0 0 30px 8px rgba(255,40,0,0.3);' +
+    'border-radius:2px;transition:left 0.35s ease-in;';
+  overlay.appendChild(burn);
+  // Ash particles
+  var ashCount = 14;
+  var ashes = [];
+  for (var i = 0; i < ashCount; i++) {
+    var ash = document.createElement('div');
+    var sz = 2 + Math.random() * 4;
+    ash.style.cssText = 'position:absolute;width:' + sz + 'px;height:' + sz + 'px;' +
+      'background:' + (Math.random() > 0.4 ? '#ff6600' : '#333') + ';' +
+      'border-radius:50%;opacity:0;pointer-events:none;' +
+      'transition:all 0.4s ease ' + (0.05 + Math.random() * 0.25) + 's;';
+    ash.style.top = (Math.random() * rect.height) + 'px';
+    ash.style.left = '0px';
+    overlay.appendChild(ash);
+    ashes.push(ash);
+  }
+  // Burned area
+  var burned = document.createElement('div');
+  burned.style.cssText = 'position:absolute;top:0;left:0;width:0;height:100%;' +
+    'background:linear-gradient(90deg,rgba(30,20,10,0.95),rgba(50,30,10,0.7));' +
+    'transition:width 0.35s ease-in;';
+  overlay.appendChild(burned);
+  // Start burn sweep immediately — no glow delay
+  row.style.filter = 'brightness(1.3) sepia(0.3)';
+  requestAnimationFrame(function() {
+    requestAnimationFrame(function() {
+      burn.style.left = (rect.width + 10) + 'px';
+      burned.style.width = '100%';
+      row.style.filter = 'brightness(0.3) sepia(1)';
+      row.style.transition = 'filter 0.3s ease-in, opacity 0.12s ease 0.2s';
+      row.style.opacity = '0';
+      ashes.forEach(function(a) {
+        a.style.opacity = '1';
+        a.style.top = (parseFloat(a.style.top) - 20 - Math.random() * 30) + 'px';
+        a.style.left = (Math.random() * rect.width) + 'px';
+        setTimeout(function() {
+          a.style.opacity = '0';
+          a.style.top = (parseFloat(a.style.top) - 20) + 'px';
+        }, 200 + Math.random() * 150);
+      });
+    });
+  });
+  // Collapse row
+  setTimeout(function() {
+    row.style.transition = 'max-height 0.2s ease, padding 0.2s ease, margin 0.2s ease';
+    row.style.overflow = 'hidden';
+    row.style.maxHeight = rect.height + 'px';
+    requestAnimationFrame(function() {
+      requestAnimationFrame(function() {
+        row.style.maxHeight = '0';
+        row.style.paddingTop = '0';
+        row.style.paddingBottom = '0';
+        row.style.marginTop = '0';
+        row.style.marginBottom = '0';
+      });
+    });
+  }, 380);
+  // Cleanup
+  setTimeout(function() {
+    if (overlay.parentNode) overlay.remove();
+    toggleWatchlist(sym);
+  }, 650);
+}
+
 function toggleWatchlist(sym, btnEl) {
   const idx = watchlist.indexOf(sym);
   if (idx > -1) watchlist.splice(idx, 1);
@@ -1052,7 +1455,13 @@ function toggleWatchlist(sym, btnEl) {
   // Update modal star
   var modalStar = document.getElementById('bmStar');
   if (modalStar && window._modalToken) {
-    modalStar.classList.toggle('active', watchlist.includes(window._modalToken.sym));
+    var mActive = watchlist.includes(window._modalToken.sym);
+    modalStar.classList.toggle('active', mActive);
+    var mSvg = modalStar.querySelector('svg');
+    if (mSvg) {
+      if (mActive) { mSvg.setAttribute('fill','#e3e3e3'); mSvg.setAttribute('stroke','none'); }
+      else { mSvg.setAttribute('fill','none'); mSvg.setAttribute('stroke','#e3e3e3'); }
+    }
   }
   // Update sidebar watchlist
   renderWatchlist();
@@ -1076,15 +1485,24 @@ function renderWatchlist() {
   if (navStar) {
     if (watchlist.length > 0) {
       navStar.setAttribute('fill', '#fff');
-      navStar.setAttribute('stroke', '#fff');
     } else {
-      navStar.setAttribute('fill', 'none');
-      navStar.setAttribute('stroke', 'currentColor');
+      navStar.setAttribute('fill', '#e3e3e3');
     }
   }
 
   var countEl = document.getElementById('wlCount');
   if (countEl) countEl.textContent = watchlist.length + '/20';
+
+  // Update nav badge
+  var badge = document.getElementById('watchlistBadge');
+  if (badge) {
+    if (watchlist.length > 0) {
+      badge.textContent = watchlist.length;
+      badge.classList.add('visible');
+    } else {
+      badge.classList.remove('visible');
+    }
+  }
 
   var body = document.getElementById('wlBody');
   if (!body) return;
@@ -1115,7 +1533,7 @@ function renderWatchlist() {
     html += '<div class="wl-modal-row" onclick="closeWatchlistModal();openBubbleModal(LIVE_TOKENS.find(function(t){return t.sym===\'' + sym + '\'}))">' +
       '<div class="wl-modal-token">' + avatarHtml +
         '<span class="wl-modal-token-sym">' + sym + '</span>' +
-        '<span class="wl-modal-token-star" onclick="event.stopPropagation();toggleWatchlist(\'' + sym + '\')"><svg width="12" height="12" viewBox="0 0 32.219 32.219" fill="currentColor"><path d="M32.144,12.402c-0.493-1.545-3.213-1.898-6.09-2.277c-1.578-0.209-3.373-0.445-3.914-0.844c-0.543-0.398-1.304-2.035-1.978-3.482C18.94,3.17,17.786,0.686,16.166,0.68l-0.03-0.003c-1.604,0.027-2.773,2.479-4.016,5.082c-0.684,1.439-1.463,3.07-2.005,3.463c-0.551,0.394-2.342,0.613-3.927,0.803c-2.877,0.352-5.598,0.68-6.108,2.217c-0.507,1.539,1.48,3.424,3.587,5.424c1.156,1.094,2.465,2.34,2.67,2.98c0.205,0.639-0.143,2.414-0.448,3.977c-0.557,2.844-1.084,5.535,0.219,6.5c0.312,0.225,0.704,0.338,1.167,0.328c1.331-0.023,3.247-1.059,5.096-2.062c1.387-0.758,2.961-1.611,3.661-1.621c0.675,0.002,2.255,0.881,3.647,1.654c1.891,1.051,3.852,2.139,5.185,2.119c0.414-0.01,0.771-0.117,1.06-0.322c1.312-0.947,0.814-3.639,0.285-6.494c-0.289-1.564-0.615-3.344-0.409-3.982c0.213-0.639,1.537-1.867,2.702-2.955C30.628,15.808,32.634,13.945,32.144,12.402z M21.473,19.355h-3.722v3.797h-3.237v-3.797h-3.768v-3.238h3.768v-3.691h3.237v3.691h3.722V19.355z"/></svg></span>' +
+        '<span class="wl-modal-token-delete" onclick="event.stopPropagation();animateWatchlistRemove(this,\'' + sym + '\')"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 1.5V2.5H3C2.44772 2.5 2 2.94772 2 3.5V4.5C2 5.05228 2.44772 5.5 3 5.5H21C21.5523 5.5 22 5.05228 22 4.5V3.5C22 2.94772 21.5523 2.5 21 2.5H16V1.5C16 0.947715 15.5523 0.5 15 0.5H9C8.44772 0.5 8 0.947715 8 1.5Z"/><path d="M3.9231 7.5H20.0767L19.1344 20.2216C19.0183 21.7882 17.7135 23 16.1426 23H7.85724C6.28636 23 4.98148 21.7882 4.86544 20.2216L3.9231 7.5Z"/></svg></span>' +
       '</div>' +
       '<span class="wl-modal-val">' + fmt(token.vol || 0) + '</span>' +
       '<span class="wl-modal-val ' + pctCls(token.p5m) + '">' + pctFmt(token.p5m) + '</span>' +
@@ -1272,15 +1690,18 @@ function checkAlerts() {
   if (toRemove.length > 0) renderAlerts();
 }
 
-// Simulate small price fluctuations and check alerts
-var _priceSimTimer = setInterval(() => {
-  LIVE_TOKENS.forEach(t => {
-    const change = (Math.random() - 0.48) * 0.02;
-    t.price *= (1 + change);
-    t.m5 += (Math.random() - 0.5) * 0.8;
-  });
-  checkAlerts();
-}, 3000);
+// Simulate small price fluctuations and check alerts — delay start so Lighthouse sees idle CPU
+var _priceSimTimer = null;
+setTimeout(function() {
+  _priceSimTimer = setInterval(() => {
+    LIVE_TOKENS.forEach(t => {
+      const change = (Math.random() - 0.48) * 0.02;
+      t.price *= (1 + change);
+      t.m5 += (Math.random() - 0.5) * 0.8;
+    });
+    checkAlerts();
+  }, 3000);
+}, 10000);
 
 
 // ========== PAGINATION ==========
@@ -1290,14 +1711,15 @@ var rowsPerPage = 100;
 function getFilteredTokens() {
   let tokens = [...LIVE_TOKENS];
   const tf = getTimeframeField();
-  if (currentChain !== 'all') tokens = tokens.filter(t => t.net === currentChain);
-  if (currentLaunchpad !== 'all') tokens = tokens.filter(t => t.pad === currentLaunchpad);
+  // Boosted tokens always stay visible regardless of chain/category filters
+  if (currentChain !== 'all') tokens = tokens.filter(t => t.boosted || t.net === currentChain);
+  if (currentLaunchpad !== 'all') tokens = tokens.filter(t => t.boosted || t.pad === currentLaunchpad);
   switch(currentCategory) {
     case 'trending': tokens.sort((a,b) => Math.abs(b[tf]) - Math.abs(a[tf])); break;
     case 'top': tokens.sort((a,b) => b.mcap - a.mcap); break;
-    case 'gainers': tokens = tokens.filter(t => t[tf] > 0); tokens.sort((a,b) => b[tf] - a[tf]); break;
-    case 'losers': tokens = tokens.filter(t => t[tf] < 0); tokens.sort((a,b) => a[tf] - b[tf]); break;
-    case 'new': tokens = tokens.filter(t => ageToHours(t.age) <= 1); tokens.sort((a,b) => ageToHours(a.age) - ageToHours(b.age)); break;
+    case 'gainers': tokens = tokens.filter(t => t.boosted || t[tf] > 0); tokens.sort((a,b) => b[tf] - a[tf]); break;
+    case 'losers': tokens = tokens.filter(t => t.boosted || t[tf] < 0); tokens.sort((a,b) => a[tf] - b[tf]); break;
+    case 'new': tokens = tokens.filter(t => t.boosted || ageToHours(t.age) <= 1); tokens.sort((a,b) => ageToHours(a.age) - ageToHours(b.age)); break;
   }
   if (currentSort.col) {
     const col = currentSort.col;
@@ -1320,9 +1742,17 @@ function getFilteredTokens() {
       return (av - bv) * dir;
     });
   }
+  // Re-check admin boosts before sorting
+  _applyAdminBoosts(tokens);
   // Boosted tokens always get priority — move them to the top
+  // Rank by boost count (higher first), then recency (newer first) as tiebreaker
   var boosted = tokens.filter(function(t){ return t.boosted; });
   var notBoosted = tokens.filter(function(t){ return !t.boosted; });
+  boosted.sort(function(a, b) {
+    var countDiff = (b.boostCount || 0) - (a.boostCount || 0);
+    if (countDiff !== 0) return countDiff;
+    return (b.boostCreatedAt || 0) - (a.boostCreatedAt || 0);
+  });
   tokens = boosted.concat(notBoosted);
   return tokens;
 }
@@ -1386,11 +1816,7 @@ function updateStickyOffsets() {
 
 // Run multiple times to catch layout changes
 updateStickyOffsets();
-setTimeout(updateStickyOffsets, 100);
-setTimeout(updateStickyOffsets, 500);
-setTimeout(updateStickyOffsets, 1500);
-setTimeout(updateStickyOffsets, 100);
-setTimeout(updateStickyOffsets, 500);
+setTimeout(updateStickyOffsets, 200);
 setTimeout(updateStickyOffsets, 1500);
 window.addEventListener('resize', updateStickyOffsets);
 
@@ -2169,7 +2595,7 @@ function saveRecentSearch(token) {
   // Remove if already exists
   recent = recent.filter(function(r) { return r.sym !== token.sym; });
   // Add to front
-  recent.unshift({ sym: token.sym, name: token.name, img: token.img || '', net: token.net || 'solana', price: token.price, p1h: token.p1h || 0, p24h: token.p24h || 0, mcap: token.mcap || 0, liq: token.liq || 0, vol: token.vol || 0, age: token.age || '2014', ca: token.ca || '' });
+  recent.unshift({ sym: token.sym, name: token.name, img: token.img || '', net: token.net || 'solana', price: token.price, p1h: token.p1h || 0, p24h: token.p24h || 0, mcap: token.mcap || 0, liq: token.liq || 0, vol: token.vol || 0, age: token.age || '?', ca: token.ca || '' });
   // Keep max 8
   recent = recent.slice(0, 8);
   try { localStorage.setItem('memescope_recent_searches', JSON.stringify(recent)); } catch(e) {}
@@ -2273,13 +2699,13 @@ async function liveSearchDexScreener(query, resultsList, localResults) {
     var data = await resp.json();
     
     var pairs = [];
-    var chainMap = {solana:'solana',ethereum:'eth',base:'base',bsc:'bsc',sui:'sui',tron:'tron',arbitrum:'arbitrum',avalanche:'avalanche',polygon:'polygon',optimism:'optimism',blast:'blast',ton:'ton'};
+    var chainMap = {solana:'solana',ethereum:'eth',base:'base',bsc:'bsc',sui:'sui',tron:'tron',arbitrum:'arbitrum',avalanche:'avalanche',polygon:'polygon',optimism:'optimism',blast:'blast',ton:'ton',seiv2:'seiv2',pulsechain:'pulsechain'};
     
     // Add Supabase results first
     if(dbResults && dbResults.length) {
       for(var d = 0; d < dbResults.length; d++) {
         var row = dbResults[d];
-        var ageStr = '2014';
+        var ageStr = '?';
         if(row.age) {
           var ageHrs = (Date.now() - new Date(row.age).getTime()) / 3600000;
           if(ageHrs < 1) ageStr = Math.round(ageHrs * 60) + 'm';
@@ -2320,7 +2746,7 @@ async function liveSearchDexScreener(query, resultsList, localResults) {
           liq: p.liquidity ? (p.liquidity.usd||0) : 0,
           p5m: pc.m5?parseFloat(pc.m5):0, p1h: pc.h1?parseFloat(pc.h1):0,
           p6h: pc.h6?parseFloat(pc.h6):0,
-          age: '2014', txn: 0, dex: p.dexId||'unknown',
+          age: p.pairCreatedAt ? _calcAge(p.pairCreatedAt) : '?', txn: 0, dex: p.dexId||'unknown',
           social: 0, boosted: false, _liveResult: true, pairAddress: p.pairAddress || ''
         });
       }
@@ -2443,7 +2869,7 @@ function selectSearchResult(ca, sym) {
         if(d && d.pairs && d.pairs.length > 0) {
           var p = d.pairs[0];
           var pc = p.priceChange || {};
-          var chainMap = {solana:'solana',ethereum:'eth',base:'base',bsc:'bsc',sui:'sui',tron:'tron',arbitrum:'arbitrum',avalanche:'avalanche',polygon:'polygon',optimism:'optimism',blast:'blast',ton:'ton'};
+          var chainMap = {solana:'solana',ethereum:'eth',base:'base',bsc:'bsc',sui:'sui',tron:'tron',arbitrum:'arbitrum',avalanche:'avalanche',polygon:'polygon',optimism:'optimism',blast:'blast',ton:'ton',seiv2:'seiv2',pulsechain:'pulsechain'};
           var t = {
             sym: p.baseToken.symbol.toUpperCase(), name: p.baseToken.name,
             img: (p.info && p.info.imageUrl) ? p.info.imageUrl : '',
@@ -2452,7 +2878,7 @@ function selectSearchResult(ca, sym) {
             liq: p.liquidity?(p.liquidity.usd||0):0,
             p5m:pc.m5?parseFloat(pc.m5):0, p1h:pc.h1?parseFloat(pc.h1):0,
             p6h:pc.h6?parseFloat(pc.h6):0, p24h:pc.h24?parseFloat(pc.h24):0,
-            age:'2014', txn:0, net:chainMap[p.chainId]||'solana',
+            age: p.pairCreatedAt ? _calcAge(p.pairCreatedAt) : '?', txn:0, net:chainMap[p.chainId]||'solana',
             dex:p.dexId||'unknown', social:0, boosted:false, ca:p.baseToken.address||''
           };
           openBubbleModal(t);
@@ -2556,9 +2982,12 @@ var _origOpenSearch = openSearchModal;
 openSearchModal = function() {
   currentSearchTab = 'tokens';
   _origOpenSearch();
-  document.getElementById('search-tab-tokens').classList.add('active');
-  document.getElementById('search-tab-x').classList.remove('active');
-  document.getElementById('search-x-results').style.display = 'none';
+  var tabT = document.getElementById('search-tab-tokens');
+  var tabX = document.getElementById('search-tab-x');
+  var xRes = document.getElementById('search-x-results');
+  if (tabT) tabT.classList.add('active');
+  if (tabX) tabX.classList.remove('active');
+  if (xRes) xRes.style.display = 'none';
 };
 
 
@@ -2661,6 +3090,7 @@ function computeBubbleStyles(tfVal) {
 var bubs = [];
 (function(){
   var world, W, H, rafId, mouseX = -1000, mouseY = -1000, mouseActive = false, mousePrevX = -1000, mousePrevY = -1000, mouseVX = 0, mouseVY = 0, mouseSpeed = 0;
+  var _idleFrames = 0, _sleeping = false, _tick = null;
 
   function init(){
     world = document.getElementById("bubbleWorld");
@@ -2671,12 +3101,30 @@ var bubs = [];
     H = hero.offsetHeight;
     if(W < 10 || H < 10){ setTimeout(init, 100); return; }
     
+    world.classList.remove('ready');
     world.innerHTML = "";
     bubs = [];
     if(rafId) cancelAnimationFrame(rafId);
     
-    var tokens = (typeof getFilteredTokens === 'function') ? getFilteredTokens().slice(0, 100) : ((typeof LIVE_TOKENS !== 'undefined') ? LIVE_TOKENS.slice(0, 100) : []);
-    if(!tokens.length){ setTimeout(init, 100); return; }
+    var tokens = (typeof getFilteredTokens === 'function') ? getFilteredTokens().slice(0, 200) : ((typeof LIVE_TOKENS !== 'undefined') ? LIVE_TOKENS.slice(0, 200) : []);
+
+    // Inject admin-boosted tokens that might not be in the top 100
+    var adminBoosts = _getAdminBoosts();
+    var tokenCAs = {};
+    tokens.forEach(function(t) { tokenCAs[(t.ca || '').toLowerCase()] = true; });
+    for (var i = 0; i < LIVE_TOKENS.length; i++) {
+      var ltCA = (LIVE_TOKENS[i].ca || '').toLowerCase();
+      if (adminBoosts[ltCA] && !tokenCAs[ltCA]) {
+        LIVE_TOKENS[i].boosted = true;
+        LIVE_TOKENS[i].boostCount = adminBoosts[ltCA].count;
+        tokens.push(LIVE_TOKENS[i]);
+        tokenCAs[ltCA] = true;
+      }
+    }
+    if(!tokens.length){
+      if (liveDataLoaded) { showEmptyBubbleState(); return; }
+      setTimeout(init, 100); return;
+    }
     
     // Deduplicate: first by CA, then by symbol (keep highest volume per symbol)
     var caMap = {};
@@ -2686,10 +3134,11 @@ var bubs = [];
     });
     tokens = Object.values(caMap);
     // Also dedup by symbol — multiple chains can have same-name tokens
+    // Boosted tokens always win the dedup
     var symMap = {};
     tokens.forEach(function(t) {
       var sym = (t.sym || '').toUpperCase();
-      if (!symMap[sym] || (t.vol || 0) > (symMap[sym].vol || 0)) {
+      if (!symMap[sym] || t.boosted || (!symMap[sym].boosted && (t.vol || 0) > (symMap[sym].vol || 0))) {
         symMap[sym] = t;
       }
     });
@@ -2701,13 +3150,21 @@ var bubs = [];
     tokens = tokens.filter(function(t) {
       return t.boosted || (t.p5m || 0) !== 0 || (t.p1h || 0) !== 0 || (t.p6h || 0) !== 0 || (t.p24h || 0) !== 0 || (t.mcap || 0) > 0;
     });
-    if(!tokens.length){ setTimeout(init, 100); return; }
-    
+    if(!tokens.length){
+      if (liveDataLoaded) { showEmptyBubbleState(); return; }
+      setTimeout(init, 100); return;
+    }
+
+    // Re-check admin boosts at render time (bulletproof against flag loss)
+    _applyAdminBoosts(tokens);
+
     // Sort by % change magnitude for bubble sizing, but keep boosted tokens prioritized
     var boostedTokens = tokens.filter(function(t){ return t.boosted; });
     var normalTokens = tokens.filter(function(t){ return !t.boosted; });
     normalTokens.sort(function(a,b){ return Math.abs(getTfVal(b, tfField)) - Math.abs(getTfVal(a, tfField)); });
-    tokens = boostedTokens.concat(normalTokens).slice(0, 50);
+    // Boosted tokens always get a spot — trim normal tokens to make room
+    var normalSlots = Math.max(0, 50 - boostedTokens.length);
+    tokens = boostedTokens.concat(normalTokens.slice(0, normalSlots));
 
     // Use shared sizing function
     var radii = calcBubbleSizes(tokens, W, H, tfField);
@@ -2727,9 +3184,9 @@ var bubs = [];
       for(var k = 0; k < items.length; k++){
         var it = items[k], r = it.r, found = false;
         for(var tries = 0; tries < 5000; tries++){
-          var glowPad = (W < 500) ? 2 : 8;
+          var glowPad = (W < 500) ? 4 : 12;
           var x = r + glowPad + Math.random() * (W - r * 2 - glowPad * 2);
-          var y = r + glowPad + Math.random() * (H - r * 2 - glowPad - 50);
+          var y = r + glowPad + Math.random() * (H - r * 2 - glowPad * 2);
           var ok = true;
           for(var j = 0; j < placed.length; j++){
             if(Math.hypot(placed[j].x - x, placed[j].y - y) < placed[j].packR + r + gap){
@@ -2787,17 +3244,19 @@ var bubs = [];
         (showCrosshair ? '<div class="hm-crosshair"></div>' : '') +
         (showScopeRing ? '<div class="hm-scope-ring"></div>' : '') +
         (showTicks ? '<div class="hm-ticks"></div>' : '') +
-        (t.boosted && r > 25 ? '<div class="hm-boosted-badge">⚡' + (t.boostCount || '') + ' BOOSTED</div>' : '') +
         '<div class="hm-content">' +
           (showLogo ? (t.img ? '<img src="' + t.img + '" style="width:' + (emojiSize + 4) + 'px;height:' + (emojiSize + 4) + 'px;border-radius:50%;object-fit:cover;margin-bottom:-1px;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5))" onerror="this.style.display=\'none\'">' : '<div style="font-size:' + emojiSize + 'px;line-height:1;margin-bottom:0;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5))">' + emoji + '</div>') : '') +
           '<div class="hm-ticker" style="font-size:' + fsTicker + 'px">' + t.sym + '</div>' +
           (showPct ? '<div class="hm-pct" style="font-size:' + fsPct + 'px;color:' + styles.pctColor + '">' + (styles.isUp && !styles.isNeutral ? "+" : "") + tfVal.toFixed(1) + '%</div>' : '') +
+          (t.boosted && r > 25 ? '<div class="hm-boosted-badge">⚡' + (t.boostCount || '') + '</div>' : '') +
         '</div>';
       
       el.onclick = function(e){ e.stopPropagation(); openBubbleModal(t); };
-      
+
+      // Start hidden, stagger entrance
+      el.style.opacity = '0';
       world.appendChild(el);
-      
+
       var spd = 0.03 + Math.random() * 0.05;
       var ang = Math.random() * Math.PI * 2;
       bubs.push({
@@ -2806,11 +3265,23 @@ var bubs = [];
         vy: Math.sin(ang) * spd,
         el: el, token: t
       });
-      
+
       // Initial position
       el.style.transform = "translate(" + (p.x - r) + "px," + (p.y - r) + "px)";
+
+      // Staggered fade-in
+      (function(el, delay){
+        setTimeout(function(){
+          el.style.opacity = '';
+          el.classList.add('entering');
+          setTimeout(function(){ el.classList.remove('entering'); }, 500);
+        }, delay);
+      })(el, idx * 20);
     });
-    
+
+    // Show bubble world now that all elements are positioned
+    world.classList.add('ready');
+
     // Animation loop
     function tick(){
       for(var i = 0; i < bubs.length; i++){
@@ -2848,7 +3319,7 @@ var bubs = [];
           var sDist = Math.sqrt(sdx*sdx + sdy*sdy);
           var ideal = b.r + sb.r + 8;
           if(sDist < ideal && sDist > 0.1){
-            var spread = (ideal - sDist) * 0.0008;
+            var spread = (ideal - sDist) * 0.003;
             b.vx += (sdx / sDist) * spread;
             b.vy += (sdy / sDist) * spread;
           }
@@ -2873,8 +3344,8 @@ var bubs = [];
         
         b.x += b.vx; b.y += b.vy;
         var isMob = window.innerWidth <= 768;
-        var padX = isMob ? 2 : 4;
-        var padY = isMob ? 2 : 10;
+        var padX = isMob ? 4 : 14;
+        var padY = isMob ? 4 : 10;
         var edgeR = b.r;
         if(b.x - edgeR < padX){ b.x = edgeR + padX; b.vx = Math.abs(b.vx); }
         if(b.x + edgeR > W - padX){ b.x = W - edgeR - padX; b.vx = -Math.abs(b.vx); }
@@ -2882,7 +3353,9 @@ var bubs = [];
         if(b.y + edgeR > H - padY){ b.y = H - edgeR - padY; b.vy = -Math.abs(b.vy); }
       }
       // Multiple passes to fully resolve overlaps
-      for(var pass = 0; pass < 3; pass++){
+      var _isMob2 = window.innerWidth <= 768;
+      var _padX2 = _isMob2 ? 4 : 10, _padY2 = _isMob2 ? 4 : 10;
+      for(var pass = 0; pass < 5; pass++){
         for(var i = 0; i < bubs.length; i++){
           for(var j = i+1; j < bubs.length; j++){
             var a = bubs[i], b = bubs[j];
@@ -2890,10 +3363,14 @@ var bubs = [];
             var dist = Math.sqrt(dx*dx + dy*dy);
             var minD = a.r + b.r + 6;
             if(dist < minD && dist > 0.1){
-              var ov = (minD - dist) / 2;
+              var ov = (minD - dist);
               var nx = dx/dist, ny = dy/dist;
-              a.x -= nx*ov; a.y -= ny*ov;
-              b.x += nx*ov; b.y += ny*ov;
+              // Check if either bubble is near a wall — push the other one more
+              var aWall = (a.x - a.r < _padX2 + 5) || (a.x + a.r > W - _padX2 - 5) || (a.y - a.r < _padY2 + 5) || (a.y + a.r > H - _padY2 - 5);
+              var bWall = (b.x - b.r < _padX2 + 5) || (b.x + b.r > W - _padX2 - 5) || (b.y - b.r < _padY2 + 5) || (b.y + b.r > H - _padY2 - 5);
+              var aShare = (bWall && !aWall) ? 0.8 : (aWall && !bWall) ? 0.2 : 0.5;
+              a.x -= nx * ov * aShare; a.y -= ny * ov * aShare;
+              b.x += nx * ov * (1 - aShare); b.y += ny * ov * (1 - aShare);
               if(pass === 0){
                 var dvx = a.vx - b.vx, dvy = a.vy - b.vy;
                 var dot = dvx*nx + dvy*ny;
@@ -2905,37 +3382,77 @@ var bubs = [];
             }
           }
         }
+        // Re-clamp to bounds after each pass
+        for(var ci = 0; ci < bubs.length; ci++){
+          var c = bubs[ci];
+          if(c.x - c.r < _padX2) c.x = c.r + _padX2;
+          if(c.x + c.r > W - _padX2) c.x = W - c.r - _padX2;
+          if(c.y - c.r < _padY2) c.y = c.r + _padY2;
+          if(c.y + c.r > H - _padY2) c.y = H - c.r - _padY2;
+        }
       }
 
+      var _allIdle = true;
       for(var i = 0; i < bubs.length; i++){
         var b = bubs[i];
         // Smoothly interpolate radius toward target
         if(b.targetR && Math.abs(b.r - b.targetR) > 0.5){
-          b.r += (b.targetR - b.r) * 0.01;
+          b.r += (b.targetR - b.r) * 0.08;
           b.el.style.width = (b.r * 2) + "px";
           b.el.style.height = (b.r * 2) + "px";
+          _allIdle = false;
         }
+        if(b.vx !== 0 || b.vy !== 0) _allIdle = false;
         b.el.style.transform = "translate(" + (b.x - b.r) + "px," + (b.y - b.r) + "px)";
       }
+      if(_allIdle){ _idleFrames++; } else { _idleFrames = 0; }
+      if(_idleFrames > 60){ _sleeping = true; rafId = null; return; }
       rafId = requestAnimationFrame(tick);
     }
+    _tick = tick;
     tick();
   }
+
+  function wakeBubbles(){
+    if(_sleeping && bubs.length > 0 && _tick){
+      _sleeping = false; _idleFrames = 0;
+      _tick();
+    }
+  }
+  window.wakeBubbles = wakeBubbles;
+
+  // Wake on any interaction with the bubble area
+  var _heroEl = document.getElementById("bubbleHero");
+  if(_heroEl){
+    _heroEl.addEventListener("mousedown", function(){ wakeBubbles(); });
+    _heroEl.addEventListener("touchstart", function(){ wakeBubbles(); }, {passive: true});
+  }
+
+  // Wait for LIVE_TOKENS then init (only if init hasn't already been called by fetchLiveTokens)
+  var _bubbleInitDone = false;
+  var _origInit = init;
+  init = function(){ _bubbleInitDone = true; _origInit(); };
   window.init = init;
 
-  
-  // Wait for LIVE_TOKENS then init
+  var _waitAttempts = 0;
   function waitAndInit(){
+    if(_bubbleInitDone) return; // already initialized by fetchLiveTokens
     if(liveDataLoaded && typeof LIVE_TOKENS !== 'undefined' && LIVE_TOKENS.length > 0){
       init();
-    } else {
-      setTimeout(waitAndInit, 200);
+    } else if(_waitAttempts < 15) {
+      _waitAttempts++;
+      setTimeout(waitAndInit, 1000);
     }
   }
   waitAndInit();
   
-  var rt;
-  window.addEventListener("resize", function(){ clearTimeout(rt); rt = setTimeout(init, 250); });
+  var rt, _lastW = window.innerWidth;
+  window.addEventListener("resize", function(){
+    // Only reinit on width change — mobile scroll hides/shows address bar changing height only
+    if(window.innerWidth === _lastW) return;
+    _lastW = window.innerWidth;
+    clearTimeout(rt); rt = setTimeout(init, 250);
+  });
   
   // Mouse interaction - only push when swiping fast
   document.addEventListener("mousemove", function(e){
@@ -2950,6 +3467,7 @@ var bubs = [];
     mouseX = newX;
     mouseY = newY;
     mouseActive = (mouseX >= 0 && mouseX <= W && mouseY >= 0 && mouseY <= H);
+    if(mouseActive) wakeBubbles();
   });
   document.addEventListener("mouseleave", function(){ mouseActive = false; });
 
@@ -3293,19 +3811,40 @@ function openBubbleModal(t) {
   var bmSymEl = document.getElementById("bmSym");
   var existingBadge = bmSymEl.parentElement.querySelector('.boost-badge');
   if (existingBadge) existingBadge.remove();
-  if (t.boosted && t.boostCount) {
-    var badge = document.createElement('span');
-    badge.className = 'boost-badge';
-    badge.style.fontSize = '11px';
-    badge.style.marginLeft = '8px';
-    badge.textContent = '⚡' + t.boostCount;
-    bmSymEl.parentElement.insertBefore(badge, bmSymEl.nextSibling);
-  }
   document.getElementById("bmFullname").textContent = t.name || t.sym;
+  var _copyCA = function() {
+    if (t.ca) {
+      navigator.clipboard.writeText(t.ca);
+      var existing = document.getElementById('bmCopyToast');
+      if (existing) existing.remove();
+      var toast = document.createElement('div');
+      toast.id = 'bmCopyToast';
+      toast.textContent = 'CA copied to clipboard';
+      toast.style.cssText = 'position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-60px);background:#2D3F7A;color:#fff;padding:10px 24px;border-radius:14px;font-size:14px;font-weight:600;z-index:100000;transition:transform 0.3s ease;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,0.4);';
+      document.body.appendChild(toast);
+      requestAnimationFrame(function() { requestAnimationFrame(function() { toast.style.transform = 'translateX(-50%) translateY(0)'; }); });
+      setTimeout(function() {
+        toast.style.transform = 'translateX(-50%) translateY(-60px)';
+        setTimeout(function() { if (toast.parentNode) toast.remove(); }, 300);
+      }, 1500);
+    }
+  };
+  bmSymEl.style.cursor = 'pointer';
+  bmSymEl.onclick = function(e) { e.stopPropagation(); _copyCA(); };
+  document.getElementById("bmFullname").style.cursor = 'pointer';
+  document.getElementById("bmFullname").onclick = function(e) { e.stopPropagation(); _copyCA(); };
   // Set watchlist star state
   var starBtn = document.getElementById("bmStar");
-  if (starBtn) starBtn.classList.toggle('active', watchlist.includes(t.sym));
-  var pairTokenMap = { 'solana':'/SOL','eth':'/WETH','ethereum':'/WETH','base':'/WETH','bsc':'/BNB','sui':'/SUI','tron':'/TRX','arbitrum':'/WETH','avalanche':'/WAVAX','polygon':'/WMATIC','optimism':'/WETH','blast':'/WETH','ton':'/TON' };
+  if (starBtn) {
+    var sActive = watchlist.includes(t.sym);
+    starBtn.classList.toggle('active', sActive);
+    var sSvg = starBtn.querySelector('svg');
+    if (sSvg) {
+      if (sActive) { sSvg.setAttribute('fill','#e3e3e3'); sSvg.setAttribute('stroke','none'); }
+      else { sSvg.setAttribute('fill','none'); sSvg.setAttribute('stroke','#e3e3e3'); }
+    }
+  }
+  var pairTokenMap = { 'solana':'/SOL','eth':'/WETH','ethereum':'/WETH','base':'/WETH','bsc':'/BNB','sui':'/SUI','tron':'/TRX','arbitrum':'/WETH','avalanche':'/WAVAX','polygon':'/WMATIC','optimism':'/WETH','blast':'/WETH','ton':'/TON','pulsechain':'/PLS','seiv2':'/WSEI' };
   document.getElementById("bmChain").textContent = pairTokenMap[(t.net || 'solana').toLowerCase()] || '/SOL';
   var ageBadge = document.getElementById("bmAgeBadge");
   if (ageBadge) ageBadge.textContent = fmtAge(t.age) || '';
@@ -3437,7 +3976,7 @@ function openBubbleModal(t) {
 
   // Show modal
   ov.classList.add("open");
-  setTimeout(function() { _initModalChart(t); }, 100);
+  loadTradingView(function() { setTimeout(function() { _initModalChart(t); }, 100); });
 
   // Update URL
   try {
@@ -3524,9 +4063,19 @@ function toggleModalWatchlist(btnEl) {
   var t = window._modalToken;
   if (!t || !t.sym) return;
   toggleWatchlist(t.sym, null);
-  // Update star state
   var isActive = watchlist.includes(t.sym);
   btnEl.classList.toggle('active', isActive);
+  // Toggle star fill/outline
+  var svg = btnEl.querySelector('svg');
+  if (svg) {
+    if (isActive) {
+      svg.setAttribute('fill', '#e3e3e3');
+      svg.setAttribute('stroke', 'none');
+    } else {
+      svg.setAttribute('fill', 'none');
+      svg.setAttribute('stroke', '#e3e3e3');
+    }
+  }
   // Pop animation
   btnEl.style.transform = 'scale(1.3)';
   setTimeout(function() { btnEl.style.transform = ''; }, 200);
@@ -3671,6 +4220,10 @@ function closeBubbleModal() {
     window._bmSubIntervals = {};
   }
   if (window._bmWidget) { try { window._bmWidget.remove(); } catch(e) {} window._bmWidget = null; }
+  // Clean up no-data overlay and poll
+  if (window._bmNoDataPoll) { clearInterval(window._bmNoDataPoll); window._bmNoDataPoll = null; }
+  var bmNoData = document.getElementById('bmNoDataOverlay');
+  if (bmNoData) bmNoData.style.display = 'none';
   var bmChart = document.getElementById('bmTvChartContainer');
   if (bmChart) bmChart.innerHTML = '';
   // Clear bar cache for this token
@@ -3709,12 +4262,15 @@ function _initModalChart(t) {
     window._bmSubIntervals = {};
   }
   if (window._bmWidget) { try { window._bmWidget.remove(); } catch(e) {} window._bmWidget = null; }
+  if (window._bmNoDataPoll) { clearInterval(window._bmNoDataPoll); window._bmNoDataPoll = null; }
+  var bmNd = document.getElementById('bmNoDataOverlay');
+  if (bmNd) bmNd.style.display = 'none';
   container.innerHTML = '';
 
   var chain = (t.net || 'solana').toLowerCase();
-  var pairTokenMap2 = { solana:'SOL', eth:'WETH', base:'WETH', bsc:'BNB', sui:'SUI', tron:'TRX', arbitrum:'WETH', avalanche:'WAVAX', polygon:'WMATIC', optimism:'WETH', blast:'WETH', ton:'TON' };
-  var geckoChainMap = { solana:'solana', eth:'eth', base:'base', bsc:'bsc', sui:'sui-network', tron:'tron', arbitrum:'arbitrum', avalanche:'avax', polygon:'polygon_pos', optimism:'optimism', blast:'blast', ton:'ton' };
-  var dexChainMap2 = { solana:'solana', eth:'ethereum', base:'base', bsc:'bsc', sui:'sui', tron:'tron', arbitrum:'arbitrum', avalanche:'avalanche', polygon:'polygon', optimism:'optimism', blast:'blast', ton:'ton' };
+  var pairTokenMap2 = { solana:'SOL', eth:'WETH', base:'WETH', bsc:'BNB', sui:'SUI', tron:'TRX', arbitrum:'WETH', avalanche:'WAVAX', polygon:'WMATIC', optimism:'WETH', blast:'WETH', ton:'TON', pulsechain:'PLS', seiv2:'WSEI' };
+  var geckoChainMap = { solana:'solana', eth:'eth', base:'base', bsc:'bsc', sui:'sui-network', tron:'tron', arbitrum:'arbitrum', avalanche:'avax', polygon:'polygon_pos', optimism:'optimism', blast:'blast', ton:'ton', pulsechain:'pulsechain', seiv2:'sei-evm' };
+  var dexChainMap2 = { solana:'solana', eth:'ethereum', base:'base', bsc:'bsc', sui:'sui', tron:'tron', arbitrum:'arbitrum', avalanche:'avalanche', polygon:'polygon', optimism:'optimism', blast:'blast', ton:'ton', pulsechain:'pulsechain', seiv2:'seiv2' };
   var geckoNet = geckoChainMap[chain] || chain;
   var dexNet = dexChainMap2[chain] || chain;
 
@@ -3730,7 +4286,7 @@ function _initModalChart(t) {
         if (best.pairAddress) { done = true; t._discoveredPool = best.pairAddress; cb(best.pairAddress); }
       }
     }).catch(function(){});
-    fetch('https://api.geckoterminal.com/api/v2/networks/'+geckoNet+'/tokens/'+t.ca+'/pools?page=1',{headers:{'Accept':'application/json'}}).then(function(r){return r.json()}).then(function(d){
+    geckoFetch('https://api.geckoterminal.com/api/v2/networks/'+geckoNet+'/tokens/'+t.ca+'/pools?page=1',{headers:{'Accept':'application/json'}}).then(function(r){return r.json()}).then(function(d){
       if (done) return;
       if (d && d.data && d.data.length) {
         var poolId = d.data[0].attributes && d.data[0].attributes.address;
@@ -3767,7 +4323,7 @@ function _initModalChart(t) {
           pricescale: ps,
           minmov: 1,
           has_intraday: true,
-          supported_resolutions: ['1','5','15','30','60','240'],
+          supported_resolutions: ['1','5','15','30','60','240','1D'],
           volume_precision: 2,
           data_status: 'streaming',
         });
@@ -3782,19 +4338,33 @@ function _initModalChart(t) {
       var resMin = parseInt(res);
       var resMs = (!isNaN(resMin) ? resMin : 1) * 60000;
       if (res === '1D') resMs = 86400000;
+      // Fallback: seed bars from DexScreener live price when no OHLCV available
+      function _seedFromLivePrice() {
+        var overlay = document.getElementById('bmNoDataOverlay');
+        if (overlay) overlay.style.display = 'flex';
+        onRes([], { noData: true });
+      }
       _discoverPoolModal(function(pool) {
-        if (!pool) { onRes([], { noData: true }); return; }
-        var url = 'https://api.geckoterminal.com/api/v2/networks/'+geckoNet+'/pools/'+pool+'/ohlcv/'+rc.agg+'?aggregate='+rc.mult+'&limit=300&currency=usd';
+        if (!pool) { _seedFromLivePrice(); return; }
+        var url = 'https://api.geckoterminal.com/api/v2/networks/'+geckoNet+'/pools/'+pool+'/ohlcv/'+rc.agg+'?aggregate='+rc.mult+'&limit=1000&currency=usd';
         var attempt = 0;
         function tryFetch() {
           attempt++;
           var ctrl = new AbortController();
-          var tid = setTimeout(function(){ ctrl.abort(); }, 8000);
-          fetch(url,{headers:{'Accept':'application/json'},signal:ctrl.signal}).then(function(r){clearTimeout(tid);return r.json();}).then(function(d){
+          var tid = setTimeout(function(){ ctrl.abort(); }, 12000);
+          geckoFetch(url,{headers:{'Accept':'application/json'},signal:ctrl.signal}).then(function(r){
+            clearTimeout(tid);
+            if (r.status === 429 || r.status === 403) {
+              if (attempt < 5) { setTimeout(tryFetch, attempt * 2000); return; }
+              _seedFromLivePrice(); return;
+            }
+            return r.json();
+          }).then(function(d){
+            if (!d) return;
             var list = d && d.data && d.data.attributes && d.data.attributes.ohlcv_list;
             if (!list || !list.length) {
-              if (attempt < 3) { setTimeout(tryFetch, 1000); return; }
-              onRes([], { noData: true }); return;
+              _seedFromLivePrice();
+              return;
             }
             var seen = {};
             var bars = [];
@@ -3807,12 +4377,37 @@ function _initModalChart(t) {
               bars.push({ time: tm, open: +c[1], high: +c[2], low: +c[3], close: +c[4], volume: +c[5] });
             }
             bars.sort(function(a,b){ return a.time - b.time; });
-            _barCache[cacheKey] = bars;
-            onRes(bars, { noData: bars.length === 0 });
+            // Place live candle RIGHT AFTER last OHLCV bar (eliminates time gap)
+            function _finishBars(livePrice) {
+              if (bars.length > 0 && livePrice) {
+                var last = bars[bars.length - 1];
+                var nextSlot = last.time + resMs;
+                var nowBucket = Math.floor(Date.now() / resMs) * resMs;
+                console.log('[MODAL CHART] Last OHLCV:', new Date(last.time).toISOString(),
+                  '| now:', new Date(nowBucket).toISOString(),
+                  '| gap:', Math.round((nowBucket - last.time) / 60000), 'min',
+                  '| OHLCV close:', last.close, '| live:', livePrice);
+                bars.push({ time: nextSlot, open: last.close, high: Math.max(last.close, livePrice), low: Math.min(last.close, livePrice), close: livePrice, volume: 0 });
+              }
+              _barCache[cacheKey] = bars;
+              onRes(bars, { noData: bars.length === 0 });
+            }
+            // Use SAME pair selection as subscribeBars (highest liquidity, not pairs[0])
+            fetchDexToken(t.ca).then(function(dexData) {
+              var lp = bars.length > 0 ? bars[bars.length - 1].close : 0;
+              if (dexData && dexData.pairs && dexData.pairs.length) {
+                var bestPair = dexData.pairs.reduce(function(b,p) { return (p.liquidity&&p.liquidity.usd||0) > (b.liquidity&&b.liquidity.usd||0) ? p : b; }, dexData.pairs[0]);
+                var p = parseFloat(bestPair.priceUsd);
+                if (p) lp = p;
+              }
+              _finishBars(lp);
+            }).catch(function() {
+              _finishBars(bars.length > 0 ? bars[bars.length - 1].close : 0);
+            });
           }).catch(function(){
             clearTimeout(tid);
-            if (attempt < 3) { setTimeout(tryFetch, 1000); return; }
-            onRes([], { noData: true });
+            if (attempt < 5) { setTimeout(tryFetch, attempt * 2000); return; }
+            _seedFromLivePrice();
           });
         }
         tryFetch();
@@ -3821,6 +4416,14 @@ function _initModalChart(t) {
     subscribeBars: function(sym, res, onTick, guid) {
       var resMin = parseInt(res);
       var resMs = (!isNaN(resMin) ? resMin : 1) * 60000;
+      if (res === '1D') resMs = 86400000;
+      var _currentBar = null;
+      var cacheKey = t.ca + '_' + res;
+      if (_barCache[cacheKey] && _barCache[cacheKey].length) {
+        var lastBar = _barCache[cacheKey][_barCache[cacheKey].length - 1];
+        _currentBar = { time: lastBar.time, open: lastBar.open, high: lastBar.high, low: lastBar.low, close: lastBar.close, volume: lastBar.volume };
+      }
+      var _lastTickPrice = _currentBar ? _currentBar.close : 0;
       var iv = setInterval(async function() {
         try {
           var d = await fetchDexToken(t.ca);
@@ -3829,7 +4432,19 @@ function _initModalChart(t) {
           var price = parseFloat(pair.priceUsd);
           if (!price) return;
           var barTime = Math.floor(Date.now() / resMs) * resMs;
-          onTick({ time: barTime, open: price, high: price, low: price, close: price, volume: 0 });
+          var priceChanged = price !== _lastTickPrice;
+          var newBucket = !_currentBar || barTime > _currentBar.time;
+          if (priceChanged) _lastTickPrice = price;
+          if (priceChanged || newBucket) {
+            if (_currentBar && _currentBar.time === barTime) {
+              _currentBar.close = price;
+              _currentBar.high = Math.max(_currentBar.high, price);
+              _currentBar.low = Math.min(_currentBar.low, price);
+            } else {
+              _currentBar = { time: barTime, open: price, high: price, low: price, close: price, volume: 0 };
+            }
+            onTick({ time: _currentBar.time, open: _currentBar.open, high: _currentBar.high, low: _currentBar.low, close: _currentBar.close, volume: _currentBar.volume });
+          }
           // Update native price on the token
           var pNative = pair.priceNative ? parseFloat(pair.priceNative) : 0;
           var qSym = pair.quoteToken ? pair.quoteToken.symbol.toUpperCase() : '';
@@ -3885,7 +4500,7 @@ function _initModalChart(t) {
           _bmBuySellData = { txns: pair.txns || {}, volume: pair.volume || {} };
           if (_bmActiveTf) renderBuySell(_bmActiveTf);
         } catch(e) {}
-      }, 4000);
+      }, 2000);
       window._bmSubIntervals = window._bmSubIntervals || {};
       window._bmSubIntervals[guid] = iv;
     },
@@ -3923,19 +4538,20 @@ function _initModalChart(t) {
       'mainSeriesProperties.candleStyle.borderDownColor': '#EF4444',
       'mainSeriesProperties.candleStyle.wickUpColor': 'rgba(34,197,94,0.5)',
       'mainSeriesProperties.candleStyle.wickDownColor': 'rgba(239,68,68,0.5)',
+      'timeScale.rightOffset': 5,
     },
     studies_overrides: {
       'volume.volume.color.0': 'rgba(239,68,68,0.25)',
       'volume.volume.color.1': 'rgba(34,197,94,0.25)',
     },
-    disabled_features: ['header_symbol_search','symbol_search_hot_key','header_compare','display_market_status','go_to_date','timeframes_toolbar'],
-    enabled_features: ['side_toolbar_in_fullscreen_mode','header_in_fullscreen_mode','create_volume_indicator_by_default'],
+    disabled_features: ['header_symbol_search','symbol_search_hot_key','header_compare','display_market_status','go_to_date','timeframes_toolbar','use_localstorage_for_settings'],
+    enabled_features: ['side_toolbar_in_fullscreen_mode','header_in_fullscreen_mode','create_volume_indicator_by_default','items_favoriting'],
+    favorites: { intervals: ['1','5','15','60','240','1D'], chartTypes: ['Candles','Line','Area'] },
   });
 
-  // Poll for chart readiness
+  // Poll for chart readiness — just resize/paint, no view reset
   if (window._bmChartPoll) clearInterval(window._bmChartPoll);
-  var _didReset = false;
-  var _ck = t.ca + '_5';
+  var _ck = t.ca + '_1';
   window._bmChartPoll = setInterval(function() {
     try {
       var iframe = container.querySelector('iframe');
@@ -3944,10 +4560,6 @@ function _initModalChart(t) {
       cw.resize();
       cw.paint();
       if (_barCache[_ck] && _barCache[_ck].length > 0) {
-        if (!_didReset && window._bmWidget && window._bmWidget.activeChart) {
-          try { window._bmWidget.activeChart().executeActionById('timeScaleReset'); } catch(e) {}
-          _didReset = true;
-        }
         setTimeout(function() {
           try { if (iframe.contentWindow && iframe.contentWindow.chartWidget) { iframe.contentWindow.chartWidget.resize(); iframe.contentWindow.chartWidget.paint(); } } catch(e) {}
           clearInterval(window._bmChartPoll);
@@ -4021,8 +4633,9 @@ document.addEventListener("keydown", function(e) {
   function sizeBubbleHero(){
     var hero = document.getElementById("bubbleHero");
     if(!hero || window.innerWidth <= 768) return;
-    var rect = hero.getBoundingClientRect();
-    hero.style.height = Math.floor(window.innerHeight - rect.top) + "px";
+    var topRel = 0, el = hero;
+    while(el){ topRel += el.offsetTop; el = el.offsetParent; }
+    hero.style.height = Math.max(300, Math.floor(window.innerHeight - topRel)) + "px";
   }
   sizeBubbleHero();
   window.addEventListener("resize", function(){ sizeBubbleHero(); });
@@ -4039,13 +4652,19 @@ var _tpWidget = null;
 var _tpPollTimer = null;
 var _tpPoolCache = {};
 
-// Load TradingView Advanced Charts library
-(function(){
+// Load TradingView Advanced Charts library on demand
+var _tvLoading = false, _tvLoaded = false, _tvCallbacks = [];
+function loadTradingView(cb) {
+  if(_tvLoaded) { if(cb) cb(); return; }
+  if(cb) _tvCallbacks.push(cb);
+  if(_tvLoading) return;
+  _tvLoading = true;
   var s = document.createElement('script');
   s.src = '/charting_library/charting_library.standalone.js';
   s.async = true;
+  s.onload = function(){ _tvLoaded = true; _tvCallbacks.forEach(function(f){ f(); }); _tvCallbacks = []; };
   document.head.appendChild(s);
-})();
+}
 
 function openTokenPage(t) {
   if (!t) return;
@@ -4088,13 +4707,7 @@ function openTokenPage(t) {
     try { history.pushState({ tokenPage: true, ca: ca, chain: chain }, '', '/' + chain + '/' + ca); } catch(e) {}
   }
 
-  var pFmt = function(p) {
-    if (!p || p === 0) return '$0';
-    if (p >= 1) return '$' + p.toFixed(2);
-    if (p >= 0.01) return '$' + p.toFixed(4);
-    if (p >= 0.0001) return '$' + p.toFixed(6);
-    return '$' + p.toExponential(2);
-  };
+  var pFmt = function(p) { return dexPriceFmt(p); };
 
   var ch = t.p24h || 0;
 
@@ -4134,7 +4747,7 @@ function openTokenPage(t) {
   if (ageVal) { ageEl.textContent = ageVal; ageEl.style.display = ''; } else { ageEl.style.display = 'none'; }
 
   // Populate right panel — price
-  document.getElementById('tpRPriceBig').textContent = pFmt(t.price);
+  document.getElementById('tpRPriceBig').innerHTML = pFmt(t.price);
   
   // Pair price (price in base token like WETH, SOL, etc.)
   var pairLabel = document.getElementById('tpRPairPriceLabel');
@@ -4189,7 +4802,7 @@ function openTokenPage(t) {
   document.getElementById('tpRCa').textContent = t.ca || '—';
   document.getElementById('tpRPairAge').textContent = fmtAge(t.age) || '—';
   document.getElementById('tpRDex').textContent = t.dex || '—';
-  var pairTokenMap = { solana:'SOL', eth:'WETH', base:'WETH', bsc:'BNB', sui:'SUI', tron:'TRX', arbitrum:'WETH', avalanche:'WAVAX', polygon:'WMATIC', optimism:'WETH', blast:'WETH', ton:'TON' };
+  var pairTokenMap = { solana:'SOL', eth:'WETH', base:'WETH', bsc:'BNB', sui:'SUI', tron:'TRX', arbitrum:'WETH', avalanche:'WAVAX', polygon:'WMATIC', optimism:'WETH', blast:'WETH', ton:'TON', pulsechain:'PLS', seiv2:'WSEI' };
   document.getElementById('tpRPair').textContent = (t.sym || '???') + ' / ' + (pairTokenMap[t.net] || 'SOL');
 
   // Social links
@@ -4202,8 +4815,8 @@ function openTokenPage(t) {
   tgEl.style.display = t.telegram ? '' : 'none';
   tgEl.href = t.telegram || '#';
 
-  // Init chart immediately — Cloudflare Worker has no cold starts
-  initTokenPageChart(t);
+  // Init chart — load TradingView on demand
+  loadTradingView(function() { initTokenPageChart(t); });
 
   // Load demo txns for now
   loadTokenPageTxns(t);
@@ -4237,9 +4850,14 @@ function closeTokenPage() {
     window._tpSubIntervals = {};
   }
   if (_tpWidget) { try { _tpWidget.remove(); } catch(e) {} _tpWidget = null; }
+  // Clean up no-data overlay and poll
+  if (window._tpNoDataPoll) { clearInterval(window._tpNoDataPoll); window._tpNoDataPoll = null; }
+  var tpNoData = document.getElementById('tpNoDataOverlay');
+  if (tpNoData) tpNoData.style.display = 'none';
+  var tpChartEl = document.getElementById('tpChartContainer');
+  if (tpChartEl) { tpChartEl.style.display = ''; tpChartEl.innerHTML = ''; }
   if (_tpPollTimer) { clearInterval(_tpPollTimer); _tpPollTimer = null; }
   if (_tpTxnTimer) { clearInterval(_tpTxnTimer); _tpTxnTimer = null; }
-  document.getElementById('tpChartContainer').innerHTML = '';
 
   // Clear bar cache for this token so next open gets fresh data
   if (_tpToken && _tpToken.ca) {
@@ -4271,13 +4889,17 @@ function initTokenPageChart(t) {
     window._tpSubIntervals = {};
   }
   if (_tpWidget) { try { _tpWidget.remove(); } catch(e) {} _tpWidget = null; }
+  if (window._tpNoDataPoll) { clearInterval(window._tpNoDataPoll); window._tpNoDataPoll = null; }
+  var tpNd = document.getElementById('tpNoDataOverlay');
+  if (tpNd) tpNd.style.display = 'none';
+  container.style.display = '';
   if (_tpPollTimer) { clearInterval(_tpPollTimer); _tpPollTimer = null; }
   container.innerHTML = '';
 
   var chain = (t.net || 'solana').toLowerCase();
-  var pairTokenMap = { solana:'SOL', eth:'WETH', base:'WETH', bsc:'BNB', sui:'SUI', tron:'TRX', arbitrum:'WETH', avalanche:'WAVAX', polygon:'WMATIC', optimism:'WETH', blast:'WETH', ton:'TON' };
-  var geckoChainMap = { solana:'solana', eth:'eth', base:'base', bsc:'bsc', sui:'sui-network', tron:'tron', arbitrum:'arbitrum', avalanche:'avax', polygon:'polygon_pos', optimism:'optimism', blast:'blast', ton:'ton' };
-  var dexChainMap2 = { solana:'solana', eth:'ethereum', base:'base', bsc:'bsc', sui:'sui', tron:'tron', arbitrum:'arbitrum', avalanche:'avalanche', polygon:'polygon', optimism:'optimism', blast:'blast', ton:'ton' };
+  var pairTokenMap = { solana:'SOL', eth:'WETH', base:'WETH', bsc:'BNB', sui:'SUI', tron:'TRX', arbitrum:'WETH', avalanche:'WAVAX', polygon:'WMATIC', optimism:'WETH', blast:'WETH', ton:'TON', pulsechain:'PLS', seiv2:'WSEI' };
+  var geckoChainMap = { solana:'solana', eth:'eth', base:'base', bsc:'bsc', sui:'sui-network', tron:'tron', arbitrum:'arbitrum', avalanche:'avax', polygon:'polygon_pos', optimism:'optimism', blast:'blast', ton:'ton', pulsechain:'pulsechain', seiv2:'sei-evm' };
+  var dexChainMap2 = { solana:'solana', eth:'ethereum', base:'base', bsc:'bsc', sui:'sui', tron:'tron', arbitrum:'arbitrum', avalanche:'avalanche', polygon:'polygon', optimism:'optimism', blast:'blast', ton:'ton', pulsechain:'pulsechain', seiv2:'seiv2' };
   var geckoNet = geckoChainMap[chain] || chain;
   var dexNet = dexChainMap2[chain] || chain;
 
@@ -4296,7 +4918,7 @@ function initTokenPageChart(t) {
       }
     }).catch(function(){});
     // GeckoTerminal fallback
-    fetch('https://api.geckoterminal.com/api/v2/networks/'+geckoNet+'/tokens/'+t.ca+'/pools?page=1',{headers:{'Accept':'application/json'}}).then(function(r){return r.json()}).then(function(d){
+    geckoFetch('https://api.geckoterminal.com/api/v2/networks/'+geckoNet+'/tokens/'+t.ca+'/pools?page=1',{headers:{'Accept':'application/json'}}).then(function(r){return r.json()}).then(function(d){
       if (done) return;
       if (d && d.data && d.data.length) {
         var poolId = d.data[0].attributes && d.data[0].attributes.address;
@@ -4334,7 +4956,7 @@ function initTokenPageChart(t) {
           pricescale: ps,
           minmov: 1,
           has_intraday: true,
-          supported_resolutions: ['1','5','15','30','60','240'],
+          supported_resolutions: ['1','5','15','30','60','240','1D'],
           volume_precision: 2,
           data_status: 'streaming',
         });
@@ -4352,19 +4974,36 @@ function initTokenPageChart(t) {
       var resMs = (!isNaN(resMin) ? resMin : 1) * 60000;
       if (res === '1D') resMs = 86400000;
 
+      // Fallback: seed bars from DexScreener live price when no OHLCV available
+      function _seedFromLivePrice2() {
+        // Show "no data" overlay with live price instead of fake seed bars
+        var overlay = document.getElementById('tpNoDataOverlay');
+        var chartArea = document.getElementById('tpChartContainer');
+        if (chartArea) chartArea.style.display = 'none';
+        if (overlay) overlay.style.display = 'flex';
+        onRes([], { noData: true });
+      }
       _discoverPool(function(pool) {
-        if (!pool) { onRes([], { noData: true }); return; }
-        var url = 'https://api.geckoterminal.com/api/v2/networks/'+geckoNet+'/pools/'+pool+'/ohlcv/'+rc.agg+'?aggregate='+rc.mult+'&limit=300&currency=usd';
+        if (!pool) { _seedFromLivePrice2(); return; }
+        var url = 'https://api.geckoterminal.com/api/v2/networks/'+geckoNet+'/pools/'+pool+'/ohlcv/'+rc.agg+'?aggregate='+rc.mult+'&limit=1000&currency=usd';
         var attempt = 0;
         function tryFetch() {
           attempt++;
           var ctrl = new AbortController();
-          var tid = setTimeout(function(){ ctrl.abort(); }, 8000);
-          fetch(url,{headers:{'Accept':'application/json'},signal:ctrl.signal}).then(function(r){clearTimeout(tid);return r.json();}).then(function(d){
+          var tid = setTimeout(function(){ ctrl.abort(); }, 12000);
+          geckoFetch(url,{headers:{'Accept':'application/json'},signal:ctrl.signal}).then(function(r){
+            clearTimeout(tid);
+            if (r.status === 429 || r.status === 403) {
+              if (attempt < 5) { setTimeout(tryFetch, attempt * 2000); return; }
+              _seedFromLivePrice2(); return;
+            }
+            return r.json();
+          }).then(function(d){
+            if (!d) return;
             var list = d && d.data && d.data.attributes && d.data.attributes.ohlcv_list;
             if (!list || !list.length) {
-              if (attempt < 3) { setTimeout(tryFetch, 1000); return; }
-              onRes([], { noData: true }); return;
+              _seedFromLivePrice2();
+              return;
             }
             var seen = {};
             var bars = [];
@@ -4377,12 +5016,37 @@ function initTokenPageChart(t) {
               bars.push({ time: tm, open: +c[1], high: +c[2], low: +c[3], close: +c[4], volume: +c[5] });
             }
             bars.sort(function(a,b){ return a.time - b.time; });
-            _barCache[cacheKey] = bars;
-            onRes(bars, { noData: bars.length === 0 });
+            // Place live candle RIGHT AFTER last OHLCV bar (eliminates time gap)
+            function _finishBars(livePrice) {
+              if (bars.length > 0 && livePrice) {
+                var last = bars[bars.length - 1];
+                var nextSlot = last.time + resMs;
+                var nowBucket = Math.floor(Date.now() / resMs) * resMs;
+                console.log('[TOKEN CHART] Last OHLCV:', new Date(last.time).toISOString(),
+                  '| now:', new Date(nowBucket).toISOString(),
+                  '| gap:', Math.round((nowBucket - last.time) / 60000), 'min',
+                  '| OHLCV close:', last.close, '| live:', livePrice);
+                bars.push({ time: nextSlot, open: last.close, high: Math.max(last.close, livePrice), low: Math.min(last.close, livePrice), close: livePrice, volume: 0 });
+              }
+              _barCache[cacheKey] = bars;
+              onRes(bars, { noData: bars.length === 0 });
+            }
+            // Use SAME pair selection as subscribeBars (highest liquidity, not pairs[0])
+            fetchDexToken(t.ca).then(function(dexData) {
+              var lp = bars.length > 0 ? bars[bars.length - 1].close : 0;
+              if (dexData && dexData.pairs && dexData.pairs.length) {
+                var bestPair = dexData.pairs.reduce(function(b,p) { return (p.liquidity&&p.liquidity.usd||0) > (b.liquidity&&b.liquidity.usd||0) ? p : b; }, dexData.pairs[0]);
+                var p = parseFloat(bestPair.priceUsd);
+                if (p) lp = p;
+              }
+              _finishBars(lp);
+            }).catch(function() {
+              _finishBars(bars.length > 0 ? bars[bars.length - 1].close : 0);
+            });
           }).catch(function(){
             clearTimeout(tid);
-            if (attempt < 3) { setTimeout(tryFetch, 1000); return; }
-            onRes([], { noData: true });
+            if (attempt < 5) { setTimeout(tryFetch, attempt * 2000); return; }
+            _seedFromLivePrice2();
           });
         }
         tryFetch();
@@ -4391,6 +5055,14 @@ function initTokenPageChart(t) {
     subscribeBars: function(sym, res, onTick, guid) {
       var resMin = parseInt(res);
       var resMs = (!isNaN(resMin) ? resMin : 1) * 60000;
+      if (res === '1D') resMs = 86400000;
+      var _currentBar = null;
+      var cacheKey = t.ca + '_' + res;
+      if (_barCache[cacheKey] && _barCache[cacheKey].length) {
+        var lastBar = _barCache[cacheKey][_barCache[cacheKey].length - 1];
+        _currentBar = { time: lastBar.time, open: lastBar.open, high: lastBar.high, low: lastBar.low, close: lastBar.close, volume: lastBar.volume };
+      }
+      var _lastTickPrice = _currentBar ? _currentBar.close : 0;
       var iv = setInterval(async function() {
         try {
           var d = await fetchDexToken(t.ca);
@@ -4399,11 +5071,22 @@ function initTokenPageChart(t) {
           var price = parseFloat(pair.priceUsd);
           if (!price) return;
           var barTime = Math.floor(Date.now() / resMs) * resMs;
-          onTick({ time: barTime, open: price, high: price, low: price, close: price, volume: 0 });
-          var pFmt = function(p) { if(p>=1) return '$'+p.toFixed(2); if(p>=0.01) return '$'+p.toFixed(4); if(p>=0.0001) return '$'+p.toFixed(6); return '$'+p.toExponential(2); };
-          document.getElementById('tpRPriceBig').textContent = pFmt(price);
+          var priceChanged = price !== _lastTickPrice;
+          var newBucket = !_currentBar || barTime > _currentBar.time;
+          if (priceChanged) _lastTickPrice = price;
+          if (priceChanged || newBucket) {
+            if (_currentBar && _currentBar.time === barTime) {
+              _currentBar.close = price;
+              _currentBar.high = Math.max(_currentBar.high, price);
+              _currentBar.low = Math.min(_currentBar.low, price);
+            } else {
+              _currentBar = { time: barTime, open: price, high: price, low: price, close: price, volume: 0 };
+            }
+            onTick({ time: _currentBar.time, open: _currentBar.open, high: _currentBar.high, low: _currentBar.low, close: _currentBar.close, volume: _currentBar.volume });
+          }
+          document.getElementById('tpRPriceBig').innerHTML = dexPriceFmt(price);
         } catch(e) {}
-      }, 4000);
+      }, 2000);
       window._tpSubIntervals = window._tpSubIntervals || {};
       window._tpSubIntervals[guid] = iv;
     },
@@ -4441,20 +5124,19 @@ function initTokenPageChart(t) {
       'mainSeriesProperties.candleStyle.borderDownColor': '#EF4444',
       'mainSeriesProperties.candleStyle.wickUpColor': 'rgba(34,197,94,0.5)',
       'mainSeriesProperties.candleStyle.wickDownColor': 'rgba(239,68,68,0.5)',
+      'timeScale.rightOffset': 5,
     },
     studies_overrides: {
       'volume.volume.color.0': 'rgba(239,68,68,0.25)',
       'volume.volume.color.1': 'rgba(34,197,94,0.25)',
     },
-    disabled_features: ['header_symbol_search','symbol_search_hot_key','header_compare','display_market_status','go_to_date','timeframes_toolbar'],
-    enabled_features: ['side_toolbar_in_fullscreen_mode','header_in_fullscreen_mode','create_volume_indicator_by_default'],
+    disabled_features: ['header_symbol_search','symbol_search_hot_key','header_compare','display_market_status','go_to_date','timeframes_toolbar','use_localstorage_for_settings'],
+    enabled_features: ['side_toolbar_in_fullscreen_mode','header_in_fullscreen_mode','create_volume_indicator_by_default','items_favoriting'],
+    favorites: { intervals: ['1','5','15','60','240','1D'], chartTypes: ['Candles','Line','Area'] },
   });
 
-  // TradingView's internal chartWidget initializes late and doesn't reliably
-  // paint candles on first render. Poll and call resize+paint repeatedly
-  // until bar data is loaded and candles are rendered.
+  // Poll for chart readiness — just resize/paint, no view reset
   if (window._tpChartPoll) clearInterval(window._tpChartPoll);
-  var _didTimeReset = false;
   var _cacheKey = t.ca + '_1';
   window._tpChartPoll = setInterval(function() {
     try {
@@ -4463,13 +5145,7 @@ function initTokenPageChart(t) {
       var cw = iframe.contentWindow.chartWidget;
       cw.resize();
       cw.paint();
-      // Once bar data is cached, do a final timeScaleReset and stop
       if (_barCache[_cacheKey] && _barCache[_cacheKey].length > 0) {
-        if (!_didTimeReset && _tpWidget && _tpWidget.activeChart) {
-          try { _tpWidget.activeChart().executeActionById('timeScaleReset'); } catch(e) {}
-          _didTimeReset = true;
-        }
-        // Give 2 more paints after data is loaded to be safe, then stop
         setTimeout(function() {
           try {
             if (iframe.contentWindow && iframe.contentWindow.chartWidget) {
@@ -4483,7 +5159,6 @@ function initTokenPageChart(t) {
       }
     } catch(e) { clearInterval(window._tpChartPoll); window._tpChartPoll = null; }
   }, 200);
-  // Safety: stop polling after 15 seconds
   setTimeout(function() { if (window._tpChartPoll) { clearInterval(window._tpChartPoll); window._tpChartPoll = null; } }, 15000);
 }
 
@@ -4552,8 +5227,8 @@ function _fetchAndRenderTxns(t) {
   var body = document.getElementById('tpTxnBody');
   if (!body) return;
   var chain = (t.net || 'solana').toLowerCase();
-  var geckoChainMap2 = { solana:'solana', eth:'eth', base:'base', bsc:'bsc', sui:'sui-network', tron:'tron', arbitrum:'arbitrum', avalanche:'avax', polygon:'polygon_pos', optimism:'optimism', blast:'blast', ton:'ton' };
-  var dexChainMap3 = { solana:'solana', eth:'ethereum', base:'base', bsc:'bsc', sui:'sui', tron:'tron', arbitrum:'arbitrum', avalanche:'avalanche', polygon:'polygon', optimism:'optimism', blast:'blast', ton:'ton' };
+  var geckoChainMap2 = { solana:'solana', eth:'eth', base:'base', bsc:'bsc', sui:'sui-network', tron:'tron', arbitrum:'arbitrum', avalanche:'avax', polygon:'polygon_pos', optimism:'optimism', blast:'blast', ton:'ton', pulsechain:'pulsechain', seiv2:'sei-evm' };
+  var dexChainMap3 = { solana:'solana', eth:'ethereum', base:'base', bsc:'bsc', sui:'sui', tron:'tron', arbitrum:'arbitrum', avalanche:'avalanche', polygon:'polygon', optimism:'optimism', blast:'blast', ton:'ton', pulsechain:'pulsechain', seiv2:'seiv2' };
   var gNet = geckoChainMap2[chain] || chain;
   var dNet = dexChainMap3[chain] || chain;
 
@@ -4582,7 +5257,7 @@ function _fetchAndRenderTxns(t) {
     var url = 'https://api.geckoterminal.com/api/v2/networks/'+gNet+'/pools/'+pool+'/trades?trade_volume_in_usd_greater_than=0';
     var ctrl = new AbortController();
     var tid = setTimeout(function(){ ctrl.abort(); }, 8000);
-    fetch(url,{headers:{'Accept':'application/json'},signal:ctrl.signal}).then(function(r){clearTimeout(tid);return r.json()}).then(function(d){
+    geckoFetch(url,{headers:{'Accept':'application/json'},signal:ctrl.signal}).then(function(r){clearTimeout(tid);return r.json()}).then(function(d){
       var raw = (d && d.data) || [];
       if (!raw.length) { body.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-secondary);padding:20px">No trades found</td></tr>'; return; }
       var html = '';
@@ -4628,7 +5303,7 @@ function _fetchAndRenderTxns(t) {
         if (best.pairAddress) { t._discoveredPool = best.pairAddress; _doFetch(best.pairAddress); return; }
       }
       // Fallback: GeckoTerminal pool discovery
-      fetch('https://api.geckoterminal.com/api/v2/networks/'+gNet+'/tokens/'+t.ca+'/pools?page=1',{headers:{'Accept':'application/json'}}).then(function(r2){return r2.json()}).then(function(d2){
+      geckoFetch('https://api.geckoterminal.com/api/v2/networks/'+gNet+'/tokens/'+t.ca+'/pools?page=1',{headers:{'Accept':'application/json'}}).then(function(r2){return r2.json()}).then(function(d2){
         if (d2 && d2.data && d2.data.length) {
           var poolId = d2.data[0].attributes && d2.data[0].attributes.address;
           if (!poolId) { var pts = d2.data[0].id.split('_'); poolId = pts.length > 1 ? pts.slice(1).join('_') : d2.data[0].id; }
@@ -4706,29 +5381,33 @@ async function verifyTopTokens() {
     var toVerify = LIVE_TOKENS.filter(function(t) { return t.ca && t.ca.length > 5; });
     if (toVerify.length === 0) { _verifyInProgress = false; return; }
 
-    // Build lookup of all pairs from DexScreener (batch in groups of 30)
+    // Build lookup of all pairs from DexScreener (parallel batches of 30)
     var pairByCa = {};
     var allCas = toVerify.map(function(t) { return t.ca; });
     var batchSize = 30;
-
+    var chunks = [];
     for (var b = 0; b < allCas.length; b += batchSize) {
-      var chunk = allCas.slice(b, b + batchSize);
-      try {
-        var resp = await fetch('https://api.dexscreener.com/latest/dex/tokens/' + chunk.join(','));
-        if (!resp.ok) continue;
-        var dexData = await resp.json();
-        if (!dexData.pairs) continue;
-        for (var i = 0; i < dexData.pairs.length; i++) {
-          var p = dexData.pairs[i];
-          var ca = p.baseToken ? p.baseToken.address : null;
-          if (!ca) continue;
-          var existingLiq = pairByCa[ca] && pairByCa[ca].liquidity ? (pairByCa[ca].liquidity.usd || 0) : 0;
-          var newLiq = p.liquidity ? (p.liquidity.usd || 0) : 0;
-          if (!pairByCa[ca] || newLiq > existingLiq) {
-            pairByCa[ca] = p;
-          }
+      chunks.push(allCas.slice(b, b + batchSize));
+    }
+
+    var results = await Promise.allSettled(chunks.map(function(chunk) {
+      return fetch('https://api.dexscreener.com/latest/dex/tokens/' + chunk.join(','))
+        .then(function(resp) { return resp.ok ? resp.json() : null; });
+    }));
+
+    for (var r = 0; r < results.length; r++) {
+      if (results[r].status !== 'fulfilled' || !results[r].value || !results[r].value.pairs) continue;
+      var pairs = results[r].value.pairs;
+      for (var i = 0; i < pairs.length; i++) {
+        var p = pairs[i];
+        var ca = p.baseToken ? p.baseToken.address : null;
+        if (!ca) continue;
+        var existingLiq = pairByCa[ca] && pairByCa[ca].liquidity ? (pairByCa[ca].liquidity.usd || 0) : 0;
+        var newLiq = p.liquidity ? (p.liquidity.usd || 0) : 0;
+        if (!pairByCa[ca] || newLiq > existingLiq) {
+          pairByCa[ca] = p;
         }
-      } catch (e) { continue; }
+      }
     }
 
     // Build set of CAs we actually sent to DexScreener
@@ -4743,6 +5422,7 @@ async function verifyTopTokens() {
 
       // If we sent this CA to DexScreener but got NO pair back = likely dead
       if (sentCas[t.ca] && !pairByCa[t.ca]) {
+        if (_isAdminBoosted(t.ca)) continue; // never remove admin-boosted tokens
         _ruggedCas[t.ca] = Date.now(); // temp blacklist with timestamp
         LIVE_TOKENS.splice(j, 1);
         removed++;
@@ -4758,6 +5438,7 @@ async function verifyTopTokens() {
       // Only remove truly dead tokens (zero price = confirmed rug)
       // Lowered thresholds: memecoins naturally dip in liq/mcap temporarily
       if (price === 0 || liq < 500 || mcap < 1000) {
+        if (_isAdminBoosted(t.ca)) continue; // never remove admin-boosted tokens
         _ruggedCas[t.ca] = Date.now(); // temp blacklist with timestamp
         LIVE_TOKENS.splice(j, 1);
         removed++;
@@ -4779,6 +5460,7 @@ async function verifyTopTokens() {
     }
 
     console.log('MemeScope: Verified', Object.keys(pairByCa).length, 'tokens, removed', removed, 'rugged, blacklist size:', Object.keys(_ruggedCas).length);
+    _applyAdminBoosts(LIVE_TOKENS);
     loadData();
     if (typeof updateBubblesSmooth === 'function') updateBubblesSmooth();
   } catch (e) {
@@ -4818,14 +5500,24 @@ async function fetchLiveTokens() {
               var tk = data.tokens[i];
               var ca = tk.ca || tk.sym;
               if(seenCa[ca]) continue;
-              if(isRugged(ca)) continue; // skip temporarily blacklisted tokens (expires after 5 min)
+              if(isRugged(ca) && !_isAdminBoosted(ca)) continue; // skip blacklisted tokens, but never skip admin-boosted
               seenCa[ca] = true;
               var sym = (tk.sym || '').toUpperCase();
-              if(seenSym[sym] && (tk.vol || 0) <= (seenSym[sym].vol || 0)) continue;
+              var _isBoostedTk = !!_isAdminBoosted(ca);
+              if(seenSym[sym]) {
+                var _prevBoosted = !!_isAdminBoosted(seenSym[sym].ca || seenSym[sym].sym);
+                // Boosted token always wins symbol dedup; otherwise higher volume wins
+                if(_isBoostedTk && !_prevBoosted) { /* current wins, fall through */ }
+                else if(!_isBoostedTk && _prevBoosted) { continue; }
+                else if((tk.vol || 0) <= (seenSym[sym].vol || 0)) { continue; }
+              }
               seenSym[sym] = tk;
               tk.boosted = false;
               incoming.push(tk);
             }
+
+            // Apply admin boosts from localStorage
+            _applyAdminBoosts(incoming);
 
             if(isFirstLoad) {
               // First load: just fill the list
@@ -4853,10 +5545,12 @@ async function fetchLiveTokens() {
                   ex.mcap = fresh.mcap;
                   ex.vol = fresh.vol;
                   ex.liq = fresh.liq;
-                  ex.p5m = fresh.p5m;
-                  ex.p1h = fresh.p1h;
-                  ex.p6h = fresh.p6h;
-                  ex.p24h = fresh.p24h;
+                  // Only overwrite % fields with non-zero values — API sometimes sends 0
+                  // before DexScreener verify fills in the real numbers
+                  if(fresh.p5m) ex.p5m = fresh.p5m;
+                  if(fresh.p1h) ex.p1h = fresh.p1h;
+                  if(fresh.p6h) ex.p6h = fresh.p6h;
+                  if(fresh.p24h) ex.p24h = fresh.p24h;
                   ex.txn = fresh.txn;
                   ex.age = fresh.age;
                   if(fresh.name) ex.name = fresh.name;
@@ -4873,26 +5567,42 @@ async function fetchLiveTokens() {
               }
             }
 
+            // Re-apply admin boosts BEFORE dedup so boosted tokens win
+            _applyAdminBoosts(LIVE_TOKENS);
+
             // Final symbol-level dedup (edge case: two chains same sym)
-            var finalSym = {};
-            for(var j = LIVE_TOKENS.length - 1; j >= 0; j--) {
+            // Boosted tokens always survive — pick winner per symbol, then rebuild
+            var symBest = {};
+            for(var j = 0; j < LIVE_TOKENS.length; j++) {
               var s = (LIVE_TOKENS[j].sym || '').toUpperCase();
-              if(finalSym[s]) { LIVE_TOKENS.splice(j, 1); }
-              else { finalSym[s] = true; }
+              if(!symBest[s]) {
+                symBest[s] = LIVE_TOKENS[j];
+              } else if(LIVE_TOKENS[j].boosted && !symBest[s].boosted) {
+                symBest[s] = LIVE_TOKENS[j];
+              }
+            }
+            var keepSet = new Set(Object.values(symBest));
+            for(var j = LIVE_TOKENS.length - 1; j >= 0; j--) {
+              if(!keepSet.has(LIVE_TOKENS[j])) LIVE_TOKENS.splice(j, 1);
             }
 
             if(isFirstLoad) {
-              // First load: render immediately, then verify in background
+              // First load: render immediately, then verify in background (smooth removal)
               loadData();
               if(typeof init === 'function') init();
               var bl = document.getElementById('bubbleLoading');
               if(bl) bl.classList.add('hidden');
               if(!window._firstLoadDone) { window._firstLoadDone = true; window.scrollTo(0, 0); checkUrlForToken(); var ls=document.getElementById('loadingScreen'); if(ls) ls.remove(); var app=document.querySelector('.app'); if(app) app.classList.add('ready'); }
               verifyTopTokens();
+              // Inject any boosted tokens not in the scraper results
+              _injectMissingBoostedTokens();
             } else {
-              // Subsequent refreshes: render immediately, verify in background
+              // Subsequent refreshes: re-sort and render, verify in background
+              _lastRowOrder = null;
               loadData();
               verifyTopTokens();
+              // Inject any boosted tokens not in the scraper results
+              _injectMissingBoostedTokens();
             }
             console.log('MemeScope: Live via API!', LIVE_TOKENS.length, 'tokens', data.cached ? '(cached)' : '(fresh)', isFirstLoad ? '(first load)' : '(merged)');
             resetRefreshProgress();
@@ -4913,7 +5623,8 @@ function parseDexPair(p) {
     'bsc': 'bsc', 'sui': 'sui', 'tron': 'tron',
     'arbitrum': 'arbitrum', 'avalanche': 'avalanche',
     'polygon': 'polygon', 'optimism': 'optimism',
-    'blast': 'blast', 'ton': 'ton'
+    'blast': 'blast', 'ton': 'ton',
+    'pulsechain': 'pulsechain', 'seiv2': 'seiv2'
   };
   var net = chainMap[p.chainId] || 'solana';
   
@@ -4930,7 +5641,7 @@ function parseDexPair(p) {
   var p24h = pc.h24 ? parseFloat(pc.h24) : 0;
   
   // Calculate age from pairCreatedAt
-  var age = '2014';
+  var age = '?';
   if(p.pairCreatedAt) {
     var ageMs = Date.now() - p.pairCreatedAt;
     var ageHrs = ageMs / 3600000;
@@ -4973,6 +5684,7 @@ if(LIVE_MODE) fetchLiveTokens();
 // Refresh every 30 seconds — but skip when token detail page is open
 var _mainRefreshTimer = setInterval(function(){
   if (!LIVE_MODE) return;
+  _fetchServerBoosts(); // sync boosts from server every cycle
   var tp = document.getElementById('tokenPage');
   if (tp && tp.style.display !== 'none') return; // token page open, skip refresh
   fetchLiveTokens();
@@ -4983,9 +5695,41 @@ var _mainRefreshTimer = setInterval(function(){
 // scale up to fill the screen.
 document.addEventListener('visibilitychange', function(){
   if (document.visibilityState !== 'visible') return;
-  if (!LIVE_MODE) return;
+
+  // Refresh chart if token page is open
   var tp = document.getElementById('tokenPage');
-  if (tp && tp.style.display !== 'none') return;
+  if (tp && tp.style.display !== 'none') {
+    // Clear bar cache so getBars fetches fresh candles
+    if (_tpToken && _tpToken.ca) {
+      Object.keys(_barCache).forEach(function(k) {
+        if (k.indexOf(_tpToken.ca) === 0) delete _barCache[k];
+      });
+    }
+    // Force TradingView to reload data
+    if (_tpWidget) {
+      try {
+        _tpWidget.activeChart().resetData();
+      } catch(e) {}
+    }
+    return;
+  }
+
+  // Refresh chart if bubble modal is open
+  var modal = document.getElementById('bubbleModal');
+  if (modal && modal.style.display !== 'none' && window._bmWidget) {
+    if (window._modalToken && window._modalToken.ca) {
+      Object.keys(_barCache).forEach(function(k) {
+        if (k.indexOf(window._modalToken.ca) === 0) delete _barCache[k];
+      });
+    }
+    try {
+      window._bmWidget.activeChart().resetData();
+    } catch(e) {}
+    return;
+  }
+
+  // No chart open — refresh token feed
+  if (!LIVE_MODE) return;
   fetchLiveTokens();
 });
 
@@ -5010,16 +5754,64 @@ function showFetchingProgress() {}
 function resetRefreshProgress() {}
 
 // ─── BUBBLE FILTER MODAL ───
+// New state model: ranges for numeric filters, strings for categorical.
+// Range = {min: 0..100, max: 0..100} — UI position. Mapped to real values via _bfMapRange.
 var bubbleFilters = {
   chain: 'all',
-  mcap: 'all',
-  age: 'all',
-  volume: 'all',
+  mcapRange: { min: 0, max: 100 },
+  volumeRange: { min: 0, max: 100 },
+  ageRange: { min: 0, max: 100 },
+  liqRange: { min: 0, max: 100 },
   perf: 'all',
-  liq: 'all',
   count: '50',
   category: 'all'
 };
+
+// Slider position (0..100) -> real-world value. Each filter has its own scale.
+// All ranges use log scale for natural feel since data is heavy-tailed.
+var _BF_SCALES = {
+  // Market cap: $1K to $100M (5 decades)
+  mcap: { min: 1e3, max: 1e8, decades: 5, fmt: 'usd' },
+  // Volume: $100 to $10M
+  volume: { min: 1e2, max: 1e7, decades: 5, fmt: 'usd' },
+  // Liquidity: $100 to $10M
+  liq: { min: 1e2, max: 1e7, decades: 5, fmt: 'usd' },
+  // Age: 0 hours to 365 days (linear-ish in hours, log for display)
+  age: { min: 1, max: 8760, decades: 4, fmt: 'age' },
+};
+
+function _bfPosToValue(group, pos) {
+  var s = _BF_SCALES[group];
+  if (!s) return pos;
+  // Log mapping
+  var log = Math.log10(s.min) + (pos / 100) * (Math.log10(s.max) - Math.log10(s.min));
+  return Math.pow(10, log);
+}
+
+function _bfFmtUsd(v) {
+  if (v >= 1e9) return '$' + (v / 1e9).toFixed(1) + 'B';
+  if (v >= 1e6) return '$' + (v / 1e6).toFixed(1) + 'M';
+  if (v >= 1e3) return '$' + Math.round(v / 1e3) + 'K';
+  return '$' + Math.round(v);
+}
+
+function _bfFmtAge(hours) {
+  if (hours < 1) return '<1h';
+  if (hours < 24) return Math.round(hours) + 'h';
+  if (hours < 24 * 30) return Math.round(hours / 24) + 'd';
+  if (hours < 24 * 365) return Math.round(hours / 24 / 30) + 'mo';
+  return Math.round(hours / 24 / 365) + 'y';
+}
+
+function _bfFmtRange(group, minPos, maxPos) {
+  var s = _BF_SCALES[group];
+  if (!s) return 'Any';
+  if (minPos <= 0 && maxPos >= 100) return 'Any';
+  var fmt = s.fmt === 'age' ? _bfFmtAge : _bfFmtUsd;
+  var lo = fmt(_bfPosToValue(group, minPos));
+  var hi = maxPos >= 100 ? (s.fmt === 'age' ? 'Any+' : fmt(_bfPosToValue(group, 100)) + '+') : fmt(_bfPosToValue(group, maxPos));
+  return lo + ' – ' + hi;
+}
 
 function toggleBubbleFilter() {
   var ov = document.getElementById('bubbleFilterOverlay');
@@ -5027,35 +5819,189 @@ function toggleBubbleFilter() {
     closeBubbleFilter();
   } else {
     ov.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    document.body.style.touchAction = 'none';
+    _bfUpdateLiveCount();
   }
 }
 
 function closeBubbleFilter() {
   document.getElementById('bubbleFilterOverlay').classList.remove('open');
+  var bm = document.getElementById('bubbleModal');
+  if (!bm || !bm.classList.contains('open')) {
+    document.body.style.overflow = '';
+    document.body.style.touchAction = '';
+  }
 }
 
 function toggleBFChip(el, group, value) {
   var section = el.closest('.bf-section');
-  var chips = section.querySelectorAll('.bf-chip');
-  chips.forEach(function(c) { c.classList.remove('active'); });
+  // Clear all chip-like buttons in this section (handles both .bf-chip and .bf-seg).
+  var btns = section.querySelectorAll('.bf-chip, .bf-seg');
+  btns.forEach(function(c) { c.classList.remove('active'); });
   el.classList.add('active');
   bubbleFilters[group] = value;
+  _bfScheduleApply();
+}
+
+// Helper: programmatically set a range slider's position (used by presets).
+function _bfSetRange(group, minPos, maxPos) {
+  var cap = group.charAt(0).toUpperCase() + group.slice(1);
+  var minEl = document.getElementById('bf' + cap + 'Min');
+  var maxEl = document.getElementById('bf' + cap + 'Max');
+  if (!minEl || !maxEl) return;
+  minEl.value = minPos;
+  maxEl.value = maxPos;
+  updateBFRange(group);
+}
+
+// Helper: convert a real value (e.g. $1M) to slider position (0..100) for a group.
+function _bfValueToPos(group, value) {
+  var s = _BF_SCALES[group];
+  if (!s || value <= s.min) return 0;
+  if (value >= s.max) return 100;
+  return ((Math.log10(value) - Math.log10(s.min)) / (Math.log10(s.max) - Math.log10(s.min))) * 100;
+}
+
+function updateBFRange(group) {
+  var cap = group.charAt(0).toUpperCase() + group.slice(1);
+  var minEl = document.getElementById('bf' + cap + 'Min');
+  var maxEl = document.getElementById('bf' + cap + 'Max');
+  var fill = document.getElementById('bf' + cap + 'Fill');
+  var readout = document.getElementById('bf' + cap + 'Readout');
+  if (!minEl || !maxEl || !fill) return;
+  var minVal = parseInt(minEl.value, 10);
+  var maxVal = parseInt(maxEl.value, 10);
+  // Prevent crossover.
+  if (minVal > maxVal - 2) {
+    if (event && event.target === minEl) {
+      minVal = maxVal - 2;
+      minEl.value = minVal;
+    } else {
+      maxVal = minVal + 2;
+      maxEl.value = maxVal;
+    }
+  }
+  fill.style.left = minVal + '%';
+  fill.style.right = (100 - maxVal) + '%';
+  if (readout) readout.textContent = _bfFmtRange(group, minVal, maxVal);
+  if (typeof bubbleFilters !== 'undefined') {
+    bubbleFilters[group + 'Range'] = { min: minVal, max: maxVal };
+  }
+  _bfScheduleApply();
+}
+
+// Initialize range fills + live count on page load.
+window.addEventListener('DOMContentLoaded', function () {
+  ['mcap', 'volume', 'age', 'liq'].forEach(function (g) {
+    var cap = g.charAt(0).toUpperCase() + g.slice(1);
+    if (document.getElementById('bf' + cap + 'Min')) updateBFRange(g);
+  });
+  _bfUpdateLiveCount();
+});
+
+// Auto-apply: debounced re-render on any filter change.
+var _bfApplyTimer = null;
+function _bfScheduleApply() {
+  clearTimeout(_bfApplyTimer);
+  _bfApplyTimer = setTimeout(function () {
+    _bfUpdateLiveCount();
+    if (typeof init === 'function') init();
+    _bfUpdateFilterBtnState();
+  }, 180);
+}
+
+function _bfUpdateLiveCount() {
+  var el = document.getElementById('bfLiveCount');
+  if (!el) return;
+  var n = (typeof getFilteredTokens === 'function') ? getFilteredTokens().length : 0;
+  el.textContent = n.toLocaleString();
+}
+
+function _bfUpdateFilterBtnState() {
+  var btn = document.getElementById('bubbleFilterBtn');
+  if (!btn) return;
+  var hasFilter = false;
+  if (bubbleFilters.chain !== 'all') hasFilter = true;
+  if (bubbleFilters.perf !== 'all') hasFilter = true;
+  if (bubbleFilters.category !== 'all') hasFilter = true;
+  if (bubbleFilters.count !== '50') hasFilter = true;
+  ['mcapRange', 'volumeRange', 'ageRange', 'liqRange'].forEach(function (k) {
+    var r = bubbleFilters[k];
+    if (r && (r.min > 0 || r.max < 100)) hasFilter = true;
+  });
+  if (hasFilter) {
+    btn.style.background = '#2D3F7A';
+    btn.style.color = '#e6e1e3';
+  } else {
+    btn.style.background = '';
+    btn.style.color = '';
+  }
+}
+
+// Preset combos — one tap configures the modal. Ranges as {minVal,maxVal} in $ or hours.
+var BF_PRESETS = {
+  pumping:   { perf: 'pumping', volume: { minVal: 5e4 } },
+  newlaunch: { age: { maxVal: 24 }, mcap: { maxVal: 1e6 }, volume: { minVal: 1e4 } },
+  whales:    { volume: { minVal: 1e6 }, liq: { minVal: 5e5 } },
+  gems:      { mcap: { maxVal: 1e5 }, volume: { minVal: 1e4 }, age: { maxVal: 168 } },
+};
+
+function applyBFPreset(name) {
+  var combo = BF_PRESETS[name];
+  if (!combo) return;
+  resetBubbleFilters();
+  Object.keys(combo).forEach(function (group) {
+    var spec = combo[group];
+    if (typeof spec === 'string') {
+      // Categorical (perf, category, chain, count): click matching chip.
+      var section = document.querySelector('.bf-section .bf-chip[onclick*="\'' + group + '\'"]');
+      if (section) {
+        var sec = section.closest('.bf-section');
+        var chip = sec.querySelector('.bf-chip[data-value="' + spec + '"], .bf-seg[data-value="' + spec + '"]');
+        if (chip) toggleBFChip(chip, group, spec);
+      }
+    } else if (typeof spec === 'object') {
+      // Range filter: convert min/maxVal in real units to slider positions.
+      var minPos = spec.minVal != null ? _bfValueToPos(group, spec.minVal) : 0;
+      var maxPos = spec.maxVal != null ? _bfValueToPos(group, spec.maxVal) : 100;
+      _bfSetRange(group, Math.round(minPos), Math.round(maxPos));
+    }
+  });
+  // Highlight the active preset chip.
+  document.querySelectorAll('.bf-preset-chip').forEach(function(c) { c.classList.remove('active'); });
+  var presetBtn = document.querySelector('.bf-preset-chip[onclick*="\'' + name + '\'"]');
+  if (presetBtn) presetBtn.classList.add('active');
 }
 
 function resetBubbleFilters() {
-  bubbleFilters = { chain:'all', mcap:'all', age:'all', volume:'all', perf:'all', liq:'all', count:'50', category:'all' };
+  bubbleFilters = {
+    chain: 'all',
+    mcapRange: { min: 0, max: 100 },
+    volumeRange: { min: 0, max: 100 },
+    ageRange: { min: 0, max: 100 },
+    liqRange: { min: 0, max: 100 },
+    perf: 'all',
+    count: '50',
+    category: 'all',
+  };
+  // Reset chips
   var sections = document.querySelectorAll('.bf-section');
-  sections.forEach(function(sec) {
-    var chips = sec.querySelectorAll('.bf-chip');
-    chips.forEach(function(c) { c.classList.remove('active'); });
-    var allChip = sec.querySelector('.bf-chip[data-value="all"]');
-    if (allChip) allChip.classList.add('active');
+  sections.forEach(function (sec) {
+    var btns = sec.querySelectorAll('.bf-chip, .bf-seg');
+    btns.forEach(function (c) { c.classList.remove('active'); });
+    var allBtn = sec.querySelector('[data-value="all"]');
+    if (allBtn) allBtn.classList.add('active');
     else {
-      // For bubble count, default is 50
-      var def = sec.querySelector('.bf-chip[data-value="50"]');
+      var def = sec.querySelector('[data-value="50"]');
       if (def) def.classList.add('active');
     }
   });
+  // Reset preset highlights
+  document.querySelectorAll('.bf-preset-chip').forEach(function (c) { c.classList.remove('active'); });
+  // Reset sliders
+  ['mcap', 'volume', 'age', 'liq'].forEach(function (g) { _bfSetRange(g, 0, 100); });
+  _bfScheduleApply();
 }
 
 function applyBubbleFilters() {
@@ -5068,7 +6014,7 @@ function applyBubbleFilters() {
   });
   if (hasFilter) {
     btn.style.background = '#2D3F7A';
-    btn.style.color = 'var(--md-sys-color-primary)';
+    btn.style.color = '#e6e1e3';
   } else {
     btn.style.background = '';
     btn.style.color = '';
@@ -5085,55 +6031,33 @@ getFilteredTokens = function() {
   var tokens = _origGetFilteredTokens ? _origGetFilteredTokens() : [...LIVE_TOKENS];
   var bf = bubbleFilters;
 
-  // Chain filter
-  if (bf.chain !== 'all') {
-    tokens = tokens.filter(function(t) { return t.net === bf.chain; });
+  // Chain filter (boosted tokens always pass)
+  if (bf.chain && bf.chain !== 'all') {
+    tokens = tokens.filter(function(t) { return t.boosted || t.net === bf.chain; });
   }
 
-  // Market cap filter
-  if (bf.mcap !== 'all') {
-    tokens = tokens.filter(function(t) {
-      var m = t.mcap || 0;
-      switch(bf.mcap) {
-        case 'micro': return m < 100000;
-        case 'small': return m >= 100000 && m < 1000000;
-        case 'mid': return m >= 1000000 && m < 10000000;
-        case 'large': return m >= 10000000;
-        default: return true;
-      }
+  // Range filters helper
+  function _applyRange(group, getter) {
+    var r = bf[group + 'Range'];
+    if (!r) return;
+    if (r.min <= 0 && r.max >= 100) return; // full range = no filter
+    var s = _BF_SCALES[group];
+    if (!s) return;
+    var lo = r.min <= 0 ? -Infinity : _bfPosToValue(group, r.min);
+    var hi = r.max >= 100 ? Infinity : _bfPosToValue(group, r.max);
+    tokens = tokens.filter(function (t) {
+      var v = getter(t);
+      return v >= lo && v <= hi;
     });
   }
 
-  // Age filter
-  if (bf.age !== 'all') {
-    tokens = tokens.filter(function(t) {
-      var hrs = ageToHours(t.age || '999y');
-      switch(bf.age) {
-        case '1h': return hrs <= 1;
-        case '24h': return hrs <= 24;
-        case '7d': return hrs <= 168;
-        case 'older': return hrs > 168;
-        default: return true;
-      }
-    });
-  }
-
-  // Volume filter
-  if (bf.volume !== 'all') {
-    tokens = tokens.filter(function(t) {
-      var v = t.vol || 0;
-      switch(bf.volume) {
-        case '10k': return v >= 10000;
-        case '50k': return v >= 50000;
-        case '100k': return v >= 100000;
-        case '1m': return v >= 1000000;
-        default: return true;
-      }
-    });
-  }
+  _applyRange('mcap',   function (t) { return t.mcap || 0; });
+  _applyRange('volume', function (t) { return t.vol  || 0; });
+  _applyRange('liq',    function (t) { return t.liq  || 0; });
+  _applyRange('age',    function (t) { return ageToHours(t.age || '999y'); });
 
   // Performance filter (based on current timeframe)
-  if (bf.perf !== 'all') {
+  if (bf.perf && bf.perf !== 'all') {
     var tf = getTimeframeField();
     tokens = tokens.filter(function(t) {
       var pct = t[tf] || 0;
@@ -5141,20 +6065,6 @@ getFilteredTokens = function() {
         case 'pumping': return pct > 10;
         case 'dumping': return pct < -10;
         case 'stable': return pct >= -10 && pct <= 10;
-        default: return true;
-      }
-    });
-  }
-
-  // Liquidity filter
-  if (bf.liq !== 'all') {
-    tokens = tokens.filter(function(t) {
-      var l = t.liq || 0;
-      switch(bf.liq) {
-        case '5k': return l >= 5000;
-        case '25k': return l >= 25000;
-        case '100k': return l >= 100000;
-        case '500k': return l >= 500000;
         default: return true;
       }
     });

@@ -250,13 +250,8 @@ async function handleDailyCron(env) {
 export default {
   // Cron handler
   async scheduled(event, env, ctx) {
-    // 0 3 * * * = daily winners (11pm EST)
-    if (event.cron === '0 3 * * *') {
-      ctx.waitUntil(handleDailyCron(env));
-    } else {
-      // */5 * * * * = alert checks
-      ctx.waitUntil(handleAlertCron(env));
-    }
+    // PAUSED — user posting manually
+    return;
   },
 
   // HTTP handler — for manual testing

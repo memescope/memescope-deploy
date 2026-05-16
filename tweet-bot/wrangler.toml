@@ -11,9 +11,9 @@ enabled = true
 binding = "TWEET_STATE"
 id = "37fe65e22cbd42da9602f133d86ad020"
 
-# Cron triggers — every 5 min for alerts, daily for winners
-[triggers]
-crons = ["*/30 * * * *", "0 3 * * *"]  # 3 UTC = 11pm EST
+# Cron triggers — PAUSED, user posting manually. Uncomment to resume.
+# [triggers]
+# crons = ["*/30 * * * *", "0 3 * * *"]  # 3 UTC = 11pm EST
 
 # Service binding to the scraper worker (avoids worker-to-worker 404)
 [[services]]

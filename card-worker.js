@@ -484,6 +484,12 @@ export default {
     const pathname = url.pathname;
     const ua = request.headers.get('user-agent') || '';
 
+    // ─── www → non-www redirect (SEO canonical) ────────────────────
+    if (url.hostname === 'www.memescope.io') {
+      url.hostname = 'memescope.io';
+      return Response.redirect(url.toString(), 301);
+    }
+
     // ─── Card Image Route ───────────────────────────────────────────
     const cardParams = parseCardImageRoute(pathname);
     if (cardParams) {
@@ -549,7 +555,189 @@ export default {
       }
     }
 
+    // ─── Boost API ────────────────────────────────────────────────────
+    if (pathname === '/api/boosts') {
+      // CORS headers for all boost API responses
+      const corsHeaders = {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type',
+      };
+
+      // Preflight
+      if (request.method === 'OPTIONS') {
+        return new Response(null, { status: 204, headers: corsHeaders });
+      }
+
+      // GET — public, returns active boosts
+      if (request.method === 'GET') {
+        try {
+          const raw = await env.BOOSTS.get('active_boosts');
+          const all = raw ? JSON.parse(raw) : [];
+          const now = Date.now();
+          const active = all.filter(b => b.expiresAt > now);
+          // Clean up expired if any were removed
+          if (active.length !== all.length) {
+            ctx.waitUntil(env.BOOSTS.put('active_boosts', JSON.stringify(active)));
+          }
+          return new Response(JSON.stringify({ boosts: active }), {
+            headers: { 'Content-Type': 'application/json', ...corsHeaders },
+          });
+        } catch (e) {
+          return new Response(JSON.stringify({ boosts: [] }), {
+            headers: { 'Content-Type': 'application/json', ...corsHeaders },
+          });
+        }
+      }
+
+      // POST — admin: add/update a boost
+      if (request.method === 'POST') {
+        try {
+          const body = await request.json();
+          const { passwordHash, ca, sym, chain, count, duration } = body;
+          if (!passwordHash || !ca) {
+            return new Response(JSON.stringify({ error: 'Missing fields' }), {
+              status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders },
+            });
+          }
+          // Verify admin password hash
+          const ADMIN_HASH = '0646b38df753eb49e8391cea45e057f0934882a1932a282ec73bbf613777459f';
+          if (passwordHash !== ADMIN_HASH) {
+            return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+              status: 403, headers: { 'Content-Type': 'application/json', ...corsHeaders },
+            });
+          }
+          const raw = await env.BOOSTS.get('active_boosts');
+          const all = raw ? JSON.parse(raw) : [];
+          const now = Date.now();
+          // Remove expired and any existing boost for this CA
+          const caLower = ca.toLowerCase();
+          const filtered = all.filter(b => b.expiresAt > now && b.ca.toLowerCase() !== caLower);
+          const newBoost = {
+            ca: ca,
+            sym: sym || '',
+            chain: chain || 'solana',
+            count: count || 1,
+            expiresAt: now + (duration || 86400000), // default 24h
+            createdAt: now,
+          };
+          filtered.push(newBoost);
+          await env.BOOSTS.put('active_boosts', JSON.stringify(filtered));
+          return new Response(JSON.stringify({ ok: true, boost: newBoost, total: filtered.length }), {
+            headers: { 'Content-Type': 'application/json', ...corsHeaders },
+          });
+        } catch (e) {
+          return new Response(JSON.stringify({ error: e.message }), {
+            status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders },
+          });
+        }
+      }
+
+      // DELETE — admin: remove a boost
+      if (request.method === 'DELETE') {
+        try {
+          const body = await request.json();
+          const { passwordHash, ca } = body;
+          if (!passwordHash || !ca) {
+            return new Response(JSON.stringify({ error: 'Missing fields' }), {
+              status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders },
+            });
+          }
+          const ADMIN_HASH = '0646b38df753eb49e8391cea45e057f0934882a1932a282ec73bbf613777459f';
+          if (passwordHash !== ADMIN_HASH) {
+            return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+              status: 403, headers: { 'Content-Type': 'application/json', ...corsHeaders },
+            });
+          }
+          const raw = await env.BOOSTS.get('active_boosts');
+          const all = raw ? JSON.parse(raw) : [];
+          const caLower = ca.toLowerCase();
+          const filtered = all.filter(b => b.ca.toLowerCase() !== caLower);
+          await env.BOOSTS.put('active_boosts', JSON.stringify(filtered));
+          return new Response(JSON.stringify({ ok: true, remaining: filtered.length }), {
+            headers: { 'Content-Type': 'application/json', ...corsHeaders },
+          });
+        } catch (e) {
+          return new Response(JSON.stringify({ error: e.message }), {
+            status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders },
+          });
+        }
+      }
+    }
+
+    // ─── GeckoTerminal Pro API Proxy ───────────────────────────────
+    // Proxies /api/gecko/* to CoinGecko Pro on-chain API with server-side key
+    if (pathname.startsWith('/api/gecko/')) {
+      const geckoPath = pathname.replace('/api/gecko/', '');
+      const proxyUrl = 'https://pro-api.coingecko.com/api/v3/onchain/' + geckoPath + url.search;
+      const corsHeaders = {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Accept',
+      };
+      if (request.method === 'OPTIONS') {
+        return new Response(null, { status: 204, headers: corsHeaders });
+      }
+
+      // Smart cache TTLs by endpoint type to save API credits
+      let cacheTtl = 30; // default 30s
+      if (geckoPath.includes('/ohlcv/')) {
+        cacheTtl = 30;   // OHLCV: 30s — needs freshness for live charts
+      } else if (geckoPath.includes('/trades')) {
+        cacheTtl = 15;   // Trades: 15s — most time-sensitive
+      } else if (geckoPath.includes('/pools/') && !geckoPath.includes('/ohlcv/')) {
+        cacheTtl = 120;  // Pool info/discovery: 2 min — rarely changes
+      } else if (geckoPath.includes('/search') || geckoPath.includes('/trending')) {
+        cacheTtl = 300;  // Search/trending: 5 min — changes slowly
+      } else if (geckoPath.includes('/tokens/') || geckoPath.includes('/info')) {
+        cacheTtl = 180;  // Token info: 3 min — metadata is stable
+      } else if (geckoPath.includes('/networks')) {
+        cacheTtl = 600;  // Network list: 10 min — almost never changes
+      }
+
+      try {
+        const apiKey = env.CG_API_KEY || '';
+        const proxyResp = await fetch(proxyUrl, {
+          headers: {
+            'Accept': 'application/json',
+            'x-cg-pro-api-key': apiKey,
+          },
+        });
+
+        // Don't cache error responses
+        const isError = proxyResp.status >= 400;
+        const cacheHeader = isError
+          ? 'no-cache, no-store'
+          : `public, max-age=${cacheTtl}, s-maxage=${cacheTtl}`;
+
+        const body = await proxyResp.arrayBuffer();
+        return new Response(body, {
+          status: proxyResp.status,
+          headers: {
+            'Content-Type': 'application/json',
+            'Cache-Control': cacheHeader,
+            ...corsHeaders,
+          },
+        });
+      } catch (e) {
+        return new Response(JSON.stringify({ error: 'Proxy error' }), {
+          status: 502,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders },
+        });
+      }
+    }
+
     // ─── Everything Else: Static Assets / SPA ───────────────────────
-    return env.ASSETS.fetch(request);
+    const assetResp = await env.ASSETS.fetch(request);
+    // Prevent mobile browsers from caching HTML
+    const ct = assetResp.headers.get('content-type') || '';
+    if (ct.includes('text/html')) {
+      const headers = new Headers(assetResp.headers);
+      headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+      headers.set('Pragma', 'no-cache');
+      headers.set('Expires', '0');
+      return new Response(assetResp.body, { status: assetResp.status, headers });
+    }
+    return assetResp;
   },
 };

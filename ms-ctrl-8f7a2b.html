@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>MS Control</title>
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --surface: #141314;
+    --surface-container-lowest: #19181a;
+    --surface-container-low: #211f21;
+    --surface-container: #1c1b1d;
+    --surface-container-high: #2b292c;
+    --surface-container-highest: #363436;
+    --on-surface: #e6e1e3;
+    --on-surface-variant: rgba(230,225,227,0.6);
+    --primary: #4A9EFF;
+    --primary-dim: rgba(74,158,255,0.12);
+    --error: #EF4444;
+    --error-dim: rgba(239,68,68,0.1);
+    --success: #22C55E;
+    --success-dim: rgba(34,197,94,0.1);
+    --warning: #FFD740;
+    --warning-dim: rgba(255,215,64,0.12);
+    --outline: #4d4256;
+    --outline-variant: rgba(220,220,220,0.12);
+  }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--surface);
+    color: var(--on-surface);
+    min-height: 100vh;
+  }
+
+  /* ── LOGIN GATE ── */
+  .login-overlay {
+    position: fixed; inset: 0;
+    background: var(--surface);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 9999;
+  }
+  .login-overlay.hidden { display: none; }
+
+  .login-card {
+    width: 380px;
+    background: var(--surface-container);
+    border-radius: 28px;
+    padding: 40px 32px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    text-align: center;
+  }
+  .login-logo {
+    width: 56px; height: 56px; margin-bottom: 20px;
+  }
+  .login-title {
+    font-size: 22px; font-weight: 600; color: var(--on-surface);
+    margin-bottom: 6px;
+  }
+  .login-subtitle {
+    font-size: 13px; color: var(--on-surface-variant);
+    margin-bottom: 28px;
+  }
+  .login-input {
+    width: 100%;
+    padding: 14px 16px;
+    background: var(--surface-container-high);
+    border: 2px solid transparent;
+    border-radius: 14px;
+    color: var(--on-surface);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    outline: none;
+    transition: border-color 150ms ease;
+    -webkit-text-security: disc;
+  }
+  .login-input:focus {
+    border-color: var(--primary);
+  }
+  .login-input::placeholder { color: var(--on-surface-variant); }
+
+  .login-btn {
+    width: 100%;
+    padding: 14px;
+    background: var(--primary);
+    border: none;
+    border-radius: 14px;
+    color: #fff;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 14px;
+    transition: background 150ms ease;
+  }
+  .login-btn:hover { background: #5EADFF; }
+
+  .login-error {
+    font-size: 12px; color: var(--error);
+    margin-top: 12px;
+    min-height: 18px;
+  }
+
+  /* ── ADMIN SHELL ── */
+  .admin-shell { display: none; }
+  .admin-shell.visible { display: block; }
+
+  .admin-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 32px;
+    background: var(--surface-container);
+    border-bottom: 1px solid var(--outline-variant);
+    position: sticky; top: 0; z-index: 100;
+  }
+  .admin-header-left {
+    display: flex; align-items: center; gap: 14px;
+  }
+  .admin-header-logo { width: 32px; height: 32px; }
+  .admin-header-title {
+    font-size: 18px; font-weight: 600;
+    letter-spacing: -0.3px;
+  }
+  .admin-header-tag {
+    font-size: 10px; font-weight: 700;
+    background: var(--warning-dim);
+    color: var(--warning);
+    padding: 3px 8px;
+    border-radius: 99px;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+  }
+  .admin-logout {
+    background: var(--surface-container-highest);
+    border: none;
+    border-radius: 10px;
+    color: var(--on-surface-variant);
+    padding: 8px 14px;
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 150ms ease;
+  }
+  .admin-logout:hover { background: #3a383a; color: var(--on-surface); }
+
+  /* ── CONTENT ── */
+  .admin-content {
+    max-width: 840px;
+    margin: 0 auto;
+    padding: 32px 24px;
+  }
+
+  /* ── SECTION CARD ── */
+  .admin-card {
+    background: var(--surface-container);
+    border-radius: 20px;
+    padding: 28px;
+    margin-bottom: 20px;
+    border: 1px solid var(--outline-variant);
+  }
+  .admin-card-header {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 20px;
+  }
+  .admin-card-icon {
+    width: 40px; height: 40px;
+    background: var(--warning-dim);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+  }
+  .admin-card-title {
+    font-size: 18px; font-weight: 600;
+    letter-spacing: -0.2px;
+  }
+  .admin-card-desc {
+    font-size: 13px; color: var(--on-surface-variant);
+    margin-top: 2px;
+  }
+
+  /* ── FORM ELEMENTS ── */
+  .form-row {
+    display: flex; gap: 12px;
+    margin-bottom: 14px;
+  }
+  .form-group {
+    flex: 1;
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .form-label {
+    font-size: 11px; font-weight: 600;
+    color: var(--on-surface-variant);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+  }
+  .form-input {
+    width: 100%;
+    padding: 12px 14px;
+    background: var(--surface-container-high);
+    border: 2px solid transparent;
+    border-radius: 12px;
+    color: var(--on-surface);
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    outline: none;
+    transition: border-color 150ms ease;
+  }
+  .form-input:focus { border-color: var(--primary); }
+  .form-input::placeholder { color: var(--on-surface-variant); }
+
+  .form-select {
+    width: 100%;
+    padding: 12px 14px;
+    background: var(--surface-container-high);
+    border: 2px solid transparent;
+    border-radius: 12px;
+    color: var(--on-surface);
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    outline: none;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%23e6e1e3' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 36px;
+    transition: border-color 150ms ease;
+  }
+  .form-select:focus { border-color: var(--primary); }
+  .form-select option {
+    background: var(--surface-container-high);
+    color: var(--on-surface);
+  }
+
+  .btn-primary {
+    width: 100%;
+    padding: 14px;
+    background: var(--warning);
+    border: none;
+    border-radius: 14px;
+    color: #141314;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 150ms ease;
+    letter-spacing: 0.3px;
+    margin-top: 6px;
+  }
+  .btn-primary:hover { background: #FFE066; }
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .btn-danger {
+    padding: 8px 14px;
+    background: var(--error-dim);
+    border: none;
+    border-radius: 10px;
+    color: var(--error);
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 150ms ease;
+  }
+  .btn-danger:hover { background: rgba(239,68,68,0.2); }
+
+  /* ── STATUS TOAST ── */
+  .admin-toast {
+    position: fixed; top: 16px; left: 50%;
+    transform: translateX(-50%) translateY(-80px);
+    padding: 12px 24px;
+    border-radius: 14px;
+    font-size: 13px; font-weight: 600;
+    z-index: 10000;
+    transition: transform 0.3s ease;
+    white-space: nowrap;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  }
+  .admin-toast.show { transform: translateX(-50%) translateY(0); }
+  .admin-toast.success { background: #1a3a2a; color: var(--success); }
+  .admin-toast.error { background: #3a1a1a; color: var(--error); }
+
+  /* ── ACTIVE BOOSTS TABLE ── */
+  .boosts-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 6px;
+  }
+  .boosts-table th {
+    font-size: 10px; font-weight: 600;
+    color: var(--on-surface-variant);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    text-align: left;
+    padding: 8px 12px;
+  }
+  .boosts-table td {
+    padding: 12px;
+    background: var(--surface-container-high);
+    font-size: 13px;
+  }
+  .boosts-table tr td:first-child { border-radius: 10px 0 0 10px; }
+  .boosts-table tr td:last-child { border-radius: 0 10px 10px 0; }
+
+  .boost-ca-cell {
+    font-family: 'JetBrains Mono', 'SF Mono', monospace;
+    font-size: 12px;
+    color: var(--primary);
+    max-width: 140px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .boost-chain-pill {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: var(--surface-container-highest);
+    padding: 3px 8px;
+    border-radius: 99px;
+    font-size: 11px; font-weight: 600;
+    text-transform: capitalize;
+  }
+  .boost-count-pill {
+    display: inline-flex; align-items: center; gap: 2px;
+    background: var(--warning-dim);
+    color: var(--warning);
+    padding: 3px 8px;
+    border-radius: 99px;
+    font-size: 11px; font-weight: 700;
+  }
+  .boost-time {
+    font-size: 12px; color: var(--on-surface-variant);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 32px 16px;
+    color: var(--on-surface-variant);
+    font-size: 13px;
+  }
+  .empty-state-icon {
+    font-size: 32px; margin-bottom: 8px; opacity: 0.4;
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 600px) {
+    .admin-content { padding: 16px; }
+    .admin-card { padding: 20px; border-radius: 16px; }
+    .form-row { flex-direction: column; }
+    .admin-header { padding: 16px 20px; }
+    .login-card { width: calc(100% - 32px); padding: 32px 24px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- LOGIN GATE -->
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-card">
+    <svg class="login-logo" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="50" cy="50" r="46" stroke="#4A9EFF" stroke-width="3" fill="none"/>
+      <circle cx="50" cy="50" r="6" fill="#4A9EFF"/>
+      <line x1="50" y1="8" x2="50" y2="30" stroke="#4A9EFF" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="50" y1="70" x2="50" y2="92" stroke="#4A9EFF" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="8" y1="50" x2="30" y2="50" stroke="#4A9EFF" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="70" y1="50" x2="92" y2="50" stroke="#4A9EFF" stroke-width="2.5" stroke-linecap="round"/>
+    </svg>
+    <div class="login-title">MemeScope Control</div>
+    <div class="login-subtitle">Enter admin password to continue</div>
+    <input type="text" class="login-input" id="loginPass" placeholder="Password" autocomplete="off" autofocus>
+    <button class="login-btn" id="loginBtn" onclick="attemptLogin()">Unlock</button>
+    <div class="login-error" id="loginError"></div>
+  </div>
+</div>
+
+<!-- ADMIN PANEL -->
+<div class="admin-shell" id="adminShell">
+
+  <!-- HEADER -->
+  <div class="admin-header">
+    <div class="admin-header-left">
+      <svg class="admin-header-logo" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="50" cy="50" r="46" stroke="#4A9EFF" stroke-width="3" fill="none"/>
+        <circle cx="50" cy="50" r="6" fill="#4A9EFF"/>
+        <line x1="50" y1="8" x2="50" y2="30" stroke="#4A9EFF" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="50" y1="70" x2="50" y2="92" stroke="#4A9EFF" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="8" y1="50" x2="30" y2="50" stroke="#4A9EFF" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="70" y1="50" x2="92" y2="50" stroke="#4A9EFF" stroke-width="2.5" stroke-linecap="round"/>
+      </svg>
+      <div>
+        <div class="admin-header-title">MemeScope Control</div>
+      </div>
+      <span class="admin-header-tag">Admin</span>
+    </div>
+    <button class="admin-logout" onclick="logout()">Sign Out</button>
+  </div>
+
+  <div class="admin-content">
+
+    <!-- BOOST TOKEN CARD -->
+    <div class="admin-card">
+      <div class="admin-card-header">
+        <div class="admin-card-icon">⚡</div>
+        <div>
+          <div class="admin-card-title">Boost Token</div>
+          <div class="admin-card-desc">Manually boost a token with a golden spotlight</div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Contract Address</label>
+          <input type="text" class="form-input" id="boostCA" placeholder="Paste token CA...">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Chain</label>
+          <select class="form-select" id="boostChain">
+            <option value="solana">Solana</option>
+            <option value="eth">Ethereum</option>
+            <option value="base">Base</option>
+            <option value="bsc">BSC</option>
+            <option value="sui">Sui</option>
+            <option value="tron">Tron</option>
+            <option value="arbitrum">Arbitrum</option>
+            <option value="avalanche">Avalanche</option>
+            <option value="polygon">Polygon</option>
+            <option value="optimism">Optimism</option>
+            <option value="blast">Blast</option>
+            <option value="ton">TON</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Boost Count</label>
+          <select class="form-select" id="boostCount">
+            <option value="5">⚡ 5</option>
+            <option value="10">⚡ 10</option>
+            <option value="20">⚡ 20</option>
+            <option value="50" selected>⚡ 50</option>
+            <option value="100">⚡ 100</option>
+            <option value="250">⚡ 250</option>
+            <option value="500">⚡ 500</option>
+            <option value="1000">⚡ 1000</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Duration</label>
+          <select class="form-select" id="boostDuration">
+            <option value="1">1 hour</option>
+            <option value="6">6 hours</option>
+            <option value="12">12 hours</option>
+            <option value="24" selected>24 hours</option>
+            <option value="48">48 hours</option>
+            <option value="72">72 hours</option>
+            <option value="168">7 days</option>
+          </select>
+        </div>
+      </div>
+
+      <button class="btn-primary" id="boostBtn" onclick="applyBoost()">
+        ⚡ Apply Boost
+      </button>
+    </div>
+
+    <!-- ACTIVE BOOSTS CARD -->
+    <div class="admin-card">
+      <div class="admin-card-header">
+        <div class="admin-card-icon" style="background: var(--primary-dim);">📋</div>
+        <div>
+          <div class="admin-card-title">Active Boosts</div>
+          <div class="admin-card-desc">Manage currently boosted tokens</div>
+        </div>
+      </div>
+
+      <div id="activeBoostsList">
+        <div class="empty-state">
+          <div class="empty-state-icon">⚡</div>
+          <div>No active boosts</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ── CONFIG ──
+var ADMIN_PASS_HASH = '0646b38df753eb49e8391cea45e057f0934882a1932a282ec73bbf613777459f';
+var STORAGE_KEY = 'ms_admin_auth';
+var _adminPasswordHash = ''; // stored after login for API calls
+
+// ── HASH FUNCTION ──
+async function sha256(str) {
+  var buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
+}
+
+// ── LOGIN ──
+async function attemptLogin() {
+  var pass = document.getElementById('loginPass').value.trim();
+  if (!pass) return;
+  var hash = await sha256(pass);
+  if (hash === ADMIN_PASS_HASH) {
+    _adminPasswordHash = hash;
+    localStorage.setItem(STORAGE_KEY, hash);
+    showAdmin();
+  } else {
+    document.getElementById('loginError').textContent = 'Wrong password';
+    document.getElementById('loginPass').value = '';
+    document.getElementById('loginPass').focus();
+  }
+}
+
+function showAdmin() {
+  document.getElementById('loginOverlay').classList.add('hidden');
+  document.getElementById('adminShell').classList.add('visible');
+  loadBoosts();
+}
+
+function logout() {
+  _adminPasswordHash = '';
+  localStorage.removeItem(STORAGE_KEY);
+  document.getElementById('loginOverlay').classList.remove('hidden');
+  document.getElementById('adminShell').classList.remove('visible');
+  document.getElementById('loginPass').value = '';
+  document.getElementById('loginError').textContent = '';
+}
+
+// Auto-login check
+(function() {
+  var saved = localStorage.getItem(STORAGE_KEY);
+  if (saved === ADMIN_PASS_HASH) {
+    _adminPasswordHash = saved;
+    showAdmin();
+  }
+  document.getElementById('loginPass').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') attemptLogin();
+  });
+})();
+
+// ── TOAST ──
+function showToast(msg, type) {
+  var existing = document.querySelector('.admin-toast');
+  if (existing) existing.remove();
+  var t = document.createElement('div');
+  t.className = 'admin-toast ' + type;
+  t.textContent = msg;
+  document.body.appendChild(t);
+  requestAnimationFrame(function() { t.classList.add('show'); });
+  setTimeout(function() {
+    t.classList.remove('show');
+    setTimeout(function() { if (t.parentNode) t.remove(); }, 300);
+  }, 2500);
+}
+
+// ── BOOST MANAGEMENT (SERVER API) ──
+var _cachedBoosts = [];
+
+async function applyBoost() {
+  var ca = document.getElementById('boostCA').value.trim();
+  if (!ca) { showToast('Enter a contract address', 'error'); return; }
+
+  var chain = document.getElementById('boostChain').value;
+  var count = parseInt(document.getElementById('boostCount').value);
+  var hours = parseInt(document.getElementById('boostDuration').value);
+  var duration = hours * 60 * 60 * 1000;
+
+  var btn = document.getElementById('boostBtn');
+  btn.disabled = true;
+  btn.textContent = 'Boosting...';
+
+  try {
+    var resp = await fetch('/api/boosts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        passwordHash: _adminPasswordHash,
+        ca: ca,
+        sym: '',
+        chain: chain,
+        count: count,
+        duration: duration
+      })
+    });
+    var data = await resp.json();
+    if (!resp.ok) {
+      showToast(data.error || 'Failed to boost', 'error');
+      return;
+    }
+    document.getElementById('boostCA').value = '';
+    showToast('⚡ Boost applied — ' + ca.slice(0, 6) + '...' + ca.slice(-4), 'success');
+    loadBoosts();
+  } catch(e) {
+    showToast('Network error: ' + e.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '⚡ Apply Boost';
+  }
+}
+
+async function removeBoost(ca) {
+  try {
+    var resp = await fetch('/api/boosts', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        passwordHash: _adminPasswordHash,
+        ca: ca
+      })
+    });
+    var data = await resp.json();
+    if (!resp.ok) {
+      showToast(data.error || 'Failed to remove', 'error');
+      return;
+    }
+    showToast('Boost removed — ' + ca.slice(0, 6) + '...' + ca.slice(-4), 'error');
+    loadBoosts();
+  } catch(e) {
+    showToast('Network error: ' + e.message, 'error');
+  }
+}
+
+async function loadBoosts() {
+  var container = document.getElementById('activeBoostsList');
+
+  try {
+    var resp = await fetch('/api/boosts');
+    var data = await resp.json();
+    _cachedBoosts = data.boosts || [];
+  } catch(e) {
+    // Use cached data on error
+  }
+
+  var now = Date.now();
+  var boosts = _cachedBoosts.filter(function(b) { return b.expiresAt > now; });
+
+  if (boosts.length === 0) {
+    container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚡</div><div>No active boosts</div></div>';
+    return;
+  }
+
+  var html = '<table class="boosts-table"><thead><tr><th>Token</th><th>Boost</th><th>Expires</th><th></th></tr></thead><tbody>';
+  boosts.forEach(function(b) {
+    var remaining = b.expiresAt - now;
+    var hrs = Math.floor(remaining / 3600000);
+    var mins = Math.floor((remaining % 3600000) / 60000);
+    var timeStr = hrs > 0 ? hrs + 'h ' + mins + 'm' : mins + 'm';
+    var displayCa = b.ca.length > 16 ? b.ca.slice(0, 6) + '...' + b.ca.slice(-4) : b.ca;
+
+    html += '<tr>' +
+      '<td><span class="boost-ca-cell" title="' + b.ca + '">' + displayCa + '</span></td>' +
+      '<td><span class="boost-count-pill">⚡ ' + (b.count || 1) + '</span></td>' +
+      '<td><span class="boost-time">' + timeStr + ' left</span></td>' +
+      '<td><button class="btn-danger" onclick="removeBoost(\'' + b.ca.replace(/'/g, "\\'") + '\')">Remove</button></td>' +
+      '</tr>';
+  });
+  html += '</tbody></table>';
+  container.innerHTML = html;
+}
+
+// Refresh active boosts every 30 seconds
+setInterval(loadBoosts, 30000);
+</script>
+</body>
+</html>

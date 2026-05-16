@@ -95,17 +95,32 @@ function openBoostModal() {
   // Fetch SOL price
   fetchSolPrice();
 
+  var scrollY = window.scrollY;
+  document.body.style.overflow = 'hidden';
+  document.body.style.position = 'fixed';
+  document.body.style.top = '-' + scrollY + 'px';
+  document.body.style.width = '100%';
+  document.body.style.touchAction = 'none';
   document.getElementById('boostModalOverlay').classList.add('open');
 }
 
 function closeBoostModal() {
+  var scrollY = Math.abs(parseInt(document.body.style.top || '0'));
+  document.body.style.overflow = '';
+  document.body.style.position = '';
+  document.body.style.top = '';
+  document.body.style.width = '';
+  document.body.style.touchAction = '';
+  window.scrollTo(0, scrollY);
   document.getElementById('boostModalOverlay').classList.remove('open');
 }
 
 /* ── Contact Modal ── */
 function openContactModal() {
+  var scrollY = window.scrollY;
   document.body.style.overflow = 'hidden';
   document.body.style.position = 'fixed';
+  document.body.style.top = '-' + scrollY + 'px';
   document.body.style.width = '100%';
   document.body.style.touchAction = 'none';
   document.getElementById('contactOverlay').classList.add('open');
@@ -117,10 +132,13 @@ function openContactModal() {
   document.getElementById('contactSubmitBtn').disabled = false;
 }
 function closeContactModal() {
+  var scrollY = Math.abs(parseInt(document.body.style.top || '0'));
   document.body.style.overflow = '';
   document.body.style.position = '';
+  document.body.style.top = '';
   document.body.style.width = '';
   document.body.style.touchAction = '';
+  window.scrollTo(0, scrollY);
   document.getElementById('contactOverlay').classList.remove('open');
 }
 function submitContact() {

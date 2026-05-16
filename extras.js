@@ -89,10 +89,12 @@ function copyDirectLink() {
   function openMsMenu() {
     document.getElementById('msMobileMenu').classList.add('open');
     document.getElementById('msMobileOverlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
   }
   function closeMsMenu() {
     document.getElementById('msMobileMenu').classList.remove('open');
     document.getElementById('msMobileOverlay').classList.remove('open');
+    document.body.style.overflow = '';
   }
 
   // Toggle body class on sidebar hover for header-logo hide
@@ -232,17 +234,22 @@ window.addEventListener('beforeinstallprompt', function(e) {
 });
 
 function openInstallModal() {
+  var scrollY = window.scrollY;
   document.body.style.overflow = 'hidden';
   document.body.style.position = 'fixed';
+  document.body.style.top = '-' + scrollY + 'px';
   document.body.style.width = '100%';
   document.body.style.touchAction = 'none';
   document.getElementById('installModalOverlay').classList.add('open');
 }
 function closeInstallModal() {
+  var scrollY = Math.abs(parseInt(document.body.style.top || '0'));
   document.body.style.overflow = '';
   document.body.style.position = '';
+  document.body.style.top = '';
   document.body.style.width = '';
   document.body.style.touchAction = '';
+  window.scrollTo(0, scrollY);
   document.getElementById('installModalOverlay').classList.remove('open');
 }
 function installAndroid() {

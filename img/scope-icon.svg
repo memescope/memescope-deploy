@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <!-- Outer ring -->
+  <circle cx="256" cy="256" r="240" fill="#211f21"/>
+  <circle cx="256" cy="256" r="192" fill="none" stroke="transparent" stroke-width="0"/>
+  <!-- Cut out inner circle to make ring -->
+  <mask id="outerRing">
+    <rect width="512" height="512" fill="white"/>
+    <circle cx="256" cy="256" r="185" fill="black"/>
+    <!-- Crosshair gaps in outer ring -->
+    <rect x="232" y="0" width="48" height="512" fill="black"/>
+    <rect x="0" y="232" width="512" height="48" fill="black"/>
+  </mask>
+  <circle cx="256" cy="256" r="240" fill="#211f21" mask="url(#outerRing)"/>
+
+  <!-- Inner ring -->
+  <mask id="innerRing">
+    <rect width="512" height="512" fill="white"/>
+    <circle cx="256" cy="256" r="100" fill="black"/>
+    <!-- Crosshair gaps in inner ring -->
+    <rect x="240" y="0" width="32" height="512" fill="black"/>
+    <rect x="0" y="240" width="512" height="32" fill="black"/>
+  </mask>
+  <circle cx="256" cy="256" r="145" fill="#211f21" mask="url(#innerRing)"/>
+
+  <!-- Center crosshair dot area -->
+  <mask id="centerCross">
+    <rect width="512" height="512" fill="white"/>
+    <circle cx="256" cy="256" r="18" fill="black"/>
+  </mask>
+  <rect x="248" y="200" width="16" height="112" fill="#211f21" mask="url(#centerCross)"/>
+  <rect x="200" y="248" width="112" height="16" fill="#211f21" mask="url(#centerCross)"/>
+
+  <!-- Tiny center diamond -->
+  <rect x="252" y="252" width="8" height="8" fill="#211f21" transform="rotate(45 256 256)"/>
+</svg>

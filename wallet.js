@@ -24,9 +24,19 @@ var WALLETS = [
     id: 'metamask',
     name: 'MetaMask',
     icon: 'https://upload.wikimedia.org/wikipedia/commons/3/36/MetaMask_Fox.svg',
-    detect: function() { return !!(window.ethereum && window.ethereum.isMetaMask); },
+    detect: function() {
+      if (window.ethereum && window.ethereum.providers) {
+        return !!window.ethereum.providers.find(function(p) { return p.isMetaMask && !p.isPhantom; });
+      }
+      return !!(window.ethereum && window.ethereum.isMetaMask && !window.ethereum.isPhantom);
+    },
     connect: async function() {
-      var accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+      var provider = window.ethereum;
+      if (provider && provider.providers) {
+        var mm = provider.providers.find(function(p) { return p.isMetaMask && !p.isPhantom; });
+        if (mm) provider = mm;
+      }
+      var accounts = await provider.request({ method: 'eth_requestAccounts' });
       return { address: accounts[0], chainType: 'evm' };
     },
     disconnect: function() {},
@@ -153,6 +163,16 @@ async function connectWallet(walletId) {
     return;
   }
 
+  // Disconnect current wallet first if switching
+  if (_wcState.connected && _wcState.walletType && _wcState.walletType !== walletId) {
+    var oldWallet = WALLETS.find(function(w) { return w.id === _wcState.walletType; });
+    if (oldWallet) try { oldWallet.disconnect(); } catch(e) {}
+    _wcState.connected = false;
+    _wcState.address = null;
+    _wcState.walletType = null;
+    _wcState.chainType = null;
+  }
+
   // Show connecting animation
   var modal = document.querySelector('.wc-modal');
   var prevContent = modal.innerHTML;
@@ -191,6 +211,12 @@ async function connectWallet(walletId) {
     localStorage.setItem('wcWallet', walletId);
     updateHeaderWallet();
     closeWalletModal();
+
+    // If ENS register modal was waiting for wallet, re-open it
+    if (window._ensWaitingForWallet) {
+      window._ensWaitingForWallet = false;
+      setTimeout(function() { if (typeof openEnsRegisterModal === 'function') openEnsRegisterModal(); }, 300);
+    }
   } catch(e) {
     console.log('Wallet connect error:', e);
     // Restore wallet list on cancel/error
@@ -407,7 +433,7 @@ document.addEventListener('keydown', function(e) {
 
 // Close wallet modal on ESC
 document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape') { closeWalletModal(); closeWatchlistModal(); closeContactModal(); }
+  if (e.key === 'Escape') { closeWalletModal(); closeWatchlistModal(); closeContactModal(); if(typeof closeEnsModal==='function') closeEnsModal(); if(typeof closeEnsRegModal==='function') closeEnsRegModal(); }
 });
 
 // Auto-reconnect wallet on page load (only if user was connected before)
@@ -429,8 +455,13 @@ document.addEventListener('keydown', function(e) {
       updateHeaderWallet();
     }).catch(function() { localStorage.removeItem('wcWallet'); });
   }
-  else if (savedWallet === 'metamask' && window.ethereum && window.ethereum.isMetaMask) {
-    window.ethereum.request({ method: 'eth_accounts' }).then(function(accounts) {
+  else if (savedWallet === 'metamask' && window.ethereum) {
+    var mmProvider = window.ethereum;
+    if (mmProvider.providers) {
+      var mmFound = mmProvider.providers.find(function(p) { return p.isMetaMask && !p.isPhantom; });
+      if (mmFound) mmProvider = mmFound;
+    }
+    mmProvider.request({ method: 'eth_accounts' }).then(function(accounts) {
       if (accounts && accounts.length > 0) {
         _wcState.connected = true;
         _wcState.address = accounts[0];

@@ -9,8 +9,14 @@
   "assets": {
     "directory": "./public",
     "not_found_handling": "single-page-application",
-    "binding": "ASSETS"
+    "binding": "ASSETS",
   },
+  "kv_namespaces": [
+    {
+      "binding": "BOOSTS",
+      "id": "a001acd6779943f0b49a3f8e7cb9b5dc"
+    }
+  ],
   "compatibility_flags": [
     "nodejs_compat"
   ],

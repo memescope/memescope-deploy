@@ -17,7 +17,10 @@
 window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/tokens').then(function(r){return r.json()}).catch(function(){return null});
 </script>
 <meta charset="UTF-8">
-<meta name="version" content="1.9.2">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<meta name="version" content="2.0.99">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -25,7 +28,9 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
 <link rel="manifest" href="/manifest.json">
 <title>MemeScope — The Meme Coin Scope & Scanner</title>
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="canonical" href="https://memescope.io/">
 <meta name="apple-mobile-web-app-title" content="MemeScope">
 <meta name="description" content="Scope trending meme coins across Solana, Ethereum, Base, BSC & more. Live bubble maps, real-time prices, charts, and on-chain analytics — all in one place.">
 <meta name="keywords" content="meme coin scanner, trending meme coins, solana meme coins, new meme coins today, meme coin tracker live, crypto bubble map, dexscreener alternative, pump fun tracker, base meme coins, meme coin radar, early meme coins, memecoin alerts">
@@ -50,7 +55,7 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
 </script>
 <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Saira+Stencil+One&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Saira+Stencil+One&display=swap" rel="stylesheet"></noscript>
-<link rel="stylesheet" href="/styles.css?v=200">
+<link rel="stylesheet" href="/styles.css?v=323">
 </head>
 <body>
 
@@ -59,8 +64,19 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
 
   <nav class="ms-nav">
     <a class="ms-nav-link ms-watchlist-nav" href="#" onclick="event.preventDefault();openWatchlistModal();" title="Watchlist" id="navWatchlistLink">
-      <svg id="navWatchlistStar" width="24" height="24" viewBox="2 2 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11.245 4.174C11.4765 3.50808 11.5922 3.17513 11.7634 3.08285C11.9115 3.00298 12.0898 3.00298 12.238 3.08285C12.4091 3.17513 12.5248 3.50808 12.7563 4.174L14.2866 8.57639C14.3525 8.76592 14.3854 8.86068 14.4448 8.93125C14.4972 8.99359 14.5641 9.04218 14.6396 9.07278C14.725 9.10743 14.8253 9.10947 15.0259 9.11356L19.6857 9.20852C20.3906 9.22288 20.743 9.23007 20.8837 9.36432C21.0054 9.48051 21.0605 9.65014 21.0303 9.81569C20.9955 10.007 20.7146 10.2199 20.1528 10.6459L16.4387 13.4616C16.2788 13.5829 16.1989 13.6435 16.1501 13.7217C16.107 13.7909 16.0815 13.8695 16.0757 13.9507C16.0692 14.0427 16.0982 14.1387 16.1563 14.3308L17.506 18.7919C17.7101 19.4667 17.8122 19.8041 17.728 19.9793C17.6551 20.131 17.5108 20.2358 17.344 20.2583C17.1513 20.2842 16.862 20.0829 16.2833 19.6802L12.4576 17.0181C12.2929 16.9035 12.2106 16.8462 12.1211 16.8239C12.042 16.8043 11.9593 16.8043 11.8803 16.8239C11.7908 16.8462 11.7084 16.9035 11.5437 17.0181L7.71805 19.6802C7.13937 20.0829 6.85003 20.2842 6.65733 20.2583C6.49056 20.2358 6.34626 20.131 6.27337 19.9793C6.18915 19.8041 6.29123 19.4667 6.49538 18.7919L7.84503 14.3308C7.90313 14.1387 7.93218 14.0427 7.92564 13.9507C7.91986 13.8695 7.89432 13.7909 7.85123 13.7217C7.80246 13.6435 7.72251 13.5829 7.56262 13.4616L3.84858 10.6459C3.28678 10.2199 3.00588 10.007 2.97101 9.81569C2.94082 9.65014 2.99594 9.48051 3.11767 9.36432C3.25831 9.23007 3.61074 9.22289 4.31559 9.20852L8.9754 9.11356C9.176 9.10947 9.27631 9.10743 9.36177 9.07278C9.43726 9.04218 9.50414 8.99359 9.55657 8.93125C9.61593 8.86068 9.64887 8.76592 9.71475 8.57639L11.245 4.174Z"/></svg>
+      <span class="ms-nav-icon-wrap">
+        <svg id="navWatchlistStar" width="22" height="22" viewBox="0 0 64 64" fill="#e3e3e3"><path d="M62.799,23.737c-0.47-1.399-1.681-2.419-3.139-2.642l-16.969-2.593L35.069,2.265C34.419,0.881,33.03,0,31.504,0c-1.527,0-2.915,0.881-3.565,2.265l-7.623,16.238L3.347,21.096c-1.458,0.223-2.669,1.242-3.138,2.642c-0.469,1.4-0.115,2.942,0.916,4l12.392,12.707l-2.935,17.977c-0.242,1.488,0.389,2.984,1.62,3.854c1.23,0.87,2.854,0.958,4.177,0.228l15.126-8.365l15.126,8.365c0.597,0.33,1.254,0.492,1.908,0.492c0.796,0,1.592-0.242,2.269-0.72c1.231-0.869,1.861-2.365,1.619-3.854l-2.935-17.977l12.393-12.707C62.914,26.68,63.268,25.138,62.799,23.737z"/></svg>
+        <span class="watchlist-badge" id="watchlistBadge"></span>
+      </span>
       <span class="ms-nav-text">Watchlist</span>
+    </a>
+    <a class="ms-nav-link" href="#" onclick="event.preventDefault(); openMultichart();" title="Multichart" id="navMultichart">
+      <svg width="23" height="23" viewBox="0 -960 960 960" fill="currentColor"><path d="M240-500v-220h220v220H240Zm0 260v-220h220v220H240Zm260-260v-220h220v220H500Zm0 260v-220h220v220H500ZM320-580h60v-60h-60v60Zm260 0h60v-60h-60v60ZM320-320h60v-60h-60v60Zm260 0h60v-60h-60v60ZM380-580Zm200 0Zm0 200Zm-200 0ZM200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200Zm0-80h560v-560H200v560Z"/></svg>
+      <span class="ms-nav-text">Multichart</span>
+    </a>
+    <a class="ms-nav-link" href="#" onclick="event.preventDefault(); toggleNewPairs();" title="New Pairs" id="navNewPairs">
+      <img src="/img/leaf.svg" alt="New Pairs" class="ms-nav-chain-icon ms-nav-leaf-icon">
+      <span class="ms-nav-text">New Pairs</span>
     </a>
     <a class="ms-nav-link" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'solana');" title="Solana">
       <img src="https://dd.dexscreener.com/ds-data/chains/solana.png" alt="Solana" class="ms-nav-chain-icon">
@@ -141,7 +157,7 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
 
   <div class="ms-utility">
     <div class="ms-utility-collapsed">
-      <svg width="24" height="24" viewBox="0 -960 960 960" fill="#A7B4C6"><path d="m370-80-16-128q-13-5-24.5-12T307-235l-119 50L78-375l103-78q-1-7-1-13.5v-27q0-6.5 1-13.5L78-585l110-190 119 50q11-8 23-15t24-12l16-128h220l16 128q13 5 24.5 12t22.5 15l119-50 110 190-103 78q1 7 1 13.5v27q0 6.5-2 13.5l103 78-110 190-118-50q-11 8-23 15t-24 12L590-80H370Zm70-80h79l14-106q31-8 57.5-23.5T639-327l99 41 39-68-86-65q5-14 7-29.5t2-31.5q0-16-2-31.5t-7-29.5l86-65-39-68-99 42q-22-23-48.5-38.5T533-694l-13-106h-79l-14 106q-31 8-57.5 23.5T321-633l-99-41-39 68 86 64q-5 15-7 30t-2 32q0 16 2 31t7 30l-86 65 39 68 99-42q22 23 48.5 38.5T427-266l13 106Zm42-180q58 0 99-41t41-99q0-58-41-99t-99-41q-59 0-99.5 41T342-480q0 58 40.5 99t99.5 41Zm-2-140Z"/></svg>
+      <svg width="24" height="24" viewBox="0 -960 960 960" fill="#e6e1e3"><path d="m370-80-16-128q-13-5-24.5-12T307-235l-119 50L78-375l103-78q-1-7-1-13.5v-27q0-6.5 1-13.5L78-585l110-190 119 50q11-8 23-15t24-12l16-128h220l16 128q13 5 24.5 12t22.5 15l119-50 110 190-103 78q1 7 1 13.5v27q0 6.5-2 13.5l103 78-110 190-118-50q-11 8-23 15t-24 12L590-80H370Zm70-80h79l14-106q31-8 57.5-23.5T639-327l99 41 39-68-86-65q5-14 7-29.5t2-31.5q0-16-2-31.5t-7-29.5l86-65-39-68-99 42q-22-23-48.5-38.5T533-694l-13-106h-79l-14 106q-31 8-57.5 23.5T321-633l-99-41-39 68 86 64q-5 15-7 30t-2 32q0 16 2 31t7 30l-86 65 39 68 99-42q22 23 48.5 38.5T427-266l13 106Zm42-180q58 0 99-41t41-99q0-58-41-99t-99-41q-59 0-99.5 41T342-480q0 58 40.5 99t99.5 41Zm-2-140Z"/></svg>
     </div>
     <div class="ms-utility-expanded">
       <div class="ms-flags">
@@ -161,7 +177,7 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
     </div>
   </div>
 
-  <div class="ms-sidebar-version">v1.9.2</div>
+  <div class="ms-sidebar-version"><span>memescope.eth</span><span>v2.2.1</span></div>
 </aside>
 
 <!-- WATCHLIST MODAL -->
@@ -186,12 +202,36 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
   </div>
 </div>
 
+<!-- MULTICHART -->
+<div class="mc-overlay" id="mcOverlay">
+  <div class="mc-top-actions">
+    <button class="mc-clear-pill" onclick="clearMultichart()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 1.5V2.5H3C2.44772 2.5 2 2.94772 2 3.5V4.5C2 5.05228 2.44772 5.5 3 5.5H21C21.5523 5.5 22 5.05228 22 4.5V3.5C22 2.94772 21.5523 2.5 21 2.5H16V1.5C16 0.947715 15.5523 0.5 15 0.5H9C8.44772 0.5 8 0.947715 8 1.5Z"/><path d="M3.9231 7.5H20.0767L19.1344 20.2216C19.0183 21.7882 17.7135 23 16.1426 23H7.85724C6.28636 23 4.98148 21.7882 4.86544 20.2216L3.9231 7.5Z"/></svg>
+      Clear All
+    </button>
+    <button class="mc-exit" onclick="closeMultichart()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <div class="mc-grid" id="mcGrid"></div>
+  <div class="mc-search-float" id="mcSearchFloat">
+    <div class="mc-search-wrap">
+      <svg class="mc-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input class="mc-search" id="mcSearch" type="text" placeholder="Search token name or paste address..." autocomplete="off">
+      <button class="mc-search-close" onclick="mcCloseSearch()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="mc-search-results" id="mcResults" style="display:none"></div>
+  </div>
+</div>
+
 <!-- MOBILE MENU (display:none when closed - completely out of layout) -->
 <div class="ms-mobile-overlay" id="msMobileOverlay" onclick="closeMsMenu()"></div>
 <div class="ms-mobile-menu" id="msMobileMenu">
   <div class="ms-mobile-header">
     <div class="ms-mobile-brand">
-      <span class="memescope-logo">meme<span class="memescope-scope">sc<img src="/img/logo_scope.png" class="memescope-icon">pe</span></span>
+      <span class="memescope-logo" style="cursor:pointer" onclick="window.location.href='/'">meme<span class="memescope-scope">sc<img src="/img/logo_scope.png" class="memescope-icon">pe</span></span>
     </div>
     <button class="ms-mobile-close" onclick="closeMsMenu()" aria-label="Close menu">
       <svg width="24" height="24" viewBox="0 -960 960 960" fill="currentColor"><path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/></svg>
@@ -199,12 +239,24 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
   </div>
   <div class="ms-mobile-items">
     <a class="ms-mobile-item" href="#" onclick="event.preventDefault(); closeMsMenu(); handleHeaderWalletClick();">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M13 3h-2v10h2V3zm4.83 2.17l-1.42 1.42C17.99 7.86 19 9.81 19 12c0 3.87-3.13 7-7 7s-7-3.13-7-7c0-2.19 1.01-4.14 2.58-5.42L6.17 5.17C4.23 6.82 3 9.26 3 12c0 4.97 4.03 9 9 9s9-4.03 9-9c0-2.74-1.23-5.18-3.17-6.83z"/></svg>
+      <svg class="ms-mobile-chain-icon" style="border-radius:0" width="23" height="23" viewBox="0 0 24 24" fill="currentColor"><path d="M13 3h-2v10h2V3zm4.83 2.17l-1.42 1.42C17.99 7.86 19 9.81 19 12c0 3.87-3.13 7-7 7s-7-3.13-7-7c0-2.19 1.01-4.14 2.58-5.42L6.17 5.17C4.23 6.82 3 9.26 3 12c0 4.97 4.03 9 9 9s9-4.03 9-9c0-2.74-1.23-5.18-3.17-6.83z"/></svg>
       <span>Connect</span>
     </a>
-    <a class="ms-mobile-item" href="#" onclick="event.preventDefault(); closeMsMenu();">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11.2691 4.41115C11.5006 3.89177 11.6164 3.63208 11.7776 3.55211C11.9176 3.48263 12.082 3.48263 12.222 3.55211C12.3832 3.63208 12.499 3.89177 12.7305 4.41115L14.5745 8.54808C14.643 8.70162 14.6772 8.77839 14.7302 8.83718C14.777 8.8892 14.8343 8.93081 14.8982 8.95929C14.9705 8.99149 15.0541 9.00031 15.2213 9.01795L19.7256 9.49336C20.2911 9.55304 20.5738 9.58288 20.6997 9.71147C20.809 9.82316 20.8598 9.97956 20.837 10.1342C20.8108 10.3122 20.5996 10.5025 20.1772 10.8832L16.8125 13.9154C16.6877 14.0279 16.6252 14.0842 16.5857 14.1527C16.5507 14.2134 16.5288 14.2807 16.5215 14.3503C16.5132 14.429 16.5306 14.5112 16.5655 14.6757L17.5053 19.1064C17.6233 19.6627 17.6823 19.9408 17.5989 20.1002C17.5264 20.2388 17.3934 20.3354 17.2393 20.3615C17.0619 20.3915 16.8156 20.2495 16.323 19.9654L12.3995 17.7024C12.2539 17.6184 12.1811 17.5765 12.1037 17.56C12.0352 17.5455 11.9644 17.5455 11.8959 17.56C11.8185 17.5765 11.7457 17.6184 11.6001 17.7024L7.67662 19.9654C7.18404 20.2495 6.93775 20.3915 6.76034 20.3615C6.60623 20.3354 6.47319 20.2388 6.40075 20.1002C6.31736 19.9408 6.37635 19.6627 6.49434 19.1064L7.4341 14.6757C7.46898 14.5112 7.48642 14.429 7.47814 14.3503C7.47081 14.2807 7.44894 14.2134 7.41394 14.1527C7.37439 14.0842 7.31195 14.0279 7.18708 13.9154L3.82246 10.8832C3.40005 10.5025 3.18884 10.3122 3.16258 10.1342C3.13978 9.97956 3.19059 9.82316 3.29993 9.71147C3.42581 9.58288 3.70856 9.55304 4.27406 9.49336L8.77835 9.01795C8.94553 9.00031 9.02911 8.99149 9.10139 8.95929C9.16534 8.93081 9.2226 8.8892 9.26946 8.83718C9.32241 8.77839 9.35663 8.70162 9.42508 8.54808L11.2691 4.41115Z"/></svg>
+    <a class="ms-mobile-item" href="#" onclick="event.preventDefault(); closeMsMenu(); openEnsModal();">
+      <img src="/img/worldwide.svg" width="23" height="23" alt="ENS" class="ms-mobile-chain-icon" style="border-radius:0">
+      <span>Free ENS</span>
+    </a>
+    <a class="ms-mobile-item" href="#" onclick="event.preventDefault(); closeMsMenu(); openMultichart();">
+      <svg width="23" height="23" viewBox="0 -960 960 960" fill="currentColor"><path d="M240-500v-220h220v220H240Zm0 260v-220h220v220H240Zm260-260v-220h220v220H500Zm0 260v-220h220v220H500ZM320-580h60v-60h-60v60Zm260 0h60v-60h-60v60ZM320-320h60v-60h-60v60Zm260 0h60v-60h-60v60ZM380-580Zm200 0Zm0 200Zm-200 0ZM200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200Zm0-80h560v-560H200v560Z"/></svg>
+      <span>Multichart</span>
+    </a>
+    <a class="ms-mobile-item" href="#" onclick="event.preventDefault(); closeMsMenu(); if(typeof openWatchlistModal==='function') openWatchlistModal();">
+      <svg width="22" height="22" viewBox="0 0 64 64" fill="#e3e3e3"><path d="M62.799,23.737c-0.47-1.399-1.681-2.419-3.139-2.642l-16.969-2.593L35.069,2.265C34.419,0.881,33.03,0,31.504,0c-1.527,0-2.915,0.881-3.565,2.265l-7.623,16.238L3.347,21.096c-1.458,0.223-2.669,1.242-3.138,2.642c-0.469,1.4-0.115,2.942,0.916,4l12.392,12.707l-2.935,17.977c-0.242,1.488,0.389,2.984,1.62,3.854c1.23,0.87,2.854,0.958,4.177,0.228l15.126-8.365l15.126,8.365c0.597,0.33,1.254,0.492,1.908,0.492c0.796,0,1.592-0.242,2.269-0.72c1.231-0.869,1.861-2.365,1.619-3.854l-2.935-17.977l12.393-12.707C62.914,26.68,63.268,25.138,62.799,23.737z"/></svg>
       <span>Watchlist</span>
+    </a>
+    <a class="ms-mobile-item" href="#" onclick="event.preventDefault(); toggleNewPairs(); closeMsMenu();" id="mobileNavNewPairs">
+      <img src="/img/leaf.svg" alt="New Pairs" class="ms-mobile-chain-icon" style="filter:brightness(1.2);border-radius:0">
+      <span>New Pairs</span>
     </a>
     <a class="ms-mobile-item" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'solana'); closeMsMenu();">
       <img src="https://dd.dexscreener.com/ds-data/chains/solana.png" alt="Solana" class="ms-mobile-chain-icon">
@@ -289,14 +341,13 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
       <input type="range" class="ms-brightness-slider" min="60" max="140" value="100" oninput="setBrightness(this.value)">
     </div>
   </div>
-  <div class="ms-mobile-version">v1.9.2</div>
+  <div class="ms-mobile-version">v2.0.99</div>
 </div>
 
 <!-- LOADING SCREEN -->
 <style>.app{visibility:hidden}.app.ready{visibility:visible}</style>
-<div id="loadingScreen" style="position:fixed;inset:0;z-index:9999;background:#141314;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;">
-  <img src="/img/loading_scope.png" width="48" height="48" style="animation:scopePulse 0.8s ease-in-out infinite;">
-  <div style="font-family:'Inter',sans-serif;font-size:14px;color:rgba(255,255,255,0.4);letter-spacing:1px;">Loading scopes...</div>
+<div id="loadingScreen" style="position:fixed;inset:0;z-index:9999;background:#141314;display:flex;align-items:center;justify-content:center;">
+  <img src="/img/scope-loading.png" width="85" height="85" style="animation:scopeSpin 1.2s linear infinite;">
 </div>
 <script>
   setTimeout(function() {
@@ -314,22 +365,23 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
     <div class="sticky-nav-wrap">
     <!-- TOP HEADER BAR -->
     <div class="top-header-bar">
-      <div class="top-header-left"><span class="memescope-logo" style="cursor:pointer" onclick="if(document.getElementById('tokenPage')&&document.getElementById('tokenPage').style.display!=='none'){closeTokenPage();try{history.pushState({},'','/');} catch(e){}}else{window.scrollTo({top:0,behavior:'smooth'}); if(typeof fetchLiveTokens==='function') fetchLiveTokens();}">meme<span class="memescope-scope">sc<img src="/img/logo_scope.png" class="memescope-icon">pe</span></div>
+      <div class="top-header-left"><span class="memescope-logo" style="cursor:pointer" onclick="window.location.href='/'">meme<span class="memescope-scope">sc<img src="/img/logo_scope.png" class="memescope-icon">pe</span></span></div>
       <div class="top-header-search" id="headerSearchBar" onclick="openSearchModal()">
         <svg width="22" height="22" viewBox="0 0 32 32" fill="currentColor" class="search-mag-icon" style="opacity:1"><path d="M16.906 20.188l5.5 5.5-2.25 2.281-5.75-5.781c-1.406 0.781-3.031 1.219-4.719 1.219-5.344 0-9.688-4.344-9.688-9.688s4.344-9.688 9.688-9.688 9.719 4.344 9.719 9.688c0 2.5-0.969 4.781-2.5 6.469zM3.219 13.719c0 3.594 2.875 6.469 6.469 6.469s6.469-2.875 6.469-6.469-2.875-6.469-6.469-6.469-6.469 2.875-6.469 6.469z"/></svg>
         <input type="text" placeholder="Search by token name, symbol or address" />
         <kbd>/</kbd>
       </div>
       <div class="top-header-right-group">
+        <button class="ms-header-ens-btn" onclick="openEnsModal()" title="Claim your .memescope.eth name">
+          <img src="/img/worldwide.svg" width="32" height="32" alt="ENS">
+        </button>
         <div class="ms-header-connect-wrap">
-          <div class="ms-header-connect-split" id="headerConnectBtn">
-            <button class="connect-split-icon" onclick="handleHeaderWalletClick()" aria-label="Connect Wallet">
+          <button class="ms-header-connect-split" id="headerConnectBtn" onclick="handleHeaderWalletClick()">
+            <span class="connect-split-icon">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M10.5 13C10.5 13.5523 10.9477 14 11.5 14H12.5C13.0523 14 13.5 13.5523 13.5 13V3C13.5 2.44772 13.0523 2 12.5 2H11.5C10.9477 2 10.5 2.44772 10.5 3V13Z"/><path d="M5.97584 7.81301C6.31036 7.37356 6.31677 6.74398 5.92623 6.35348L5.21909 5.6464C4.82855 5.2559 4.19112 5.25312 3.8398 5.67926C2.37973 7.4503 1.5 9.71165 1.5 12.1764C1.5 17.9058 6.22915 22.4999 12 22.4999C17.7709 22.4999 22.5 17.9058 22.5 12.1764C22.5 9.71165 21.6203 7.4503 20.1602 5.67926C19.8089 5.25312 19.1715 5.2559 18.7809 5.6464L18.0738 6.35348C17.6832 6.74398 17.6896 7.37356 18.0242 7.81301C18.9539 9.03438 19.5 10.5437 19.5 12.1764C19.5 16.1932 16.1703 19.4999 12 19.4999C7.82973 19.4999 4.5 16.1932 4.5 12.1764C4.5 10.5437 5.04606 9.03438 5.97584 7.81301Z"/></svg>
-            </button>
-            <button class="connect-split-label" onclick="handleHeaderWalletClick()">
-              <span>Connect</span>
-            </button>
-          </div>
+            </span>
+            <span class="connect-split-label">Connect</span>
+          </button>
           <button class="connect-split-chevron" id="headerConnectChevron" onclick="toggleWalletDropdown(event)" aria-label="Wallet menu">
             <svg width="18" height="18" viewBox="0 -960 960 960" fill="currentColor"><path d="M480-344 240-584l56-56 184 184 184-184 56 56-240 240Z"/></svg>
           </button>
@@ -351,7 +403,7 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
         <button class="filter-btn" onclick="setTimeframe('24h')">24H</button>
       </div>
 
-      <button class="filter-chip active-chip" onclick="setCategory(this,'top')"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:-1px;margin-right:3px"><path d="M5 9l1.41 1.41L11 5.83V22h2V5.83l4.59 4.58L19 9l-7-7-7 7z"/></svg>Top</button>
+      <button class="filter-chip active-chip" onclick="setCategory(this,'trending')"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:-1px;margin-right:3px"><path d="M5 9l1.41 1.41L11 5.83V22h2V5.83l4.59 4.58L19 9l-7-7-7 7z"/></svg>Top</button>
       <button class="filter-chip" onclick="setCategory(this,'gainers')"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:-1px;margin-right:3px"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6h-6z"/></svg>Gainers</button>
       <button class="filter-chip" onclick="setCategory(this,'losers')"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:-1px;margin-right:3px"><path d="M16 18l2.29-2.29-4.88-4.88-4 4L2 7.41 3.41 6l6 6 4-4 6.3 6.29L22 12v6h-6z"/></svg>Losers</button>
 
@@ -434,10 +486,10 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
             <th class="sortable" onclick="sortByColumn('age')"> Age <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" class="sort-icon"><path d="M7 10l5-5 5 5z"/><path d="M7 14l5 5 5-5z"/></svg></th>
             
             <th class="sortable" onclick="sortByColumn('vol')"> Volume <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" class="sort-icon"><path d="M7 10l5-5 5 5z"/><path d="M7 14l5 5 5-5z"/></svg></th>
-            <th class="sortable" onclick="sortByColumn('p30m')"> 5M <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" class="sort-icon"><path d="M7 10l5-5 5 5z"/><path d="M7 14l5 5 5-5z"/></svg></th>
-            <th class="sortable" onclick="sortByColumn('p1h')"> 15M <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" class="sort-icon"><path d="M7 10l5-5 5 5z"/><path d="M7 14l5 5 5-5z"/></svg></th>
-            <th class="sortable" onclick="sortByColumn('p6h')"> 1H <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" class="sort-icon"><path d="M7 10l5-5 5 5z"/><path d="M7 14l5 5 5-5z"/></svg></th>
-        <th class="sortable" onclick="sortByColumn('p12h')"> 4H <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" class="sort-icon"><path d="M7 10l5-5 5 5z"/><path d="M7 14l5 5 5-5z"/></svg></th>
+            <th class="sortable" onclick="sortByColumn('p5m')"> 5M <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" class="sort-icon"><path d="M7 10l5-5 5 5z"/><path d="M7 14l5 5 5-5z"/></svg></th>
+            <th class="sortable" onclick="sortByColumn('p15m')"> 15M <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" class="sort-icon"><path d="M7 10l5-5 5 5z"/><path d="M7 14l5 5 5-5z"/></svg></th>
+            <th class="sortable" onclick="sortByColumn('p1h')"> 1H <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" class="sort-icon"><path d="M7 10l5-5 5 5z"/><path d="M7 14l5 5 5-5z"/></svg></th>
+        <th class="sortable" onclick="sortByColumn('p6h')"> 6H <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" class="sort-icon"><path d="M7 10l5-5 5 5z"/><path d="M7 14l5 5 5-5z"/></svg></th>
             <th class="sortable" onclick="sortByColumn('p24h')"> 24H <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" class="sort-icon"><path d="M7 10l5-5 5 5z"/><path d="M7 14l5 5 5-5z"/></svg></th>
             <th class="sortable" onclick="sortByColumn(window._priceColMode==='mcap'?'price':'mcap')"><span id="mcapColLabel">MCap</span></th>
             <th class="row-dots-col"><svg width="16" height="16" viewBox="0 -960 960 960" fill="#ffffff" style="vertical-align:middle"><path d="M440-280h80v-240h-80v240Zm40-320q17 0 28.5-11.5T520-640q0-17-11.5-28.5T480-680q-17 0-28.5 11.5T440-640q0 17 11.5 28.5T480-600Zm0 520q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"/></svg></th>
@@ -456,6 +508,7 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
     </div>
 
   <div style="text-align:center;padding:24px 16px 32px;border-top:1px solid rgba(255,255,255,0.04);margin-top:20px">
+    <div style="font-size:11px;color:rgba(255,255,255,0.25);font-family:'Inter',sans-serif;margin-bottom:6px">memescope.eth &middot; v2.2.1</div>
     <div style="font-size:11px;color:rgba(255,255,255,0.2);font-family:'Inter',sans-serif">&copy; 2026 Memescope.io. All rights reserved.</div>
   </div>
 
@@ -471,6 +524,12 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
       <!-- Center: chart + bottom -->
       <div class="tp-center">
         <div class="tp-chart-area" id="tpChartContainer"></div>
+        <div id="tpNoDataOverlay" class="chart-nodata-overlay" style="display:none">
+          <svg width="120" height="120" viewBox="0 0 64 64" fill="var(--text-secondary)"><path d="M2.3384,25.8242a1,1,0,0,0,1.4145,0l.7664-.7667.7663.7667A1,1,0,0,0,6.7007,24.41l-.7672-.7676.7672-.7676a1,1,0,0,0-1.4151-1.4141l-.7663.7668-.7664-.7668a1,1,0,0,0-1.415,1.4141l.7672.7676-.7672.7676A1,1,0,0,0,2.3384,25.8242Z"/><path d="M55.98,40.2405a23.9922,23.9922,0,0,0-47.9607,0C2.7753,42.0383,0,44.3694,0,47c0,3.7141,5.3953,6.4485,12.9129,8.1108.0118.0025.0227.0057.0345.0076A91.8345,91.8345,0,0,0,32,57c15.5127,0,32-3.5049,32-10C64,44.37,61.2246,42.0372,55.98,40.2405ZM13.7349,53.2578a22,22,0,1,1,36.53,0A88.4654,88.4654,0,0,1,32,55,88.4654,88.4654,0,0,1,13.7349,53.2578Z"/><path d="M53,22.0039a3.001,3.001,0,1,0-3-3.001A3.0041,3.0041,0,0,0,53,22.0039Zm0-4.0019a1.001,1.001,0,1,1-1,1.0009A1.0018,1.0018,0,0,1,53,18.002Z"/><circle cx="57" cy="11.0005" r="1.0002"/><path d="M41.5,28.0078A7.503,7.503,0,1,0,49,35.5107,7.51,7.51,0,0,0,41.5,28.0078Zm0,13.0059a5.503,5.503,0,1,1,5.5-5.503A5.5078,5.5078,0,0,1,41.5,41.0137Z"/><circle cx="40.5" cy="34.8918" r="1.5004"/><path d="M30,35.5107a7.5,7.5,0,1,0-7.5,7.503A7.51,7.51,0,0,0,30,35.5107Zm-7.5,5.503a5.503,5.503,0,1,1,5.5-5.503A5.5078,5.5078,0,0,1,22.5,41.0137Z"/><path d="M23.5,33.3926A1.5007,1.5007,0,1,0,25,34.8933,1.5,1.5,0,0,0,23.5,33.3926Z"/><path d="M32.0176,45c-3.5547,0-6.8062,1.3965-8.4864,3.6436A2.7448,2.7448,0,0,0,25.707,53H38.3193a2.652,2.652,0,0,0,2.3975-1.5215,2.8063,2.8063,0,0,0-.33-2.9863C38.6792,46.3379,35.4722,45,32.0176,45Z"/><path d="M16.9048,28.3867a1.001,1.001,0,0,0,1.272-.6181c1.19-3.4375,5.3671-3.2286,5.542-3.2129A1,1,0,0,0,23.85,22.56c-2.0132-.127-6.2065.6416-7.5625,4.5547A1,1,0,0,0,16.9048,28.3867Z"/><path d="M40.2988,24.5557c.0469-.0069,4.3394-.25,5.5391,3.2129a1,1,0,1,0,1.89-.6543C46.3726,23.2012,42.1816,22.43,40.165,22.56a1,1,0,0,0-.9306,1.0654A1.0158,1.0158,0,0,0,40.2988,24.5557Z"/><path d="M32,14a1,1,0,0,0,1-1V9a1,1,0,0,0-2,0v4A1,1,0,0,0,32,14Z"/><path d="M36,15a.9967.9967,0,0,0,.707-.293l2.5-2.5a1,1,0,0,0-1.414-1.414l-2.5,2.5A1,1,0,0,0,36,15Z"/><path d="M27.793,14.707a1,1,0,0,0,1.414-1.414l-2.5-2.5a1,1,0,0,0-1.414,1.414Z"/></svg>
+          <div class="chart-nodata-label">Not enough data</div>
+          <div class="chart-nodata-price" id="tpNoDataPrice"></div>
+          <div class="chart-nodata-sub">Live price via DexScreener</div>
+        </div>
         <!-- Bottom tabs -->
         <div class="tp-bottom" id="tpBottom">
           <div class="tp-bottom-handle" id="tpResizeHandle"></div>
@@ -703,13 +762,13 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
       
       <div class="search-modal-body" id="search-modal-body">
         <div class="search-modal-section" id="search-recent">
-          <div class="search-modal-section-title">🕐 Recent Searches</div>
+          <div class="search-modal-section-title"><svg width="18" height="18" viewBox="0 -960 960 960" fill="#e3e3e3" style="margin-right:4px;flex-shrink:0"><path d="M480-80q-155 0-268.67-102.33Q97.67-284.67 82.67-438h67q15.66 125.67 109.83 208.5T480-146.67q139.33 0 236.33-97t97-236.33q0-139.33-97-236.33t-236.33-97q-92.67 0-172.17 48.16Q228.33-717 186-635.33h123.33v66.66H90Q121-706 230-793t250-87q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm114-239.33L446.67-466.67V-676h66.66v182.67L640.67-366 594-319.33Z"/></svg> Recent Searches</div>
           <div class="search-modal-items" id="search-recent-list">
             <div class="search-modal-empty">No recent searches</div>
           </div>
         </div>
         <div class="search-modal-section" id="search-trending">
-          <div class="search-modal-section-title">🔥 Trending</div>
+          <div class="search-modal-section-title"><svg width="18" height="18" viewBox="0 -960 960 960" fill="#e3e3e3" style="margin-right:4px;flex-shrink:0"><path d="M480-80q-66 0-127.17-20.17-61.16-20.16-112.16-58.5l48.66-48.66q43.34 29.66 92 45.16 48.67 15.5 98.67 15.5 139.67 0 236.5-96.83 96.83-96.83 96.83-236.5 0-139.67-96.83-236.5-96.83-96.83-236.5-96.83-139.67 0-236.5 96.83-96.83 96.83-96.83 236.5H80q0-83 31.5-155.67 31.5-72.66 85.83-127Q251.67-817 324.67-848.5T480-880q83 0 155.5 31.5t127 86q54.5 54.5 86 127t31.5 155q0 82.5-31.5 155.5t-86 127.5q-54.5 54.5-127 86T480-80ZM151-254.33 314.67-418l124.66 107.33L652.67-524v122.67h66.66v-233.34H486V-568h122.67l-172 172L312-503.33 118.33-309.67q8.34 17 15.5 29.5 7.17 12.5 17.17 25.84ZM480-480Z"/></svg> Trending</div>
           <div class="search-modal-cols">
             <span class="smc-token">Token</span>
             <span class="smc-price">Price</span>
@@ -763,7 +822,7 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
 <div class="bf-overlay" id="bubbleFilterOverlay" onclick="if(event.target===this)closeBubbleFilter()">
   <div class="bf-modal">
     <div class="bf-header">
-      <div class="bf-title"><svg width="20" height="20" viewBox="0 -960 960 960" fill="currentColor" style="vertical-align:-4px;margin-right:8px;transform:rotate(90deg)"><path d="M200-160v-280h-80v-80h240v80h-80v280h-80Zm0-440v-200h80v200h-80Zm160 0v-80h80v-120h80v120h80v80H360Zm80 440v-360h80v360h-80Zm240 0v-120h-80v-80h240v80h-80v120h-80Zm0-280v-360h80v360h-80Z"/></svg>Scope Filters</div>
+      <div class="bf-title">Filter Scopes</div>
       <div class="bf-header-actions">
         <button class="bf-reset-btn" onclick="resetBubbleFilters()">Reset All</button>
         <button class="bf-close-btn" onclick="closeBubbleFilter()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
@@ -771,48 +830,77 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
     </div>
     <div class="bf-body">
 
+      <div class="bf-section bf-presets">
+        <div class="bf-section-title">Quick Presets</div>
+        <div class="bf-chip-group">
+          <button class="bf-chip bf-preset-chip" onclick="applyBFPreset('pumping')">🚀 Pumping</button>
+          <button class="bf-chip bf-preset-chip" onclick="applyBFPreset('newlaunch')">🌱 New launches</button>
+          <button class="bf-chip bf-preset-chip" onclick="applyBFPreset('whales')">🐋 Whales</button>
+          <button class="bf-chip bf-preset-chip" onclick="applyBFPreset('gems')">💎 Hidden gems</button>
+        </div>
+      </div>
+
       <div class="bf-section">
         <div class="bf-section-title">Chain</div>
         <div class="bf-chip-group">
-          <button class="bf-chip active" onclick="toggleBFChip(this,'chain','all')" data-value="all">All</button>
-          <button class="bf-chip" onclick="toggleBFChip(this,'chain','solana')" data-value="solana"><img src="https://dd.dexscreener.com/ds-data/chains/solana.png" width="14" height="14" style="border-radius:50%;vertical-align:-2px;margin-right:4px">Solana</button>
-          <button class="bf-chip" onclick="toggleBFChip(this,'chain','eth')" data-value="eth"><img src="https://dd.dexscreener.com/ds-data/chains/ethereum.png" width="14" height="14" style="border-radius:50%;vertical-align:-2px;margin-right:4px">Ethereum</button>
-          <button class="bf-chip" onclick="toggleBFChip(this,'chain','base')" data-value="base"><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='264' height='264' viewBox='0 0 264 264' fill='none'%3E%3Cpath d='M131.706 263.876C204.705 263.876 263.876 204.81 263.876 131.938C263.876 59.066 204.705 0 131.706 0C62.4541 0 5.64694 53.1764 0 120.845H174.697V143.032H0C5.64694 210.7 62.4541 263.876 131.706 263.876Z' fill='%230052FF'/%3E%3C/svg%3E" width="14" height="14" style="border-radius:50%;vertical-align:-2px;margin-right:4px">Base</button>
-          <button class="bf-chip" onclick="toggleBFChip(this,'chain','bsc')" data-value="bsc"><img src="https://dd.dexscreener.com/ds-data/chains/bsc.png" width="14" height="14" style="border-radius:50%;vertical-align:-2px;margin-right:4px">BSC</button>
-          <button class="bf-chip" onclick="toggleBFChip(this,'chain','sui')" data-value="sui"><img src="https://dd.dexscreener.com/ds-data/chains/sui.png" width="14" height="14" style="border-radius:50%;vertical-align:-2px;margin-right:4px">Sui</button>
+          <button class="bf-chip bf-chain active" onclick="toggleBFChip(this,'chain','all')" data-value="all">All</button>
+          <button class="bf-chip bf-chain" onclick="toggleBFChip(this,'chain','solana')" data-value="solana"><img src="https://dd.dexscreener.com/ds-data/chains/solana.png" width="14" height="14" style="border-radius:50%;vertical-align:-2px;margin-right:4px">Solana</button>
+          <button class="bf-chip bf-chain" onclick="toggleBFChip(this,'chain','eth')" data-value="eth"><img src="https://dd.dexscreener.com/ds-data/chains/ethereum.png" width="14" height="14" style="border-radius:50%;vertical-align:-2px;margin-right:4px">Ethereum</button>
+          <button class="bf-chip bf-chain" onclick="toggleBFChip(this,'chain','base')" data-value="base"><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='264' height='264' viewBox='0 0 264 264' fill='none'%3E%3Cpath d='M131.706 263.876C204.705 263.876 263.876 204.81 263.876 131.938C263.876 59.066 204.705 0 131.706 0C62.4541 0 5.64694 53.1764 0 120.845H174.697V143.032H0C5.64694 210.7 62.4541 263.876 131.706 263.876Z' fill='%230052FF'/%3E%3C/svg%3E" width="14" height="14" style="border-radius:50%;vertical-align:-2px;margin-right:4px">Base</button>
+          <button class="bf-chip bf-chain" onclick="toggleBFChip(this,'chain','bsc')" data-value="bsc"><img src="https://dd.dexscreener.com/ds-data/chains/bsc.png" width="14" height="14" style="border-radius:50%;vertical-align:-2px;margin-right:4px">BSC</button>
+          <button class="bf-chip bf-chain" onclick="toggleBFChip(this,'chain','sui')" data-value="sui"><img src="https://dd.dexscreener.com/ds-data/chains/sui.png" width="14" height="14" style="border-radius:50%;vertical-align:-2px;margin-right:4px">Sui</button>
         </div>
       </div>
 
       <div class="bf-section">
-        <div class="bf-section-title">Market Cap</div>
-        <div class="bf-chip-group">
-          <button class="bf-chip active" onclick="toggleBFChip(this,'mcap','all')" data-value="all">All</button>
-          <button class="bf-chip" onclick="toggleBFChip(this,'mcap','micro')" data-value="micro">Micro &lt;$100K</button>
-          <button class="bf-chip" onclick="toggleBFChip(this,'mcap','small')" data-value="small">$100K – $1M</button>
-          <button class="bf-chip" onclick="toggleBFChip(this,'mcap','mid')" data-value="mid">$1M – $10M</button>
-          <button class="bf-chip" onclick="toggleBFChip(this,'mcap','large')" data-value="large">$10M+</button>
+        <div class="bf-section-title">
+          Market Cap
+          <span class="bf-range-readout" id="bfMcapReadout">Any</span>
+        </div>
+        <div class="bf-range">
+          <div class="bf-range-track"></div>
+          <div class="bf-range-fill" id="bfMcapFill"></div>
+          <input type="range" min="0" max="100" value="0" class="bf-range-input bf-range-min" id="bfMcapMin" oninput="updateBFRange('mcap')">
+          <input type="range" min="0" max="100" value="100" class="bf-range-input bf-range-max" id="bfMcapMax" oninput="updateBFRange('mcap')">
         </div>
       </div>
 
       <div class="bf-section">
-        <div class="bf-section-title">Age</div>
-        <div class="bf-chip-group">
-          <button class="bf-chip active" onclick="toggleBFChip(this,'age','all')" data-value="all">All</button>
-          <button class="bf-chip" onclick="toggleBFChip(this,'age','1h')" data-value="1h">&lt; 1 Hour</button>
-          <button class="bf-chip" onclick="toggleBFChip(this,'age','24h')" data-value="24h">&lt; 24 Hours</button>
-          <button class="bf-chip" onclick="toggleBFChip(this,'age','7d')" data-value="7d">&lt; 7 Days</button>
-          <button class="bf-chip" onclick="toggleBFChip(this,'age','older')" data-value="older">7+ Days</button>
+        <div class="bf-section-title">
+          Volume (24h)
+          <span class="bf-range-readout" id="bfVolumeReadout">Any</span>
+        </div>
+        <div class="bf-range">
+          <div class="bf-range-track"></div>
+          <div class="bf-range-fill" id="bfVolumeFill"></div>
+          <input type="range" min="0" max="100" value="0" class="bf-range-input bf-range-min" id="bfVolumeMin" oninput="updateBFRange('volume')">
+          <input type="range" min="0" max="100" value="100" class="bf-range-input bf-range-max" id="bfVolumeMax" oninput="updateBFRange('volume')">
         </div>
       </div>
 
       <div class="bf-section">
-        <div class="bf-section-title">Volume (24h)</div>
-        <div class="bf-chip-group">
-          <button class="bf-chip active" onclick="toggleBFChip(this,'volume','all')" data-value="all">All</button>
-          <button class="bf-chip" onclick="toggleBFChip(this,'volume','10k')" data-value="10k">&gt;$10K</button>
-          <button class="bf-chip" onclick="toggleBFChip(this,'volume','50k')" data-value="50k">&gt;$50K</button>
-          <button class="bf-chip" onclick="toggleBFChip(this,'volume','100k')" data-value="100k">&gt;$100K</button>
-          <button class="bf-chip" onclick="toggleBFChip(this,'volume','1m')" data-value="1m">&gt;$1M</button>
+        <div class="bf-section-title">
+          Age
+          <span class="bf-range-readout" id="bfAgeReadout">Any</span>
+        </div>
+        <div class="bf-range">
+          <div class="bf-range-track"></div>
+          <div class="bf-range-fill" id="bfAgeFill"></div>
+          <input type="range" min="0" max="100" value="0" class="bf-range-input bf-range-min" id="bfAgeMin" oninput="updateBFRange('age')">
+          <input type="range" min="0" max="100" value="100" class="bf-range-input bf-range-max" id="bfAgeMax" oninput="updateBFRange('age')">
+        </div>
+      </div>
+
+      <div class="bf-section">
+        <div class="bf-section-title">
+          Liquidity
+          <span class="bf-range-readout" id="bfLiqReadout">Any</span>
+        </div>
+        <div class="bf-range">
+          <div class="bf-range-track"></div>
+          <div class="bf-range-fill" id="bfLiqFill"></div>
+          <input type="range" min="0" max="100" value="0" class="bf-range-input bf-range-min" id="bfLiqMin" oninput="updateBFRange('liq')">
+          <input type="range" min="0" max="100" value="100" class="bf-range-input bf-range-max" id="bfLiqMax" oninput="updateBFRange('liq')">
         </div>
       </div>
 
@@ -827,27 +915,6 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
       </div>
 
       <div class="bf-section">
-        <div class="bf-section-title">Liquidity</div>
-        <div class="bf-chip-group">
-          <button class="bf-chip active" onclick="toggleBFChip(this,'liq','all')" data-value="all">All</button>
-          <button class="bf-chip" onclick="toggleBFChip(this,'liq','5k')" data-value="5k">&gt;$5K</button>
-          <button class="bf-chip" onclick="toggleBFChip(this,'liq','25k')" data-value="25k">&gt;$25K</button>
-          <button class="bf-chip" onclick="toggleBFChip(this,'liq','100k')" data-value="100k">&gt;$100K</button>
-          <button class="bf-chip" onclick="toggleBFChip(this,'liq','500k')" data-value="500k">&gt;$500K</button>
-        </div>
-      </div>
-
-      <div class="bf-section">
-        <div class="bf-section-title">Bubble Count</div>
-        <div class="bf-chip-group">
-          <button class="bf-chip" onclick="toggleBFChip(this,'count','10')" data-value="10">Top 10</button>
-          <button class="bf-chip" onclick="toggleBFChip(this,'count','25')" data-value="25">Top 25</button>
-          <button class="bf-chip active" onclick="toggleBFChip(this,'count','50')" data-value="50">Top 50</button>
-          <button class="bf-chip" onclick="toggleBFChip(this,'count','100')" data-value="100">Top 100</button>
-        </div>
-      </div>
-
-      <div class="bf-section">
         <div class="bf-section-title">Category</div>
         <div class="bf-chip-group">
           <button class="bf-chip active" onclick="toggleBFChip(this,'category','all')" data-value="all">All</button>
@@ -857,9 +924,21 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
         </div>
       </div>
 
+      <div class="bf-section">
+        <div class="bf-section-title">Scope Count</div>
+        <div class="bf-segmented" role="radiogroup">
+          <button class="bf-seg" onclick="toggleBFChip(this,'count','10')" data-value="10">Top 10</button>
+          <button class="bf-seg" onclick="toggleBFChip(this,'count','20')" data-value="20">Top 20</button>
+          <button class="bf-seg" onclick="toggleBFChip(this,'count','30')" data-value="30">Top 30</button>
+          <button class="bf-seg" onclick="toggleBFChip(this,'count','40')" data-value="40">Top 40</button>
+          <button class="bf-seg active" onclick="toggleBFChip(this,'count','50')" data-value="50">Top 50</button>
+        </div>
+      </div>
+
     </div>
-    <div class="bf-footer">
-      <button class="bf-apply-btn" onclick="applyBubbleFilters()">Apply Filters</button>
+    <div class="bf-footer-live">
+      <span class="bf-live-text"><span id="bfLiveCount">—</span> scopes found</span>
+      <button class="bf-apply-btn" onclick="closeBubbleFilter()">Apply Filters</button>
     </div>
   </div>
 </div>
@@ -889,6 +968,62 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
       </div>
       <button class="bugreport-submit" id="contactSubmitBtn" onclick="submitContact()">Send Message</button>
       <div class="bugreport-status" id="contactStatus"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ENS SEARCH MODAL (Step 1) -->
+<div class="wc-overlay" id="ensOverlay" onclick="closeEnsModal()">
+  <div class="wc-modal" onclick="event.stopPropagation()" style="width:420px">
+    <div class="wc-header">
+      <span class="wc-title">Claim Your .memescope.eth</span>
+      <button class="wc-close" onclick="closeEnsModal()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="ens-body">
+      <p class="ens-description">Get a free ENS subdomain. Use it as your wallet name, profile handle, or onchain identity.</p>
+      <div class="ens-input-wrap">
+        <input type="text" id="ensNameInput" class="ens-input" placeholder="yourname" autocomplete="off" autocapitalize="none" spellcheck="false" oninput="onEnsInput(event)">
+        <span class="ens-input-suffix">.memescope.eth</span>
+      </div>
+      <div class="ens-status" id="ensStatus"></div>
+      <div class="ens-result" id="ensResult" style="display:none" onclick="openEnsRegisterModal()">
+        <span class="ens-result-name" id="ensResultName"></span>
+        <span class="ens-result-badge">Available</span>
+      </div>
+      <div class="ens-benefits">
+        <div class="ens-benefit"><span>♾️</span> Yours forever, no renewals</div>
+        <div class="ens-benefit"><span>🔗</span> Works with any ENS-compatible wallet</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ENS REGISTER MODAL (Step 2) -->
+<div class="wc-overlay" id="ensRegOverlay" onclick="closeEnsRegModal()">
+  <div class="wc-modal" onclick="event.stopPropagation()" style="width:420px">
+    <div class="wc-header">
+      <button class="ens-back-btn" onclick="backToEnsSearch()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+      </button>
+      <span class="wc-title">Register</span>
+      <button class="wc-close" onclick="closeEnsRegModal()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="ens-body">
+      <div class="ens-preview" id="ensRegPreviewName"></div>
+      <div class="ens-price-row">
+        <span class="ens-price-label">Price</span>
+        <span class="ens-price-value">Free</span>
+      </div>
+      <div class="ens-price-row">
+        <span class="ens-price-label">Gas (Base L2)</span>
+        <span class="ens-price-value">~$0.001</span>
+      </div>
+      <div class="ens-reg-status" id="ensRegStatus"></div>
+      <button class="ens-register-btn" id="ensRegisterBtn" onclick="onEnsRegister()">Register Name</button>
     </div>
   </div>
 </div>
@@ -923,7 +1058,7 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
             <span class="bm-sym" id="bmSym"></span>
             <span class="bm-chain-badge" id="bmChain"></span>
             <span class="bm-age-badge" id="bmAgeBadge" style="display:none"></span>
-            <button class="bm-star" id="bmStar" onclick="event.stopPropagation();toggleModalWatchlist(this)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11.245 4.174C11.4765 3.50808 11.5922 3.17513 11.7634 3.08285C11.9115 3.00298 12.0898 3.00298 12.238 3.08285C12.4091 3.17513 12.5248 3.50808 12.7563 4.174L14.2866 8.57639C14.3525 8.76592 14.3854 8.86068 14.4448 8.93125C14.4972 8.99359 14.5641 9.04218 14.6396 9.07278C14.725 9.10743 14.8253 9.10947 15.0259 9.11356L19.6857 9.20852C20.3906 9.22288 20.743 9.23007 20.8837 9.36432C21.0054 9.48051 21.0605 9.65014 21.0303 9.81569C20.9955 10.007 20.7146 10.2199 20.1528 10.6459L16.4387 13.4616C16.2788 13.5829 16.1989 13.6435 16.1501 13.7217C16.107 13.7909 16.0815 13.8695 16.0757 13.9507C16.0692 14.0427 16.0982 14.1387 16.1563 14.3308L17.506 18.7919C17.7101 19.4667 17.8122 19.8041 17.728 19.9793C17.6551 20.131 17.5108 20.2358 17.344 20.2583C17.1513 20.2842 16.862 20.0829 16.2833 19.6802L12.4576 17.0181C12.2929 16.9035 12.2106 16.8462 12.1211 16.8239C12.042 16.8043 11.9593 16.8043 11.8803 16.8239C11.7908 16.8462 11.7084 16.9035 11.5437 17.0181L7.71805 19.6802C7.13937 20.0829 6.85003 20.2842 6.65733 20.2583C6.49056 20.2358 6.34626 20.131 6.27337 19.9793C6.18915 19.8041 6.29123 19.4667 6.49538 18.7919L7.84503 14.3308C7.90313 14.1387 7.93218 14.0427 7.92564 13.9507C7.91986 13.8695 7.89432 13.7909 7.85123 13.7217C7.80246 13.6435 7.72251 13.5829 7.56262 13.4616L3.84858 10.6459C3.28678 10.2199 3.00588 10.007 2.97101 9.81569C2.94082 9.65014 2.99594 9.48051 3.11767 9.36432C3.25831 9.23007 3.61074 9.22289 4.31559 9.20852L8.9754 9.11356C9.176 9.10947 9.27631 9.10743 9.36177 9.07278C9.43726 9.04218 9.50414 8.99359 9.55657 8.93125C9.61593 8.86068 9.64887 8.76592 9.71475 8.57639L11.245 4.174Z"/></svg></button>
+            <button class="bm-star" id="bmStar" onclick="event.stopPropagation();toggleModalWatchlist(this)"><svg width="15" height="15" viewBox="-3 -3 70 70" fill="none" stroke="#e3e3e3" stroke-width="4"><path d="M62.799,23.737c-0.47-1.399-1.681-2.419-3.139-2.642l-16.969-2.593L35.069,2.265C34.419,0.881,33.03,0,31.504,0c-1.527,0-2.915,0.881-3.565,2.265l-7.623,16.238L3.347,21.096c-1.458,0.223-2.669,1.242-3.138,2.642c-0.469,1.4-0.115,2.942,0.916,4l12.392,12.707l-2.935,17.977c-0.242,1.488,0.389,2.984,1.62,3.854c1.23,0.87,2.854,0.958,4.177,0.228l15.126-8.365l15.126,8.365c0.597,0.33,1.254,0.492,1.908,0.492c0.796,0,1.592-0.242,2.269-0.72c1.231-0.869,1.861-2.365,1.619-3.854l-2.935-17.977l12.393-12.707C62.914,26.68,63.268,25.138,62.799,23.737z"/></svg></button>
             <span class="bm-dots" id="bmDots" onclick="event.stopPropagation();toggleModalMenu()"><svg width="18" height="18" viewBox="0 -960 960 960" fill="currentColor"><path d="M480-160q-33 0-56.5-23.5T400-240q0-33 23.5-56.5T480-320q33 0 56.5 23.5T560-240q0 33-23.5 56.5T480-160Zm0-240q-33 0-56.5-23.5T400-480q0-33 23.5-56.5T480-560q33 0 56.5 23.5T560-480q0 33-23.5 56.5T480-400Zm0-240q-33 0-56.5-23.5T400-720q0-33 23.5-56.5T480-800q33 0 56.5 23.5T560-720q0 33-23.5 56.5T480-640Z"/></svg></span>
           </div>
           <span class="bm-fullname" id="bmFullname"></span>
@@ -962,6 +1097,10 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
     <!-- Chart -->
     <div class="bm-chart">
       <div id="bmTvChartContainer" style="width:100%;height:100%;position:absolute;inset:0"></div>
+      <div id="bmNoDataOverlay" class="chart-nodata-overlay" style="display:none">
+        <svg width="120" height="120" viewBox="0 0 64 64" fill="var(--text-secondary)"><path d="M2.3384,25.8242a1,1,0,0,0,1.4145,0l.7664-.7667.7663.7667A1,1,0,0,0,6.7007,24.41l-.7672-.7676.7672-.7676a1,1,0,0,0-1.4151-1.4141l-.7663.7668-.7664-.7668a1,1,0,0,0-1.415,1.4141l.7672.7676-.7672.7676A1,1,0,0,0,2.3384,25.8242Z"/><path d="M55.98,40.2405a23.9922,23.9922,0,0,0-47.9607,0C2.7753,42.0383,0,44.3694,0,47c0,3.7141,5.3953,6.4485,12.9129,8.1108.0118.0025.0227.0057.0345.0076A91.8345,91.8345,0,0,0,32,57c15.5127,0,32-3.5049,32-10C64,44.37,61.2246,42.0372,55.98,40.2405ZM13.7349,53.2578a22,22,0,1,1,36.53,0A88.4654,88.4654,0,0,1,32,55,88.4654,88.4654,0,0,1,13.7349,53.2578Z"/><path d="M53,22.0039a3.001,3.001,0,1,0-3-3.001A3.0041,3.0041,0,0,0,53,22.0039Zm0-4.0019a1.001,1.001,0,1,1-1,1.0009A1.0018,1.0018,0,0,1,53,18.002Z"/><circle cx="57" cy="11.0005" r="1.0002"/><path d="M41.5,28.0078A7.503,7.503,0,1,0,49,35.5107,7.51,7.51,0,0,0,41.5,28.0078Zm0,13.0059a5.503,5.503,0,1,1,5.5-5.503A5.5078,5.5078,0,0,1,41.5,41.0137Z"/><circle cx="40.5" cy="34.8918" r="1.5004"/><path d="M30,35.5107a7.5,7.5,0,1,0-7.5,7.503A7.51,7.51,0,0,0,30,35.5107Zm-7.5,5.503a5.503,5.503,0,1,1,5.5-5.503A5.5078,5.5078,0,0,1,22.5,41.0137Z"/><path d="M23.5,33.3926A1.5007,1.5007,0,1,0,25,34.8933,1.5,1.5,0,0,0,23.5,33.3926Z"/><path d="M32.0176,45c-3.5547,0-6.8062,1.3965-8.4864,3.6436A2.7448,2.7448,0,0,0,25.707,53H38.3193a2.652,2.652,0,0,0,2.3975-1.5215,2.8063,2.8063,0,0,0-.33-2.9863C38.6792,46.3379,35.4722,45,32.0176,45Z"/><path d="M16.9048,28.3867a1.001,1.001,0,0,0,1.272-.6181c1.19-3.4375,5.3671-3.2286,5.542-3.2129A1,1,0,0,0,23.85,22.56c-2.0132-.127-6.2065.6416-7.5625,4.5547A1,1,0,0,0,16.9048,28.3867Z"/><path d="M40.2988,24.5557c.0469-.0069,4.3394-.25,5.5391,3.2129a1,1,0,1,0,1.89-.6543C46.3726,23.2012,42.1816,22.43,40.165,22.56a1,1,0,0,0-.9306,1.0654A1.0158,1.0158,0,0,0,40.2988,24.5557Z"/><path d="M32,14a1,1,0,0,0,1-1V9a1,1,0,0,0-2,0v4A1,1,0,0,0,32,14Z"/><path d="M36,15a.9967.9967,0,0,0,.707-.293l2.5-2.5a1,1,0,0,0-1.414-1.414l-2.5,2.5A1,1,0,0,0,36,15Z"/><path d="M27.793,14.707a1,1,0,0,0,1.414-1.414l-2.5-2.5a1,1,0,0,0-1.414,1.414Z"/></svg>
+        <div class="chart-nodata-label">Not enough data</div>
+      </div>
     </div>
 
     <!-- Footer -->
@@ -1112,9 +1251,11 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
 </div>
 
 <script src="/embed.js" defer></script>
-<script src="/app.js?v=200"></script>
+<script src="/app.js?v=300" defer></script>
 <script src="/wallet.js" defer></script>
 <script src="/boost.js" defer></script>
 <script src="/extras.js" defer></script>
+<script src="/multichart.js?v=1" defer></script>
+<script src="/ens.js?v=244" defer></script>
 </body>
 </html>
