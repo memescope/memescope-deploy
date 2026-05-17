@@ -102,6 +102,8 @@
     if (overlay) overlay.classList.remove('open');
     document.body.style.overflow = '';
     mcCloseSearch();
+    var mcNav = document.getElementById('navMultichart');
+    if(mcNav) { mcNav.classList.remove('pill-animate'); mcNav.classList.remove('active'); }
   };
 
   // ---- Floating search open / close ----

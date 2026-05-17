@@ -1,4 +1,41 @@
 
+// Sidebar nav pill animation (M3 style — grows from center)
+(function(){
+  document.addEventListener('DOMContentLoaded', function(){
+    var allLinks = document.querySelectorAll('.ms-nav-link');
+    allLinks.forEach(function(link){
+      link.addEventListener('click', function(){
+        allLinks.forEach(function(l){
+          l.classList.remove('pill-animate');
+          if(l !== link) l.classList.remove('active');
+        });
+        void link.offsetWidth;
+        link.classList.add('pill-animate');
+      });
+    });
+  });
+})();
+
+// Sidebar lock toggle
+(function(){
+  document.addEventListener('DOMContentLoaded', function(){
+    var btn = document.getElementById('sidebarLockBtn');
+    if(!btn) return;
+    var sidebar = btn.closest('.ms-sidebar');
+    if(localStorage.getItem('sidebarLocked') === '1'){
+      sidebar.classList.add('sidebar-locked');
+      btn.title = 'Unlock sidebar';
+    }
+    btn.addEventListener('click', function(e){
+      e.stopPropagation();
+      sidebar.classList.toggle('sidebar-locked');
+      var locked = sidebar.classList.contains('sidebar-locked');
+      btn.title = locked ? 'Unlock sidebar' : 'Lock sidebar';
+      localStorage.setItem('sidebarLocked', locked ? '1' : '0');
+    });
+  });
+})();
+
 // --- Admin Boost Check (server-side via Cloudflare KV) ---
 var _serverBoosts = {}; // { ca_lowercase: { ca, sym, count, expiresAt } }
 var _boostsFetched = false;
@@ -1477,6 +1514,8 @@ function openWatchlistModal() {
 function closeWatchlistModal() {
   document.getElementById('wlOverlay').classList.remove('open');
   document.body.style.overflow = '';
+  var wlNav = document.querySelector('.ms-watchlist-nav');
+  if(wlNav) { wlNav.classList.remove('pill-animate'); wlNav.classList.remove('active'); }
 }
 
 function renderWatchlist() {
@@ -3820,7 +3859,7 @@ function openBubbleModal(t) {
       var toast = document.createElement('div');
       toast.id = 'bmCopyToast';
       toast.textContent = 'CA copied to clipboard';
-      toast.style.cssText = 'position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-60px);background:#2D3F7A;color:#fff;padding:10px 24px;border-radius:14px;font-size:14px;font-weight:600;z-index:100000;transition:transform 0.3s ease;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,0.4);';
+      toast.style.cssText = 'position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-60px);background:#4a4fd8;color:#fff;padding:10px 24px;border-radius:14px;font-size:14px;font-weight:600;z-index:100000;transition:transform 0.3s ease;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,0.4);';
       document.body.appendChild(toast);
       requestAnimationFrame(function() { requestAnimationFrame(function() { toast.style.transform = 'translateX(-50%) translateY(0)'; }); });
       setTimeout(function() {
@@ -5931,7 +5970,7 @@ function _bfUpdateFilterBtnState() {
     if (r && (r.min > 0 || r.max < 100)) hasFilter = true;
   });
   if (hasFilter) {
-    btn.style.background = '#2D3F7A';
+    btn.style.background = '#4a4fd8';
     btn.style.color = '#e6e1e3';
   } else {
     btn.style.background = '';
@@ -6013,7 +6052,7 @@ function applyBubbleFilters() {
     return bubbleFilters[k] !== 'all';
   });
   if (hasFilter) {
-    btn.style.background = '#2D3F7A';
+    btn.style.background = '#4a4fd8';
     btn.style.color = '#e6e1e3';
   } else {
     btn.style.background = '';

@@ -102,7 +102,8 @@ function copyDirectLink() {
     var sb = document.querySelector('.ms-sidebar');
     if (sb) {
       sb.addEventListener('mouseenter', function() {
-        document.body.classList.add('ms-sb-open');
+        if (!sb.classList.contains('sidebar-locked'))
+          document.body.classList.add('ms-sb-open');
       });
       sb.addEventListener('mouseleave', function() {
         document.body.classList.remove('ms-sb-open');
