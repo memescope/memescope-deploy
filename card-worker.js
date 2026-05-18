@@ -729,15 +729,16 @@ export default {
 
     // ─── Everything Else: Static Assets / SPA ───────────────────────
     const assetResp = await env.ASSETS.fetch(request);
-    // Prevent mobile browsers from caching HTML
     const ct = assetResp.headers.get('content-type') || '';
+    const headers = new Headers(assetResp.headers);
     if (ct.includes('text/html')) {
-      const headers = new Headers(assetResp.headers);
-      headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+      // HTML: always revalidate so deploys are instant
+      headers.set('Cache-Control', 'no-cache, must-revalidate');
       headers.set('Pragma', 'no-cache');
-      headers.set('Expires', '0');
-      return new Response(assetResp.body, { status: assetResp.status, headers });
+    } else if (ct.includes('javascript') || ct.includes('css') || ct.includes('font') || ct.includes('image/')) {
+      // JS, CSS, fonts, images: cache 1 year (busted by ?v= query string)
+      headers.set('Cache-Control', 'public, max-age=31536000, immutable');
     }
-    return assetResp;
+    return new Response(assetResp.body, { status: assetResp.status, headers });
   },
 };

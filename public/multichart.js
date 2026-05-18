@@ -246,31 +246,44 @@
           _curBar = { time: lb.time, open: lb.open, high: lb.high, low: lb.low, close: lb.close, volume: lb.volume };
         }
         var _lastTickPrice = _curBar ? _curBar.close : 0;
-        var iv = setInterval(function() {
-          fetchDexToken(t.ca).then(function(d) {
-            if (!d || !d.pairs || !d.pairs.length) return;
-            var pair = d.pairs.reduce(function(b, p) { return (p.liquidity && p.liquidity.usd || 0) > (b.liquidity && b.liquidity.usd || 0) ? p : b; }, d.pairs[0]);
-            var price = parseFloat(pair.priceUsd);
-            if (!price) return;
-            var barTime = Math.floor(Date.now() / resMs) * resMs;
-            var priceChanged = price !== _lastTickPrice;
-            var newBucket = !_curBar || barTime > _curBar.time;
-            if (priceChanged) _lastTickPrice = price;
-            if (priceChanged || newBucket) {
-              if (_curBar && _curBar.time === barTime) {
-                _curBar.close = price;
-                _curBar.high = Math.max(_curBar.high, price);
-                _curBar.low = Math.min(_curBar.low, price);
-              } else {
-                _curBar = { time: barTime, open: price, high: price, low: price, close: price, volume: 0 };
-              }
-              onTick({ time: _curBar.time, open: _curBar.open, high: _curBar.high, low: _curBar.low, close: _curBar.close, volume: _curBar.volume });
+
+        function _handleTick(d) {
+          if (!d || !d.pairs || !d.pairs.length) return;
+          var pair = d.pairs.reduce(function(b, p) { return (p.liquidity && p.liquidity.usd || 0) > (b.liquidity && b.liquidity.usd || 0) ? p : b; }, d.pairs[0]);
+          var price = parseFloat(pair.priceUsd);
+          if (!price) return;
+          var barTime = Math.floor(Date.now() / resMs) * resMs;
+          var priceChanged = price !== _lastTickPrice;
+          var newBucket = !_curBar || barTime > _curBar.time;
+          if (priceChanged) _lastTickPrice = price;
+          if (priceChanged || newBucket) {
+            if (_curBar && _curBar.time === barTime) {
+              _curBar.close = price;
+              _curBar.high = Math.max(_curBar.high, price);
+              _curBar.low = Math.min(_curBar.low, price);
+            } else {
+              _curBar = { time: barTime, open: price, high: price, low: price, close: price, volume: 0 };
             }
-          }).catch(function() {});
-        }, 2000);
-        _mcSubIntervals[guid] = iv;
+            onTick({ time: _curBar.time, open: _curBar.open, high: _curBar.high, low: _curBar.low, close: _curBar.close, volume: _curBar.volume });
+          }
+        }
+
+        // Use Web Worker if available, fallback to setInterval
+        if (window._priceWorker && window._priceWorkerCallbacks) {
+          window._priceWorkerCallbacks[guid] = _handleTick;
+          window._priceWorker.postMessage({ type: 'subscribe', guid: guid, ca: t.ca, interval: 2000 });
+        } else {
+          var iv = setInterval(function() {
+            fetchDexToken(t.ca).then(_handleTick).catch(function() {});
+          }, 2000);
+          _mcSubIntervals[guid] = iv;
+        }
       },
       unsubscribeBars: function(guid) {
+        if (window._priceWorker && window._priceWorkerCallbacks) {
+          window._priceWorker.postMessage({ type: 'unsubscribe', guid: guid });
+          delete window._priceWorkerCallbacks[guid];
+        }
         if (_mcSubIntervals[guid]) { clearInterval(_mcSubIntervals[guid]); delete _mcSubIntervals[guid]; }
       },
     };
