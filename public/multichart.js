@@ -110,6 +110,8 @@
   window.mcOpenSearch = function() {
     var float = document.getElementById('mcSearchFloat');
     if (float) float.classList.add('open');
+    var backdrop = document.getElementById('mcSearchBackdrop');
+    if (backdrop) backdrop.classList.add('open');
     setTimeout(function() {
       var inp = document.getElementById('mcSearch');
       if (inp) inp.focus();
@@ -118,6 +120,8 @@
   window.mcCloseSearch = function() {
     var float = document.getElementById('mcSearchFloat');
     if (float) { float.classList.remove('open'); float.classList.remove('has-results'); }
+    var backdrop = document.getElementById('mcSearchBackdrop');
+    if (backdrop) backdrop.classList.remove('open');
     var results = document.getElementById('mcResults');
     if (results) results.style.display = 'none';
     var inp = document.getElementById('mcSearch');
@@ -309,25 +313,51 @@
 
     var pctClass = (t.p24h || 0) >= 0 ? 'mc-pct-up' : 'mc-pct-down';
     var pctText = (t.p24h || 0) >= 0 ? '+' + (t.p24h || 0).toFixed(2) + '%' : (t.p24h || 0).toFixed(2) + '%';
+    var escapedCa = t.ca.replace(/'/g, "\\'");
+
+    var pct1hClass = (t.p1h || 0) >= 0 ? 'mc-pct-up' : 'mc-pct-down';
+    var pct1hText = (t.p1h || 0) >= 0 ? '+' + (t.p1h || 0).toFixed(2) + '%' : (t.p1h || 0).toFixed(2) + '%';
 
     card.innerHTML =
       '<div class="mc-card-header">' +
         '<div class="mc-card-info">' +
-          '<span class="mc-card-sym">' + (t.sym || '???') + '</span>' +
-          '<span class="mc-card-pair">/ ' + (pairTokenMap[(t.net || 'solana').toLowerCase()] || 'SOL') + '</span>' +
-          '<span class="mc-card-pct ' + pctClass + '">' + pctText + '</span>' +
+          '<img class="mc-card-logo" src="' + (t.img || '') + '" onerror="this.style.display=\'none\'">' +
+          '<div class="mc-card-info-text">' +
+            '<div class="mc-card-info-row">' +
+              '<span class="mc-card-sym">' + (t.sym || '???') + '</span>' +
+              '<span class="mc-card-pair">/ ' + (pairTokenMap[(t.net || 'solana').toLowerCase()] || 'SOL') + '</span>' +
+            '</div>' +
+            '<span class="mc-card-name">' + (t.name || t.sym || '') + '</span>' +
+          '</div>' +
         '</div>' +
-        '<div class="mc-card-actions">' +
+        '<div class="mc-card-right-text">' +
           '<span class="mc-card-price">' + _fmtPrice(t.price) + '</span>' +
-          '<button class="mc-card-expand" onclick="expandMultichartCard(\'' + t.ca.replace(/'/g, "\\'") + '\')">' +
-            '<svg width="14" height="14" viewBox="0 -960 960 960" fill="currentColor"><path d="M200-120q-33 0-56.5-23.5T120-200v-160h80v160h160v80H200Zm400 0v-80h160v-160h80v160q0 33-23.5 56.5T760-120H600ZM120-600v-160q0-33 23.5-56.5T200-840h160v80H200v160h-80Zm640 0v-160H600v-80h160q33 0 56.5 23.5T840-760v160h-80Z"/></svg>' +
-          '</button>' +
-          '<button class="mc-card-close" onclick="removeMultichartCard(\'' + t.ca.replace(/'/g, "\\'") + '\')">' +
-            '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' +
-          '</button>' +
+          '<div class="mc-card-right-row">' +
+            '<span class="mc-card-pct-label">1H</span>' +
+            '<span class="mc-card-pct ' + pct1hClass + '">' + pct1hText + '</span>' +
+          '</div>' +
         '</div>' +
       '</div>' +
-      '<div class="mc-card-chart" id="' + chartId + '"></div>';
+      '<div class="mc-card-chart-wrap">' +
+        '<div class="mc-card-chart" id="' + chartId + '"></div>' +
+      '</div>' +
+      '<div class="mc-card-footer">' +
+        '<div class="mc-card-footer-left"></div>' +
+        '<div class="mc-card-footer-right">' +
+          '<div class="mc-card-expand" onclick="event.stopPropagation();expandMultichartCard(\'' + escapedCa + '\')" title="Open coin modal">' +
+            '<svg width="16" height="16" viewBox="0 -960 960 960" fill="currentColor"><path d="M800-600v-120H680v-80h120q33 0 56.5 23.5T880-720v120h-80Zm-720 0v-120q0-33 23.5-56.5T160-800h120v80H160v120H80Zm600 440v-80h120v-120h80v120q0 33-23.5 56.5T800-160H680Zm-520 0q-33 0-56.5-23.5T80-240v-120h80v120h120v80H160Zm80-160v-320h480v320H240Zm80-80h320v-160H320v160Zm0 0v-160 160Z"/></svg>' +
+          '</div>' +
+          '<div class="mc-card-fullscreen" onclick="event.stopPropagation();toggleMcFullscreen(this, \'' + escapedCa + '\')" title="Fullscreen chart">' +
+            '<svg width="16" height="16" viewBox="0 -960 960 960" fill="currentColor"><path d="M120-120v-80l80-80v160h-80Zm160 0v-240l80-80v320h-80Zm160 0v-320l80 81v239h-80Zm160 0v-239l80-80v319h-80Zm160 0v-400l80-80v480h-80ZM120-327v-113l280-280 160 160 280-280v113L560-447 400-607 120-327Z"/></svg>' +
+          '</div>' +
+          '<div class="mc-card-trash" onclick="removeMultichartCard(\'' + escapedCa + '\')">' +
+            '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 1.5V2.5H3C2.44772 2.5 2 2.94772 2 3.5V4.5C2 5.05228 2.44772 5.5 3 5.5H21C21.5523 5.5 22 5.05228 22 4.5V3.5C22 2.94772 21.5523 2.5 21 2.5H16V1.5C16 0.947715 15.5523 0.5 15 0.5H9C8.44772 0.5 8 0.947715 8 1.5Z"/><path d="M3.9231 7.5H20.0767L19.1344 20.2216C19.0183 21.7882 17.7135 23 16.1426 23H7.85724C6.28636 23 4.98148 21.7882 4.86544 20.2216L3.9231 7.5Z"/></svg>' +
+          '</div>' +
+          '<div class="mc-card-dots" onclick="mcToggleCardMenu(this, \'' + escapedCa + '\')">' +
+            '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
 
     // Insert before the add-slot
     var addSlot = grid.querySelector('.mc-add-slot');
@@ -400,6 +430,81 @@
     }
   }
 
+  // ---- 3-dot card menu (reuses row-chrome-menu style) ----
+  var _mcActiveMenu = null;
+  var _mcActiveDots = null;
+
+  window.mcToggleCardMenu = function(dotsEl, ca) {
+    if (_mcActiveDots === dotsEl) { mcCloseCardMenu(); return; }
+    mcCloseCardMenu();
+
+    var t = _mcTokens.find(function(tok) { return tok.ca.toLowerCase() === ca.toLowerCase(); });
+    if (!t) return;
+    var escapedCa = ca.replace(/'/g, "\\'");
+    var net = (t.net || 'solana').toLowerCase();
+    var caLabel = ca ? (ca.slice(0,4) + '...' + ca.slice(-4)) : 'N/A';
+
+    var explorers = {
+      solana: { url:'https://solscan.io/token/'+ca, name:'Solscan' },
+      eth: { url:'https://etherscan.io/token/'+ca, name:'Etherscan' },
+      base: { url:'https://basescan.org/token/'+ca, name:'Basescan' },
+      bsc: { url:'https://bscscan.com/token/'+ca, name:'BscScan' },
+      tron: { url:'https://tronscan.org/#/token20/'+ca, name:'Tronscan' },
+      sui: { url:'https://suiscan.xyz/mainnet/coin/'+ca, name:'Suiscan' },
+      arbitrum: { url:'https://arbiscan.io/token/'+ca, name:'Arbiscan' },
+      avalanche: { url:'https://snowtrace.io/token/'+ca, name:'Snowtrace' },
+      polygon: { url:'https://polygonscan.com/token/'+ca, name:'Polygonscan' },
+      optimism: { url:'https://optimistic.etherscan.io/token/'+ca, name:'Optimism Explorer' },
+      blast: { url:'https://blastscan.io/token/'+ca, name:'Blastscan' },
+      ton: { url:'https://tonviewer.com/'+ca, name:'TON Viewer' },
+      pulsechain: { url:'https://scan.pulsechain.com/token/'+ca, name:'PulseScan' },
+      seiv2: { url:'https://seitrace.com/token/'+ca, name:'Seitrace' }
+    };
+    var exp = explorers[net] || explorers.solana;
+    var expIcon = '';
+    if (typeof SCANNER_ICONS !== 'undefined' && SCANNER_ICONS[net]) expIcon = SCANNER_ICONS[net];
+    else if (typeof CHAIN_ICONS !== 'undefined' && CHAIN_ICONS[net]) expIcon = CHAIN_ICONS[net];
+
+    var menu = document.createElement('div');
+    menu.className = 'row-chrome-menu';
+    var html = '';
+    html += '<span onclick="event.stopPropagation();navigator.clipboard.writeText(\'' + escapedCa + '\');var s=this;var o=s.childNodes[1];o.nodeValue=\' Copied!\';setTimeout(function(){o.nodeValue=\' ' + caLabel + '\';},1200)"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="currentColor"><path d="M760-200H320q-33 0-56.5-23.5T240-280v-560q0-33 23.5-56.5T320-920h280l240 240v400q0 33-23.5 56.5T760-200ZM560-640v-200H320v560h440v-360H560ZM160-40q-33 0-56.5-23.5T80-120v-560h80v560h440v80H160Zm160-800v200-200 560-560Z"/></svg> ' + caLabel + '</span>';
+    html += '<a href="https://x.com/search?q=' + encodeURIComponent('$' + t.sym + ' OR ' + ca) + '&src=typed_query&f=live" target="_blank" onclick="event.stopPropagation()"><svg class="ico-search" viewBox="0 0 32 32" fill="currentColor"><path d="M16.906 20.188l5.5 5.5-2.25 2.281-5.75-5.781c-1.406 0.781-3.031 1.219-4.719 1.219-5.344 0-9.688-4.344-9.688-9.688s4.344-9.688 9.688-9.688 9.719 4.344 9.719 9.688c0 2.5-0.969 4.781-2.5 6.469zM3.219 13.719c0 3.594 2.875 6.469 6.469 6.469s6.469-2.875 6.469-6.469-2.875-6.469-6.469-6.469-6.469 2.875-6.469 6.469z"/></svg>Search on X</a>';
+    html += '<a href="' + exp.url + '" target="_blank" onclick="event.stopPropagation()"><img src="' + expIcon + '" onerror="this.style.display=\'none\'">' + exp.name + '</a>';
+    html += '<span onclick="event.stopPropagation();mcCloseCardMenu();window._modalToken={ca:\'' + escapedCa + '\',sym:\'' + ((t.sym||'').replace(/'/g,'')) + '\',net:\'' + net + '\'};if(typeof openBoostModal===\'function\')openBoostModal()" style="background:rgba(234,179,8,0.15);color:#eab308;border-radius:0 0 10px 10px;margin:0;padding:10px 14px;box-sizing:border-box"><svg viewBox="0 0 24 24" fill="none" stroke="#eab308" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg> Boost Token</span>';
+    menu.innerHTML = html;
+
+    _mcActiveDots = dotsEl;
+    _mcActiveMenu = menu;
+    document.body.appendChild(menu);
+
+    // Position near the dots
+    var rect = dotsEl.getBoundingClientRect();
+    menu.style.left = (rect.right + 4) + 'px';
+    menu.style.top = rect.top + 'px';
+
+    // Adjust if off-screen
+    var menuRect = menu.getBoundingClientRect();
+    if (menuRect.right > window.innerWidth - 10) {
+      menu.style.left = (rect.left - menuRect.width - 4) + 'px';
+    }
+    if (menuRect.bottom > window.innerHeight - 10) {
+      menu.style.top = (window.innerHeight - menuRect.height - 10) + 'px';
+    }
+
+    requestAnimationFrame(function() { menu.classList.add('open'); });
+  };
+
+  function mcCloseCardMenu() {
+    if (_mcActiveMenu) { _mcActiveMenu.remove(); _mcActiveMenu = null; }
+    _mcActiveDots = null;
+  }
+  window.mcCloseCardMenu = mcCloseCardMenu;
+
+  document.addEventListener('click', function(e) {
+    if (_mcActiveMenu && !e.target.closest('.mc-card-dots') && !e.target.closest('.row-chrome-menu')) mcCloseCardMenu();
+  });
+
   // ---- Expand to full modal ----
   window.expandMultichartCard = function(ca) {
     var t = _mcTokens.find(function(tok) { return tok.ca.toLowerCase() === ca.toLowerCase(); });
@@ -409,6 +514,32 @@
       openBubbleModal(t);
     } else if (typeof selectSearchResult === 'function') {
       selectSearchResult(t.ca, t.sym);
+    }
+  };
+
+  window.toggleMcFullscreen = function(btn, ca) {
+    var card = btn.closest('.mc-card');
+    if (!card) return;
+    var isFS = card.classList.toggle('mc-card-fullscreen-active');
+    // Resize the TradingView widget so it fills the new size
+    var chartEl = card.querySelector('.mc-card-chart');
+    if (chartEl && _mcWidgets[chartEl.id]) {
+      try { _mcWidgets[chartEl.id].resize(); } catch(e) {}
+    }
+    // Close fullscreen on Escape
+    if (isFS) {
+      card._mcEscHandler = function(e) {
+        if (e.key === 'Escape') {
+          card.classList.remove('mc-card-fullscreen-active');
+          if (chartEl && _mcWidgets[chartEl.id]) { try { _mcWidgets[chartEl.id].resize(); } catch(ex) {} }
+          document.removeEventListener('keydown', card._mcEscHandler);
+          card._mcEscHandler = null;
+        }
+      };
+      document.addEventListener('keydown', card._mcEscHandler);
+    } else if (card._mcEscHandler) {
+      document.removeEventListener('keydown', card._mcEscHandler);
+      card._mcEscHandler = null;
     }
   };
 

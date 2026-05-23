@@ -735,9 +735,15 @@ export default {
       // HTML: always revalidate so deploys are instant
       headers.set('Cache-Control', 'no-cache, must-revalidate');
       headers.set('Pragma', 'no-cache');
-    } else if (ct.includes('javascript') || ct.includes('css') || ct.includes('font') || ct.includes('image/')) {
-      // JS, CSS, fonts, images: cache 1 year (busted by ?v= query string)
+    } else if (ct.includes('font')) {
+      // Fonts: cache 1 year (they never change)
       headers.set('Cache-Control', 'public, max-age=31536000, immutable');
+    } else if (ct.includes('javascript') || ct.includes('css')) {
+      // JS, CSS: short cache, revalidate on every visit so deploys take effect
+      headers.set('Cache-Control', 'public, max-age=60, must-revalidate');
+    } else if (ct.includes('image/')) {
+      // Images: cache 1 day
+      headers.set('Cache-Control', 'public, max-age=86400');
     }
     return new Response(assetResp.body, { status: assetResp.status, headers });
   },

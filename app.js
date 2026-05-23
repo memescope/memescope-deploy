@@ -1,4 +1,14 @@
 
+var APP_VERSION = '2.5.23';
+(function() {
+  document.addEventListener('DOMContentLoaded', function() {
+    var meta = document.querySelector('meta[name="version"]');
+    if (meta) meta.setAttribute('content', APP_VERSION);
+    var footers = document.querySelectorAll('[data-version]');
+    footers.forEach(function(el) { el.textContent = 'v' + APP_VERSION; });
+  });
+})();
+
 // Sidebar nav pill animation (M3 style — grows from center)
 (function(){
   document.addEventListener('DOMContentLoaded', function(){
@@ -1209,7 +1219,7 @@ function loadData() {
       var aChainColor = CHAIN_COLORS[at.net] || CHAIN_COLORS['solana'];
       var aCa = (at.ca || '').replace(/'/g, "\\'");
       var aRowNum = aIdx + 1;
-      var aRow = '<tr' + (at.boosted ? ' class="boosted-row"' : '') + ' style="cursor:pointer" onclick="openTokenModal(\'' + aCa + '\')"><td' + (at.boosted ? ' class="boosted-cell"' : '') + '><div class="token-cell"><span class="row-num">' + aRowNum + '</span><div class="token-badges"><img class="token-badge-icon" src="' + aChainImg + '"></div><div class="token-avatar-wrap' + (at.boosted ? ' boosted-avatar' : '') + '"><img class="token-avatar-img" style="outline:1px solid ' + aChainColor + '" src="' + (at.img || '') + '" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'"><div class="token-avatar" style="display:' + (at.img ? 'none' : 'flex') + ';background:linear-gradient(135deg,' + aGrad + ')">' + aLetter + '</div></div><div class="token-info"><div class="token-top-row"><span class="token-symbol">' + at.sym + '</span><span class="token-pair" style="color:rgba(255,255,255,0.3);font-size:14px;font-weight:400">/' + (at.pair||at.quoteSymbol||({solana:'SOL',eth:'WETH',base:'WETH',bsc:'BNB',sui:'SUI',tron:'TRX',arbitrum:'WETH',avalanche:'WAVAX',polygon:'WMATIC',optimism:'WETH',blast:'WETH',ton:'TON'}[at.net])||'SOL') + '</span>' + (at.boosted ? '<span class="boost-badge"><svg class="boost-badge-icon" viewBox="0 0 500 500" fill="none" stroke-linecap="round" stroke-linejoin="round"><g class="boost-bob"><g transform="translate(312.32 204.14) rotate(45) translate(-116.42 -151.35)"><g transform="translate(116.78 283.83) translate(-54.13 -30)"><g class="boost-fire"><g transform="translate(54.13 64.96)"><path d="M24.13-10.83C24.13 2.5 0 34.96 0 34.96S-24.13 2.5-24.13-10.83C-24.13-24.15-13.33-34.96 0-34.96 13.33-34.96 24.13-24.15 24.13-10.83Z" stroke="#ffb627" stroke-width="12"/></g></g></g><g transform="translate(47.31 232.35)"><path d="M14.22-40.34L-17.31-18.18-14.58 40.34 17.31 18.66Z" stroke="#ffb627" stroke-width="12"/></g><g transform="translate(185.53 232.35)"><path d="M-14.22-40.34L17.31-18.18 14.58 40.34-17.31 18.66Z" stroke="#ffb627" stroke-width="12"/></g><g transform="translate(116.56 146.22)"><path d="M0-116.22C3.97-116.22 7.83-114.81 10.84-112.22 23.12-101.62 53.64-69.63 55.4-12.18 57.09 43.31 51.08 116.22 51.08 116.22H-51.08S-57.09 43.31-55.4-12.18C-53.64-69.63-23.12-101.62-10.84-112.22-7.83-114.81-3.97-116.22 0-116.22Z" stroke="#ffd539" stroke-width="12"/><path class="boost-shine" d="M0-116.22C3.97-116.22 7.83-114.81 10.84-112.22 23.12-101.62 53.64-69.63 55.4-12.18 57.09 43.31 51.08 116.22 51.08 116.22H-51.08S-57.09 43.31-55.4-12.18C-53.64-69.63-23.12-101.62-10.84-112.22-7.83-114.81-3.97-116.22 0-116.22Z"/><g transform="translate(0 -116.22)"><g class="boost-sparkle"><path d="M0,-22 L4,-4 L22,0 L4,4 L0,22 L-4,4 L-22,0 L-4,-4 Z" fill="#fff8d1"/><path d="M0,-12 L2,-2 L12,0 L2,2 L0,12 L-2,2 L-12,0 L-2,-2 Z" fill="#fff"/></g></g></g><g transform="translate(116.56 273.13)"><path d="M32.09 10.7H-32.09V-10.7H32.09Z" stroke="#ffd539" stroke-width="12"/></g><circle cx="116.56" cy="105.92" r="23.48" stroke="#ffb627" stroke-width="12"/></g></g></svg>' + (at.boostCount || '') + '</span>' : '') + '</div></div></div></div></div></td><td class="price-col">' + (window._priceColMode === 'mcap' ? fmt(at.mcap) : fmtPrice(at.price)) + '</td><td class="age-col">' + fmtAge(at.age) + '</td><td class="vol-col">' + fmt(at.vol) + '</td>' + pctTd(at.p5m) + pctTd(at.p5m) + pctTd(at.p1h) + pctTd(at.p6h) + pctTd(at.p24h) + '<td class="mcap-col">' + (window._priceColMode === 'mcap' ? fmtPrice(at.price) : fmt(at.mcap)) + '</td><td class="row-dots-col"><span class="token-dots" onclick="event.stopPropagation();showRowMenu(this, ' + aIdx + ')"><svg width="18" height="18" viewBox="0 -960 960 960" fill="currentColor"><path d="M480-160q-33 0-56.5-23.5T400-240q0-33 23.5-56.5T480-320q33 0 56.5 23.5T560-240q0 33-23.5 56.5T480-160Zm0-240q-33 0-56.5-23.5T400-480q0-33 23.5-56.5T480-560q33 0 56.5 23.5T560-480q0 33-23.5 56.5T480-400Zm0-240q-33 0-56.5-23.5T400-720q0-33 23.5-56.5T480-800q33 0 56.5 23.5T560-720q0 33-23.5 56.5T480-640Z"/></svg></span></td></tr>';
+      var aRow = '<tr' + (at.boosted ? ' class="boosted-row"' : '') + ' style="cursor:pointer" onclick="openTokenModal(\'' + aCa + '\')"><td' + (at.boosted ? ' class="boosted-cell"' : '') + '><div class="token-cell"><span class="row-num">' + aRowNum + '</span><div class="token-badges"><img class="token-badge-icon" src="' + aChainImg + '"></div><div class="token-avatar-wrap' + (at.boosted ? ' boosted-avatar' : '') + '"><img class="token-avatar-img" style="outline:1px solid ' + aChainColor + '" src="' + (at.img || '') + '" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'"><div class="token-avatar" style="display:' + (at.img ? 'none' : 'flex') + ';background:linear-gradient(135deg,' + aGrad + ')">' + aLetter + '</div></div><div class="token-info"><div class="token-top-row"><span class="token-symbol">' + at.sym + '</span><span class="token-pair" style="color:rgba(255,255,255,0.3);font-size:14px;font-weight:400">/' + (at.pair||at.quoteSymbol||({solana:'SOL',eth:'WETH',base:'WETH',bsc:'BNB',sui:'SUI',tron:'TRX',arbitrum:'WETH',avalanche:'WAVAX',polygon:'WMATIC',optimism:'WETH',blast:'WETH',ton:'TON'}[at.net])||'SOL') + '</span>' + (at.boosted ? '<span class="boost-badge"><svg class="boost-badge-icon" viewBox="0 0 500 500" fill="none" stroke-linecap="round" stroke-linejoin="round"><g class="boost-bob"><g transform="translate(312.32 204.14) rotate(45) translate(-116.42 -151.35)"><g transform="translate(116.78 283.83) translate(-54.13 -30)"><g class="boost-fire"><g transform="translate(54.13 64.96)"><path d="M24.13-10.83C24.13 2.5 0 34.96 0 34.96S-24.13 2.5-24.13-10.83C-24.13-24.15-13.33-34.96 0-34.96 13.33-34.96 24.13-24.15 24.13-10.83Z" stroke="#ffb627" stroke-width="12"/></g></g></g><g transform="translate(47.31 232.35)"><path d="M14.22-40.34L-17.31-18.18-14.58 40.34 17.31 18.66Z" stroke="#ffb627" stroke-width="12"/></g><g transform="translate(185.53 232.35)"><path d="M-14.22-40.34L17.31-18.18 14.58 40.34-17.31 18.66Z" stroke="#ffb627" stroke-width="12"/></g><g transform="translate(116.56 146.22)"><path d="M0-116.22C3.97-116.22 7.83-114.81 10.84-112.22 23.12-101.62 53.64-69.63 55.4-12.18 57.09 43.31 51.08 116.22 51.08 116.22H-51.08S-57.09 43.31-55.4-12.18C-53.64-69.63-23.12-101.62-10.84-112.22-7.83-114.81-3.97-116.22 0-116.22Z" stroke="#ffd539" stroke-width="12"/><path class="boost-shine" d="M0-116.22C3.97-116.22 7.83-114.81 10.84-112.22 23.12-101.62 53.64-69.63 55.4-12.18 57.09 43.31 51.08 116.22 51.08 116.22H-51.08S-57.09 43.31-55.4-12.18C-53.64-69.63-23.12-101.62-10.84-112.22-7.83-114.81-3.97-116.22 0-116.22Z"/><g transform="translate(0 -116.22)"><g class="boost-sparkle"><path d="M0,-22 L4,-4 L22,0 L4,4 L0,22 L-4,4 L-22,0 L-4,-4 Z" fill="#fff8d1"/><path d="M0,-12 L2,-2 L12,0 L2,2 L0,12 L-2,2 L-12,0 L-2,-2 Z" fill="#fff"/></g></g></g><g transform="translate(116.56 273.13)"><path d="M32.09 10.7H-32.09V-10.7H32.09Z" stroke="#ffd539" stroke-width="12"/></g><circle cx="116.56" cy="105.92" r="23.48" stroke="#ffb627" stroke-width="12"/></g></g></svg>' + (at.boostCount || '') + '</span>' : '') + '</div></div></div></div></div></td><td class="price-col">' + (window._priceColMode === 'mcap' ? fmt(at.mcap) : fmtPrice(at.price)) + '</td><td class="age-col">' + fmtAge(at.age) + '</td><td class="vol-col">' + fmt(at.vol) + '</td>' + pctTd(at.p5m) + pctTd(at.p5m) + pctTd(at.p1h) + pctTd(at.p6h) + pctTd(at.p24h) + '<td class="mcap-col">' + (window._priceColMode === 'mcap' ? fmtPrice(at.price) : fmt(at.mcap)) + '</td><td class="row-dots-col"><span class="token-dots" onclick="event.stopPropagation();showRowMenu(this, ' + aIdx + ')"><svg class="dots-outline" width="20" height="20" viewBox="0 -960 960 960" fill="currentColor"><path d="M322.5-437.5Q340-455 340-480t-17.5-42.5Q305-540 280-540t-42.5 17.5Q220-505 220-480t17.5 42.5Q255-420 280-420t42.5-17.5Zm200 0Q540-455 540-480t-17.5-42.5Q505-540 480-540t-42.5 17.5Q420-505 420-480t17.5 42.5Q455-420 480-420t42.5-17.5Zm200 0Q740-455 740-480t-17.5-42.5Q705-540 680-540t-42.5 17.5Q620-505 620-480t17.5 42.5Q655-420 680-420t42.5-17.5ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"/></svg><svg class="dots-filled" width="20" height="20" viewBox="0 -960 960 960" fill="currentColor"><path d="M322.5-437.5Q340-455 340-480t-17.5-42.5Q305-540 280-540t-42.5 17.5Q220-505 220-480t17.5 42.5Q255-420 280-420t42.5-17.5Zm200 0Q540-455 540-480t-17.5-42.5Q505-540 480-540t-42.5 17.5Q420-505 420-480t17.5 42.5Q455-420 480-420t42.5-17.5Zm200 0Q740-455 740-480t-17.5-42.5Q705-540 680-540t-42.5 17.5Q620-505 620-480t17.5 42.5Q655-420 680-420t42.5-17.5ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Z"/></svg></span></td></tr>';
       tbody.insertAdjacentHTML('beforeend', aRow);
     }
   } else {
@@ -1244,7 +1254,7 @@ function loadData() {
         ${pctTd(t.p6h)}
         ${pctTd(t.p24h)}
         <td class="mcap-col">${window._priceColMode === 'mcap' ? fmtPrice(t.price) : fmt(t.mcap)}</td>
-        <td class="row-dots-col"><span class="token-dots" onclick="event.stopPropagation();showRowMenu(this, ${startIdx + i})"><svg width="18" height="18" viewBox="0 -960 960 960" fill="currentColor"><path d="M480-160q-33 0-56.5-23.5T400-240q0-33 23.5-56.5T480-320q33 0 56.5 23.5T560-240q0 33-23.5 56.5T480-160Zm0-240q-33 0-56.5-23.5T400-480q0-33 23.5-56.5T480-560q33 0 56.5 23.5T560-480q0 33-23.5 56.5T480-400Zm0-240q-33 0-56.5-23.5T400-720q0-33 23.5-56.5T480-800q33 0 56.5 23.5T560-720q0 33-23.5 56.5T480-640Z"/></svg></span></td>
+        <td class="row-dots-col"><span class="token-dots" onclick="event.stopPropagation();showRowMenu(this, ${startIdx + i})"><svg class="dots-outline" width="20" height="20" viewBox="0 -960 960 960" fill="currentColor"><path d="M322.5-437.5Q340-455 340-480t-17.5-42.5Q305-540 280-540t-42.5 17.5Q220-505 220-480t17.5 42.5Q255-420 280-420t42.5-17.5Zm200 0Q540-455 540-480t-17.5-42.5Q505-540 480-540t-42.5 17.5Q420-505 420-480t17.5 42.5Q455-420 480-420t42.5-17.5Zm200 0Q740-455 740-480t-17.5-42.5Q705-540 680-540t-42.5 17.5Q620-505 620-480t17.5 42.5Q655-420 680-420t42.5-17.5ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"/></svg><svg class="dots-filled" width="20" height="20" viewBox="0 -960 960 960" fill="currentColor"><path d="M322.5-437.5Q340-455 340-480t-17.5-42.5Q305-540 280-540t-42.5 17.5Q220-505 220-480t17.5 42.5Q255-420 280-420t42.5-17.5Zm200 0Q540-455 540-480t-17.5-42.5Q505-540 480-540t-42.5 17.5Q420-505 420-480t17.5 42.5Q455-420 480-420t42.5-17.5Zm200 0Q740-455 740-480t-17.5-42.5Q705-540 680-540t-42.5 17.5Q620-505 620-480t17.5 42.5Q655-420 680-420t42.5-17.5ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Z"/></svg></span></td>
       </tr>`;
       tbody.insertAdjacentHTML('beforeend', row);
     });
@@ -1539,11 +1549,6 @@ function toggleWatchlist(sym, btnEl) {
   if (modalStar && window._modalToken) {
     var mActive = watchlist.includes(window._modalToken.sym);
     modalStar.classList.toggle('active', mActive);
-    var mSvg = modalStar.querySelector('svg');
-    if (mSvg) {
-      if (mActive) { mSvg.setAttribute('fill','#e3e3e3'); mSvg.setAttribute('stroke','none'); }
-      else { mSvg.setAttribute('fill','none'); mSvg.setAttribute('stroke','#e3e3e3'); }
-    }
   }
   // Update sidebar watchlist
   renderWatchlist();
@@ -1626,14 +1631,10 @@ function closeWatchlistModal() {
 }
 
 function renderWatchlist() {
-  // Toggle nav star: filled when has items, outline when empty
-  var navStar = document.getElementById('navWatchlistStar');
-  if (navStar) {
-    if (watchlist.length > 0) {
-      navStar.setAttribute('fill', '#fff');
-    } else {
-      navStar.setAttribute('fill', '#e3e3e3');
-    }
+  // Toggle nav bookmark: filled when has items, outline when empty
+  var navWlLink = document.getElementById('navWatchlistLink');
+  if (navWlLink) {
+    navWlLink.classList.toggle('has-items', watchlist.length > 0);
   }
 
   var countEl = document.getElementById('wlCount');
@@ -1647,6 +1648,26 @@ function renderWatchlist() {
       badge.classList.add('visible');
     } else {
       badge.classList.remove('visible');
+    }
+  }
+  // Mobile nav bar badge
+  var mobBadge = document.getElementById('mobWlBadge');
+  if (mobBadge) {
+    if (watchlist.length > 0) {
+      mobBadge.textContent = watchlist.length;
+      mobBadge.classList.add('visible');
+    } else {
+      mobBadge.classList.remove('visible');
+    }
+  }
+  // Mobile menu badge
+  var menuBadge = document.getElementById('menuWlBadge');
+  if (menuBadge) {
+    if (watchlist.length > 0) {
+      menuBadge.textContent = watchlist.length;
+      menuBadge.classList.add('visible');
+    } else {
+      menuBadge.classList.remove('visible');
     }
   }
 
@@ -3728,10 +3749,10 @@ function showRowMenu(dotsEl, idx) {
   menu.className = 'row-chrome-menu';
   var html = '';
   var caLabel = t.ca ? (t.ca.slice(0,4) + '...' + t.ca.slice(-4)) : 'N/A';
-  html += '<span onclick="event.stopPropagation();navigator.clipboard.writeText(\''+t.ca+'\');var s=this;var o=s.childNodes[1];o.nodeValue=\' Copied!\';setTimeout(function(){o.nodeValue=\' '+caLabel+'\';},1200)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> '+caLabel+'</span>';
-  html += '<a href="https://x.com/search?q='+encodeURIComponent('$'+t.sym+' OR '+t.ca)+'&src=typed_query&f=live" target="_blank" onclick="event.stopPropagation()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Search on X</a>';
+  html += '<span onclick="event.stopPropagation();navigator.clipboard.writeText(\''+t.ca+'\');var s=this;var o=s.childNodes[1];o.nodeValue=\' Copied!\';setTimeout(function(){o.nodeValue=\' '+caLabel+'\';},1200)"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="currentColor"><path d="M760-200H320q-33 0-56.5-23.5T240-280v-560q0-33 23.5-56.5T320-920h280l240 240v400q0 33-23.5 56.5T760-200ZM560-640v-200H320v560h440v-360H560ZM160-40q-33 0-56.5-23.5T80-120v-560h80v560h440v80H160Zm160-800v200-200 560-560Z"/></svg> '+caLabel+'</span>';
+  html += '<a href="https://x.com/search?q='+encodeURIComponent('$'+t.sym+' OR '+t.ca)+'&src=typed_query&f=live" target="_blank" onclick="event.stopPropagation()"><svg class="ico-search" viewBox="0 0 32 32" fill="currentColor"><path d="M16.906 20.188l5.5 5.5-2.25 2.281-5.75-5.781c-1.406 0.781-3.031 1.219-4.719 1.219-5.344 0-9.688-4.344-9.688-9.688s4.344-9.688 9.688-9.688 9.719 4.344 9.719 9.688c0 2.5-0.969 4.781-2.5 6.469zM3.219 13.719c0 3.594 2.875 6.469 6.469 6.469s6.469-2.875 6.469-6.469-2.875-6.469-6.469-6.469-6.469 2.875-6.469 6.469z"/></svg>Search on X</a>';
   if(t.twitter) html += '<a href="'+t.twitter+'" target="_blank" onclick="event.stopPropagation()"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>Community</a>';
-  if(t.website) html += '<a href="'+t.website+'" target="_blank" onclick="event.stopPropagation()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>Website</a>';
+  if(t.website) html += '<a href="'+t.website+'" target="_blank" onclick="event.stopPropagation()"><svg class="ico-globe" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="currentColor"><path d="M325-111.5q-73-31.5-127.5-86t-86-127.5Q80-398 80-480.5t31.5-155q31.5-72.5 86-127t127.5-86Q398-880 480.5-880t155 31.5q72.5 31.5 127 86t86 127Q880-563 880-480.5T848.5-325q-31.5 73-86 127.5t-127 86Q563-80 480.5-80T325-111.5ZM480-162q26-36 45-75t31-83H404q12 44 31 83t45 75Zm-104-16q-18-33-31.5-68.5T322-320H204q29 50 72.5 87t99.5 55Zm208 0q56-18 99.5-55t72.5-87H638q-9 38-22.5 73.5T584-178ZM170-400h136q-3-20-4.5-39.5T300-480q0-21 1.5-40.5T306-560H170q-5 20-7.5 39.5T160-480q0 21 2.5 40.5T170-400Zm216 0h188q3-20 4.5-39.5T580-480q0-21-1.5-40.5T574-560H386q-3 20-4.5 39.5T380-480q0 21 1.5 40.5T386-400Zm268 0h136q5-20 7.5-39.5T800-480q0-21-2.5-40.5T790-560H654q3 20 4.5 39.5T660-480q0 21-1.5 40.5T654-400Zm-16-240h118q-29-50-72.5-87T584-782q18 33 31.5 68.5T638-640Zm-234 0h152q-12-44-31-83t-45-75q-26 36-45 75t-31 83Zm-200 0h118q9-38 22.5-73.5T376-782q-56 18-99.5 55T204-640Z"/></svg>Website</a>';
   html += '<a href="'+exp.url+'" target="_blank" onclick="event.stopPropagation()"><img src="'+expIcon+'" onerror="this.style.display=\'none\'">'+exp.name+'</a>';
   html += '<span onclick="event.stopPropagation();closeRowMenu();window._modalToken={ca:\''+((t.ca||'').replace(/'/g,''))+'\',sym:\''+((t.sym||'').replace(/'/g,''))+'\',net:\''+(t.net||'solana')+'\'};if(typeof openBoostModal===\'function\')openBoostModal()" style="background:rgba(234,179,8,0.15);color:#eab308;border-radius:0 0 8px 8px;margin:0;padding:10px 14px;box-sizing:border-box"><svg viewBox="0 0 24 24" fill="none" stroke="#eab308" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg> Boost Token</span>';
   menu.innerHTML = html;
@@ -3806,6 +3827,18 @@ function dexPriceFmt(p) {
     subHtml += '<sub style="font-size:0.7em;vertical-align:baseline;opacity:0.85">' + sub[j] + '</sub>';
   }
   return '$0.0' + subHtml + sigDigits;
+}
+function dexPricePlain(p) {
+  if (!p || p <= 0) return '$0.00';
+  if (p >= 1) return '$' + p.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+  if (p >= 0.01) return '$' + p.toFixed(4);
+  var s = p.toFixed(20);
+  var dot = s.indexOf('.');
+  var zeros = 0;
+  for (var i = dot + 1; i < s.length; i++) { if (s[i] === '0') zeros++; else break; }
+  if (zeros < 4) return '$' + p.toFixed(zeros + 4);
+  var sigDigits = s.substring(dot + 1 + zeros, dot + 1 + zeros + 4).replace(/0+$/, '') || '0';
+  return '$0.0{' + zeros + '}' + sigDigits;
 }
 
 // --- Price currency toggle (USD / native) ---
@@ -3951,11 +3984,6 @@ function openBubbleModal(t) {
   if (starBtn) {
     var sActive = watchlist.includes(t.sym);
     starBtn.classList.toggle('active', sActive);
-    var sSvg = starBtn.querySelector('svg');
-    if (sSvg) {
-      if (sActive) { sSvg.setAttribute('fill','#e3e3e3'); sSvg.setAttribute('stroke','none'); }
-      else { sSvg.setAttribute('fill','none'); sSvg.setAttribute('stroke','#e3e3e3'); }
-    }
   }
   var pairTokenMap = { 'solana':'/SOL','eth':'/WETH','ethereum':'/WETH','base':'/WETH','bsc':'/BNB','sui':'/SUI','tron':'/TRX','arbitrum':'/WETH','avalanche':'/WAVAX','polygon':'/WMATIC','optimism':'/WETH','blast':'/WETH','ton':'/TON','pulsechain':'/PLS','seiv2':'/WSEI' };
   document.getElementById("bmChain").textContent = pairTokenMap[(t.net || 'solana').toLowerCase()] || '/SOL';
@@ -4178,17 +4206,6 @@ function toggleModalWatchlist(btnEl) {
   toggleWatchlist(t.sym, null);
   var isActive = watchlist.includes(t.sym);
   btnEl.classList.toggle('active', isActive);
-  // Toggle star fill/outline
-  var svg = btnEl.querySelector('svg');
-  if (svg) {
-    if (isActive) {
-      svg.setAttribute('fill', '#e3e3e3');
-      svg.setAttribute('stroke', 'none');
-    } else {
-      svg.setAttribute('fill', 'none');
-      svg.setAttribute('stroke', '#e3e3e3');
-    }
-  }
   // Pop animation
   btnEl.style.transform = 'scale(1.3)';
   setTimeout(function() { btnEl.style.transform = ''; }, 200);
@@ -4225,11 +4242,16 @@ function toggleModalMenu() {
   dd.className = 'bm-dropdown';
   var html = '';
   var caLabel2 = t.ca ? (t.ca.slice(0,4) + '...' + t.ca.slice(-4)) : 'N/A';
-  html += '<span onclick="event.stopPropagation();navigator.clipboard.writeText(\''+t.ca+'\');var s=this;s.childNodes[1].nodeValue=\' Copied!\';setTimeout(function(){s.childNodes[1].nodeValue=\' '+caLabel2+'\'},1200)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> '+caLabel2+'</span>';
-  html += '<a href="https://x.com/search?q='+encodeURIComponent('$'+t.sym+' OR '+t.ca)+'&src=typed_query&f=live" target="_blank" onclick="event.stopPropagation()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Search on X</a>';
+  html += '<span onclick="event.stopPropagation();navigator.clipboard.writeText(\''+t.ca+'\');var s=this;s.childNodes[1].nodeValue=\' Copied!\';setTimeout(function(){s.childNodes[1].nodeValue=\' '+caLabel2+'\'},1200)"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="currentColor"><path d="M760-200H320q-33 0-56.5-23.5T240-280v-560q0-33 23.5-56.5T320-920h280l240 240v400q0 33-23.5 56.5T760-200ZM560-640v-200H320v560h440v-360H560ZM160-40q-33 0-56.5-23.5T80-120v-560h80v560h440v80H160Zm160-800v200-200 560-560Z"/></svg> '+caLabel2+'</span>';
+  html += '<a href="https://x.com/search?q='+encodeURIComponent('$'+t.sym+' OR '+t.ca)+'&src=typed_query&f=live" target="_blank" onclick="event.stopPropagation()"><svg class="ico-search" viewBox="0 0 32 32" fill="currentColor"><path d="M16.906 20.188l5.5 5.5-2.25 2.281-5.75-5.781c-1.406 0.781-3.031 1.219-4.719 1.219-5.344 0-9.688-4.344-9.688-9.688s4.344-9.688 9.688-9.688 9.719 4.344 9.719 9.688c0 2.5-0.969 4.781-2.5 6.469zM3.219 13.719c0 3.594 2.875 6.469 6.469 6.469s6.469-2.875 6.469-6.469-2.875-6.469-6.469-6.469-6.469 2.875-6.469 6.469z"/></svg>Search on X</a>';
   if (t.twitter) html += '<a href="'+t.twitter+'" target="_blank" onclick="event.stopPropagation()"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>Community</a>';
-  if (t.website) html += '<a href="'+t.website+'" target="_blank" onclick="event.stopPropagation()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>Website</a>';
+  if (t.website) html += '<a href="'+t.website+'" target="_blank" onclick="event.stopPropagation()"><svg class="ico-globe" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="currentColor"><path d="M325-111.5q-73-31.5-127.5-86t-86-127.5Q80-398 80-480.5t31.5-155q31.5-72.5 86-127t127.5-86Q398-880 480.5-880t155 31.5q72.5 31.5 127 86t86 127Q880-563 880-480.5T848.5-325q-31.5 73-86 127.5t-127 86Q563-80 480.5-80T325-111.5ZM480-162q26-36 45-75t31-83H404q12 44 31 83t45 75Zm-104-16q-18-33-31.5-68.5T322-320H204q29 50 72.5 87t99.5 55Zm208 0q56-18 99.5-55t72.5-87H638q-9 38-22.5 73.5T584-178ZM170-400h136q-3-20-4.5-39.5T300-480q0-21 1.5-40.5T306-560H170q-5 20-7.5 39.5T160-480q0 21 2.5 40.5T170-400Zm216 0h188q3-20 4.5-39.5T580-480q0-21-1.5-40.5T574-560H386q-3 20-4.5 39.5T380-480q0 21 1.5 40.5T386-400Zm268 0h136q5-20 7.5-39.5T800-480q0-21-2.5-40.5T790-560H654q3 20 4.5 39.5T660-480q0 21-1.5 40.5T654-400Zm-16-240h118q-29-50-72.5-87T584-782q18 33 31.5 68.5T638-640Zm-234 0h152q-12-44-31-83t-45-75q-26 36-45 75t-31 83Zm-200 0h118q9-38 22.5-73.5T376-782q-56 18-99.5 55T204-640Z"/></svg>Website</a>';
   html += '<a href="'+exp.url+'" target="_blank" onclick="event.stopPropagation()"><img src="'+expIcon+'" onerror="this.style.display=\'none\'">'+exp.name+'</a>';
+  // Bubblemaps — only show for supported chains
+  var _bmChains = {solana:1,eth:1,bsc:1,tron:1,base:1,ton:1,avalanche:1,polygon:1};
+  if (_bmChains[net]) {
+    html += '<span onclick="event.stopPropagation();closeModalMenu();showBubblemapsView()"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 151 97" width="26" height="17" style="vertical-align:-3px"><g transform="matrix(0.358637,0,0,0.442707,-3370.29,-2535.37)"><g transform="matrix(-0.569944,-0.461713,0.569944,-0.461713,4403.48,14658.4)"><path d="M5074.5,13845.5C5074.5,13845.5 5137,13879.9 5137,13924.5C5137,13959 5108.99,13987 5074.5,13987C5040.01,13987 5012,13959 5012,13924.5C5012,13879.9 5074.5,13845.5 5074.5,13845.5Z" style="fill:url(#_dd1)"/></g><g transform="matrix(0.723552,-0.338414,0.417743,0.586151,299.802,-598.176)"><path d="M4796.35,13671.2C4796.35,13628.2 4856.64,13595 4856.64,13595C4856.64,13595 4916.94,13628.2 4916.94,13671.2V13867.3C4916.94,13900.6 4889.92,13927.6 4856.64,13927.6C4823.36,13927.6 4796.35,13900.6 4796.35,13867.3V13671.2Z" style="fill:url(#_dd2)"/></g><g transform="matrix(0.723552,-0.338414,0.417743,0.586151,459.141,-598.176)"><path d="M4796.35,13671.2C4796.35,13628.2 4856.64,13595 4856.64,13595C4856.64,13595 4916.94,13628.2 4916.94,13671.2V13867.3C4916.94,13900.6 4889.92,13927.6 4856.64,13927.6C4823.36,13927.6 4796.35,13900.6 4796.35,13867.3V13671.2Z" style="fill:url(#_dd3)"/></g></g><defs><linearGradient gradientTransform="matrix(5.22e-16,-141.487,160.148,5.91e-16,5074.5,13987)" gradientUnits="userSpaceOnUse" id="_dd1"><stop offset="0" stop-color="rgb(111,23,186)"/><stop offset="1" stop-color="rgb(176,56,250)"/></linearGradient><linearGradient gradientTransform="matrix(2.04e-14,-332.592,917.287,5.62e-14,4856.64,13927.6)" gradientUnits="userSpaceOnUse" id="_dd2"><stop offset="0" stop-color="rgb(196,27,175)"/><stop offset="1" stop-color="rgb(245,37,134)"/></linearGradient><linearGradient gradientTransform="matrix(2.04e-14,-332.592,917.287,5.62e-14,4856.64,13927.6)" gradientUnits="userSpaceOnUse" id="_dd3"><stop offset="0" stop-color="rgb(48,84,182)"/><stop offset="1" stop-color="rgb(0,164,252)"/></linearGradient></defs></svg> Bubblemaps</span>';
+  }
   html += '<span onclick="event.stopPropagation();closeModalMenu();if(typeof openBoostModal===\'function\')openBoostModal()" style="background:rgba(234,179,8,0.15);color:#eab308;border-radius:0 0 10px 10px;margin:0;padding:10px 14px;box-sizing:border-box"><svg viewBox="0 0 24 24" fill="none" stroke="#eab308" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg> Boost Token</span>';
   dd.innerHTML = html;
 
@@ -4258,6 +4280,31 @@ function closeModalMenu() {
 document.addEventListener('click', function(e) {
   if (_bmDropdown && !e.target.closest('.bm-dots') && !e.target.closest('.bm-dropdown')) closeModalMenu();
 });
+
+// ── Bubblemaps iframe view ──
+function showBubblemapsView() {
+  var t = window._modalToken;
+  if (!t || !t.ca) return;
+  var net = (t.net || 'solana').toLowerCase();
+  var supported = {solana:'solana',eth:'eth',bsc:'bsc',tron:'tron',base:'base',ton:'ton',avalanche:'avalanche',polygon:'polygon'};
+  var chain = supported[net];
+  if (!chain) return;
+  window.open('https://app.bubblemaps.io/' + chain + '/token/' + t.ca, '_blank');
+}
+function closeBubblemapsView() {
+  var overlay = document.getElementById('bmBubblemapsOverlay');
+  var chart = document.getElementById('bmChartWrap');
+  var footer = document.querySelector('.bm-footer');
+  var frame = document.getElementById('bmBubblemapsFrame');
+  if (overlay) { overlay.classList.remove('open'); overlay.style.display = 'none'; }
+  if (frame) frame.src = '';
+  var modal = document.querySelector('.bubble-modal');
+  if (modal) { modal.classList.remove('bm-bubblemaps-active'); modal.style.height = ''; }
+  var statsBar = document.querySelector('.bm-stats-bar');
+  if (statsBar) statsBar.style.display = '';
+  if (chart) chart.style.display = '';
+  if (footer) footer.style.display = '';
+}
 
 function updateConverter(direction) {
   var t = window._modalToken;
@@ -4319,12 +4366,14 @@ function closeBubbleModal() {
   if(!ov || !ov.classList.contains("open")) return;
   ov.classList.remove("open");
   document.body.style.overflow = '';
+  document.title = 'MemeScope — The Meme Coin Scope & Scanner';
   if (document.body.classList.contains('modal-scroll-lock')) {
     document.body.classList.remove('modal-scroll-lock');
     document.body.style.top = '';
     window.scrollTo(0, window._scrollY || 0);
   }
   closeModalMenu();
+  closeBubblemapsView();
   if(_candlePollTimer) { clearInterval(_candlePollTimer); _candlePollTimer = null; }
   // Destroy TradingView modal chart
   if (window._bmChartPoll) { clearInterval(window._bmChartPoll); window._bmChartPoll = null; }
@@ -4563,11 +4612,14 @@ function _initModalChart(t) {
             }
             onTick({ time: _currentBar.time, open: _currentBar.open, high: _currentBar.high, low: _currentBar.low, close: _currentBar.close, volume: _currentBar.volume });
           }
+          // Delay UI updates ~300ms so price display syncs with TradingView candle repaint
+          var _price = price, _pair = pair;
+          setTimeout(function() {
           // Update native price on the token
-          var pNative = pair.priceNative ? parseFloat(pair.priceNative) : 0;
-          var qSym = pair.quoteToken ? pair.quoteToken.symbol.toUpperCase() : '';
+          var pNative = _pair.priceNative ? parseFloat(_pair.priceNative) : 0;
+          var qSym = _pair.quoteToken ? _pair.quoteToken.symbol.toUpperCase() : '';
           if (window._modalToken) {
-            window._modalToken.price = price;
+            window._modalToken.price = _price;
             window._modalToken.priceNative = pNative;
             if (qSym) window._modalToken.quoteSymbol = qSym;
           }
@@ -4575,32 +4627,37 @@ function _initModalChart(t) {
           var priceEl = document.getElementById('bmPriceBig');
           if (priceEl) {
             var prevPrice = parseFloat(priceEl.getAttribute('data-price')) || 0;
-            priceEl.setAttribute('data-price', price);
+            priceEl.setAttribute('data-price', _price);
             priceEl.setAttribute('data-price-native', pNative);
             // Show in whichever currency is active
             if (_bmPriceCurrency === 'native' && pNative && window._modalToken) {
               var _ns = (window._modalToken.quoteSymbol) || _nativeTokenMap[(window._modalToken.net || 'solana').toLowerCase()] || 'SOL';
               priceEl.innerHTML = nativePriceFmt(pNative, _ns);
             } else {
-              priceEl.innerHTML = dexPriceFmt(price);
+              priceEl.innerHTML = dexPriceFmt(_price);
             }
+            // Update browser tab title with mcap
+            var _mc = _pair.marketCap || _pair.fdv || 0;
+            var _bmOv = document.getElementById('bubbleModalOverlay');
+            if (window._modalToken && _bmOv && _bmOv.classList.contains('open')) document.title = fmt(_mc) + ' | ' + (window._modalToken.sym || '') + ' — MemeScope';
             // Header glow
             var hdr = document.querySelector('.bm-header');
-            if (hdr && prevPrice && price !== prevPrice) {
+            if (hdr && prevPrice && _price !== prevPrice) {
               hdr.classList.remove('glow-up','glow-down');
               void hdr.offsetWidth; // reflow to restart animation
-              hdr.classList.add(price > prevPrice ? 'glow-up' : 'glow-down');
+              hdr.classList.add(_price > prevPrice ? 'glow-up' : 'glow-down');
             }
           }
           // Update stats bar (mcap, vol, liq)
           var mcapEl = document.getElementById('bmMcap');
           var volEl = document.getElementById('bmVol');
           var liqEl = document.getElementById('bmLiq');
-          if (mcapEl) mcapEl.textContent = fmt(pair.marketCap || pair.fdv || 0);
-          if (volEl) volEl.textContent = fmt(pair.volume ? (pair.volume.h24 || 0) : 0);
-          if (liqEl) liqEl.textContent = fmt(pair.liquidity ? (pair.liquidity.usd || 0) : 0);
+          if (mcapEl) mcapEl.textContent = fmt(_pair.marketCap || _pair.fdv || 0);
+          if (volEl) volEl.textContent = fmt(_pair.volume ? (_pair.volume.h24 || 0) : 0);
+          if (liqEl) liqEl.textContent = fmt(_pair.liquidity ? (_pair.liquidity.usd || 0) : 0);
           var supplyEl = document.getElementById('bmSupply');
-          if (supplyEl && pair.fdv && price) supplyEl.textContent = fmtNum(Math.round(pair.fdv / price));
+          if (supplyEl && _pair.fdv && _price) supplyEl.textContent = fmtNum(Math.round(_pair.fdv / _price));
+          }, 300);
           // Update percentage timeframes
           var pc = pair.priceChange || {};
           var _pFmt = function(v, id) {
@@ -4969,6 +5026,7 @@ function openTokenPage(t) {
 function closeTokenPage() {
   var tp = document.getElementById('tokenPage');
   if (tp) tp.style.display = 'none';
+  document.title = 'MemeScope — The Meme Coin Scope & Scanner';
   // Restore all hidden content
   var els = ['.filter-bar', '.refresh-progress-wrap', '#bubbleHero', '.table-container', '.pagination-bar', '.disclaimer-footer', '.top-header-bar'];
   els.forEach(function(sel) {
@@ -5225,7 +5283,15 @@ function initTokenPageChart(t) {
             }
             onTick({ time: _currentBar.time, open: _currentBar.open, high: _currentBar.high, low: _currentBar.low, close: _currentBar.close, volume: _currentBar.volume });
           }
-          document.getElementById('tpRPriceBig').innerHTML = dexPriceFmt(price);
+          var _p = price, _pr = pair;
+          setTimeout(function() {
+            var el = document.getElementById('tpRPriceBig');
+            if (el) el.innerHTML = dexPriceFmt(_p);
+            // Update browser tab title with mcap
+            var _mc = _pr.marketCap || _pr.fdv || 0;
+            var _tpEl = document.getElementById('tokenPage');
+            if (_tpToken && _tpEl && _tpEl.style.display !== 'none') document.title = fmt(_mc) + ' | ' + (_tpToken.sym || '') + ' — MemeScope';
+          }, 300);
         } catch(e) {}
       }
 
@@ -5647,6 +5713,12 @@ async function fetchLiveTokens() {
             var isFirstLoad = !liveDataLoaded;
             liveDataLoaded = true;
 
+            // Dismiss loading screen on first data load
+            if (isFirstLoad) {
+              var loader = document.getElementById('loadingScreen');
+              if (loader) { loader.style.opacity = '0'; setTimeout(function() { loader.remove(); }, 400); }
+            }
+
             // 1) Dedup incoming payload (by ca, then by symbol keeping highest volume)
             var seenCa = {};
             var seenSym = {};
@@ -5767,9 +5839,15 @@ async function fetchLiveTokens() {
       } catch(apiErr) { console.log('MemeScope: API error', apiErr); }
     }
     
-    // No fallback - API is the only source. If it fails, keep showing whatever was loaded before.
+    // No fallback - API is the only source. If it fails, dismiss loader and keep showing whatever was loaded before.
     console.log('MemeScope: No data loaded from API');
-  } catch(e) { console.error('MemeScope error:', e); }
+    var loader = document.getElementById('loadingScreen');
+    if (loader) { loader.style.opacity = '0'; setTimeout(function() { loader.remove(); }, 400); }
+  } catch(e) {
+    console.error('MemeScope error:', e);
+    var loader = document.getElementById('loadingScreen');
+    if (loader) { loader.style.opacity = '0'; setTimeout(function() { loader.remove(); }, 400); }
+  }
 }
 
 function parseDexPair(p) {
@@ -5851,35 +5929,33 @@ var _mainRefreshTimer = setInterval(function(){
 document.addEventListener('visibilitychange', function(){
   if (document.visibilityState !== 'visible') return;
 
-  // Refresh chart if token page is open
+  // Refresh chart if token page is open — fully rebuild to avoid gap
   var tp = document.getElementById('tokenPage');
   if (tp && tp.style.display !== 'none') {
-    // Clear bar cache so getBars fetches fresh candles
     if (_tpToken && _tpToken.ca) {
       Object.keys(_barCache).forEach(function(k) {
         if (k.indexOf(_tpToken.ca) === 0) delete _barCache[k];
       });
     }
-    // Force TradingView to reload data
-    if (_tpWidget) {
-      try {
-        _tpWidget.activeChart().resetData();
-      } catch(e) {}
+    // Destroy and rebuild chart — shows loading instead of gap
+    if (_tpToken && typeof initTokenPageChart === 'function') {
+      initTokenPageChart(_tpToken);
     }
     return;
   }
 
-  // Refresh chart if bubble modal is open
+  // Refresh chart if bubble modal is open — fully rebuild to avoid gap
   var modal = document.getElementById('bubbleModal');
-  if (modal && modal.style.display !== 'none' && window._bmWidget) {
+  if (modal && modal.style.display !== 'none') {
     if (window._modalToken && window._modalToken.ca) {
       Object.keys(_barCache).forEach(function(k) {
         if (k.indexOf(window._modalToken.ca) === 0) delete _barCache[k];
       });
     }
-    try {
-      window._bmWidget.activeChart().resetData();
-    } catch(e) {}
+    // Destroy and rebuild chart — shows loading instead of gap
+    if (window._modalToken && typeof _initModalChart === 'function') {
+      _initModalChart(window._modalToken);
+    }
     return;
   }
 
@@ -6237,3 +6313,134 @@ getFilteredTokens = function() {
 
   return tokens;
 };
+
+// ── Mobile bottom nav ──
+function mobNavGo(tab) {
+  var nav = document.getElementById('mobileBottomNav');
+  var btns = nav ? nav.querySelectorAll('.mob-nav-item') : [];
+
+  if (tab === 'home') {
+    btns.forEach(function(b) { b.classList.remove('active'); });
+    if (btns[0]) btns[0].classList.add('active');
+    // Close any open modals/pages and go to main view
+    var ov = document.getElementById('bubbleModalOverlay');
+    if (ov && ov.classList.contains('open')) closeBubbleModal();
+    var tp = document.getElementById('tokenPage');
+    if (tp && tp.style.display !== 'none') closeTokenPage();
+    var wl = document.getElementById('wlOverlay');
+    var navEl = document.getElementById('mobileBottomNav');
+    if ((wl && wl.classList.contains('open')) || (navEl && navEl.classList.contains('watchlist-open'))) closeWatchlistModal();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  if (tab === 'watchlist') {
+    btns.forEach(function(b) { b.classList.remove('active'); });
+    if (btns[2]) btns[2].classList.add('active');
+    if (window.innerWidth <= 768) {
+      var nav = document.getElementById('mobileBottomNav');
+      var wlModal = document.querySelector('.wl-modal');
+      var container = document.getElementById('mobNavWatchlist');
+      if (nav && wlModal && container) {
+        window._wlModalParent = wlModal.parentNode;
+        container.appendChild(wlModal);
+        nav.classList.add('watchlist-open');
+        document.body.style.overflow = 'hidden';
+        renderWatchlist();
+      }
+    } else {
+      if (typeof openWatchlistModal === 'function') openWatchlistModal();
+    }
+  }
+
+  if (tab === 'search') {
+    btns.forEach(function(b) { b.classList.remove('active'); });
+    if (btns[1]) btns[1].classList.add('active');
+    if (window.innerWidth <= 768) {
+      var nav = document.getElementById('mobileBottomNav');
+      var searchModal = document.getElementById('search-modal');
+      var container = document.getElementById('mobNavSearch');
+      if (nav && searchModal && container) {
+        window._searchModalParent = searchModal.parentNode;
+        container.appendChild(searchModal);
+        nav.classList.add('search-open');
+        document.body.style.overflow = 'hidden';
+        var input = document.getElementById('search-modal-input');
+        if (input) { input.value = ''; setTimeout(function() { input.focus(); }, 350); }
+        searchHighlightIdx = -1;
+        showSearchDefault();
+      }
+    } else {
+      openSearchModal();
+    }
+  }
+
+  if (tab === 'menu') {
+    btns.forEach(function(b) { b.classList.remove('active'); });
+    if (btns[3]) btns[3].classList.add('active');
+    var nav = document.getElementById('mobileBottomNav');
+    if (nav) {
+      nav.classList.add('menu-open');
+      document.body.style.overflow = 'hidden';
+    }
+  }
+}
+
+function closeMobMenu() {
+  var nav = document.getElementById('mobileBottomNav');
+  if (nav) {
+    nav.classList.remove('menu-open');
+    document.body.style.overflow = '';
+    var btns = nav.querySelectorAll('.mob-nav-item');
+    btns.forEach(function(b) { b.classList.remove('active'); });
+    if (btns[0]) btns[0].classList.add('active');
+  }
+}
+
+// Reset nav to Home when watchlist closes + move modal back
+(function() {
+  var _origCloseWl = closeWatchlistModal;
+  closeWatchlistModal = function() {
+    var nav = document.getElementById('mobileBottomNav');
+    if (nav && window.innerWidth <= 768 && nav.classList.contains('watchlist-open')) {
+      nav.classList.remove('watchlist-open');
+      document.body.style.overflow = '';
+      // Move modal back to its original parent
+      var wlModal = document.querySelector('.wl-modal');
+      if (wlModal && window._wlModalParent) {
+        window._wlModalParent.appendChild(wlModal);
+      }
+      var btns = nav.querySelectorAll('.mob-nav-item');
+      btns.forEach(function(b) { b.classList.remove('active'); });
+      if (btns[0]) btns[0].classList.add('active');
+    } else {
+      _origCloseWl();
+    }
+  };
+})();
+
+// Handle search close — move modal back if it was in nav
+(function() {
+  var _origCloseSearch = closeSearchModal;
+  closeSearchModal = function() {
+    var nav = document.getElementById('mobileBottomNav');
+    var searchModal = document.getElementById('search-modal');
+    // If search modal is inside the nav, move it back and collapse
+    if (nav && nav.classList.contains('search-open') && searchModal && window._searchModalParent) {
+      window._searchModalParent.appendChild(searchModal);
+      window._searchModalParent = null;
+      nav.classList.remove('search-open');
+      document.body.style.overflow = '';
+      var btns = nav.querySelectorAll('.mob-nav-item');
+      btns.forEach(function(b) { b.classList.remove('active'); });
+      if (btns[0]) btns[0].classList.add('active');
+      searchHighlightIdx = -1;
+    } else {
+      _origCloseSearch();
+      if (nav && window.innerWidth <= 768) {
+        var btns = nav.querySelectorAll('.mob-nav-item');
+        btns.forEach(function(b) { b.classList.remove('active'); });
+        if (btns[0]) btns[0].classList.add('active');
+      }
+    }
+  };
+})();
