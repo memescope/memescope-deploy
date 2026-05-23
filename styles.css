@@ -15,7 +15,7 @@
     --md-sys-color-surface: #141314;
     --md-sys-color-surface-dim: #141314;
     --md-sys-color-surface-container-lowest: #19181a;
-    --md-sys-color-surface-container-low: #211f21;
+    --md-sys-color-surface-container-low: #141314;
     --md-sys-color-surface-container: #1c1b1d;
     --md-sys-color-surface-container-high: #2b292c;
     --md-sys-color-surface-container-highest: #44404c;
@@ -458,8 +458,8 @@
     padding: 10px 16px 10px 24px;
     border-bottom: none;
     background: #2b2930;
-    margin: 8px 8px 0 8px;
-    border-radius: var(--md-sys-shape-corner-extra-large) var(--md-sys-shape-corner-extra-large) 0 0;
+    margin: 0 8px 0 8px;
+    border-radius: 0;
     flex-wrap: wrap;
     transition: transform var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-emphasized), opacity var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-emphasized);
   }
@@ -1805,12 +1805,14 @@
     align-items: center;
     justify-content: space-between;
     padding: 10px 24px 10px 24px;
-    background: #141314;
-    border-bottom: none;
+    background: #2b2930;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
     flex-shrink: 0;
     z-index: 950;
     position: relative;
     top: auto;
+    margin: 8px 8px 0 8px;
+    border-radius: var(--md-sys-shape-corner-extra-large) var(--md-sys-shape-corner-extra-large) 0 0;
   }
   .top-header-left {
     display: flex;
@@ -5022,8 +5024,8 @@
     /* === LAYOUT === */
     .main { margin-left: 0 !important; }
     .bubble-hero {
-      margin: 0 !important;
-      border-radius: 0 !important;
+      margin: 0 8px !important;
+      border-radius: 0 0 var(--md-sys-shape-corner-extra-large) var(--md-sys-shape-corner-extra-large) !important;
     }
 
     /* === HEADER — clean minimal === */
@@ -5038,9 +5040,10 @@
     .top-header-bar {
       left: 0 !important;
       padding: 8px 14px 8px !important;
-      border-bottom: none !important;
-      margin-bottom: 0 !important;
-      background: #141314 !important;
+      border-bottom: 1px solid rgba(255,255,255,0.08) !important;
+      margin: 8px 8px 0 8px !important;
+      border-radius: var(--md-sys-shape-corner-extra-large) var(--md-sys-shape-corner-extra-large) 0 0 !important;
+      background: #2b2930 !important;
     }
     .memescope-logo { font-size: 26px !important; letter-spacing: 0.5px; }
     .memescope-icon { height: 15px !important; width: 15px !important; vertical-align: -1px !important; margin: 0 1px !important; }
@@ -5090,8 +5093,8 @@
       align-items: center !important;
       -webkit-overflow-scrolling: touch;
       border-bottom: none !important;
-      margin: -1px 8px 0 !important;
-      border-radius: var(--md-sys-shape-corner-extra-large) var(--md-sys-shape-corner-extra-large) 0 0 !important;
+      margin: 0 8px 0 !important;
+      border-radius: 0 !important;
     }
     .filter-bar::-webkit-scrollbar { display: none; }
     /* Dark shadow edge — shows there's more to scroll */
@@ -5523,7 +5526,7 @@
     height: 100vh;
     width: 64px;
     background: #211f21;
-    border-right: 1px solid rgba(255,255,255,0.10);
+    border-right: none;
     z-index: 1000;
     transition: width var(--md-sys-motion-duration-medium1) var(--md-sys-motion-easing-emphasized), border-radius var(--md-sys-motion-duration-medium1) var(--md-sys-motion-easing-emphasized);
     overflow: hidden;
