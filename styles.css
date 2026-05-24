@@ -5894,12 +5894,9 @@
 
   /* NEW CLEAN NAV — uses CSS grid for predictable layout */
   .ms-nav { display: flex; flex-direction: column; flex: 1; min-height: 0; }
-  .ms-nav-chains { flex: 1; overflow: hidden; min-height: 0; }
+  .ms-nav-chains { flex: 1; overflow: hidden; min-height: 0; scrollbar-width: none; -webkit-mask-image: linear-gradient(to bottom, black calc(100% - 32px), transparent); mask-image: linear-gradient(to bottom, black calc(100% - 32px), transparent); }
+  .ms-nav-chains::-webkit-scrollbar { display: none; }
   .ms-sidebar:hover .ms-nav-chains { overflow-y: auto; }
-  .ms-nav-chains::-webkit-scrollbar { width: 4px; }
-  .ms-nav-chains::-webkit-scrollbar-track { background: transparent; }
-  .ms-nav-chains::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 4px; }
-  .ms-nav-chains::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.22); }
 
   .ms-nav-link {
     display: grid;

@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.50';
+var APP_VERSION = '2.5.51';
 (function() {
   document.addEventListener('DOMContentLoaded', function() {
     var meta = document.querySelector('meta[name="version"]');
@@ -522,9 +522,9 @@ function toggleChainFilter() {
       if (t.net) activeChains[t.net] = (activeChains[t.net] || 0) + 1;
     });
   }
-  var chainOrder = ['solana','eth','base','bsc','sui','tron','arbitrum','avalanche','polygon','optimism','blast','ton','pulsechain','seiv2'];
-  var chainNames = {'solana':'Solana','eth':'Ethereum','base':'Base','bsc':'BSC','sui':'Sui','tron':'Tron','arbitrum':'Arbitrum','avalanche':'Avalanche','polygon':'Polygon','optimism':'Optimism','blast':'Blast','ton':'TON','pulsechain':'Pulsechain','seiv2':'Sei'};
-  var chainDexImg = {'solana':'solana','eth':'ethereum','base':'base','bsc':'bsc','sui':'sui','tron':'tron','arbitrum':'arbitrum','avalanche':'avalanche','polygon':'polygon','optimism':'optimism','blast':'blast','ton':'ton','pulsechain':'pulsechain','seiv2':'seiv2'};
+  var chainOrder = ['solana','eth','base','bsc','sui','tron','arbitrum','avalanche','polygon','optimism','blast','ton','pulsechain','seiv2','sonic','hyperliquid','berachain','monad','cronos','aptos','linea','zksync','fantom','mantle','scroll','manta','starknet'];
+  var chainNames = {'solana':'Solana','eth':'Ethereum','base':'Base','bsc':'BSC','sui':'Sui','tron':'Tron','arbitrum':'Arbitrum','avalanche':'Avalanche','polygon':'Polygon','optimism':'Optimism','blast':'Blast','ton':'TON','pulsechain':'Pulsechain','seiv2':'Sei','sonic':'Sonic','hyperliquid':'Hyperliquid','berachain':'Berachain','monad':'Monad','cronos':'Cronos','aptos':'Aptos','linea':'Linea','zksync':'zkSync','fantom':'Fantom','mantle':'Mantle','scroll':'Scroll','manta':'Manta','starknet':'Starknet'};
+  var chainDexImg = {'solana':'solana','eth':'ethereum','base':'base','bsc':'bsc','sui':'sui','tron':'tron','arbitrum':'arbitrum','avalanche':'avalanche','polygon':'polygon','optimism':'optimism','blast':'blast','ton':'ton','pulsechain':'pulsechain','seiv2':'seiv2','sonic':'sonic','hyperliquid':'hyperliquid','berachain':'berachain','monad':'monad','cronos':'cronos','aptos':'aptos','linea':'linea','zksync':'zksync','fantom':'fantom','mantle':'mantle','scroll':'scroll','manta':'manta','starknet':'starknet'};
   var html = '<button class="dropdown-item' + (currentChain === 'all' ? ' active' : '') + '" onclick="toggleChain(this,\'all\')">All Chains</button>';
   var baseLogoSvg = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='264' height='264' viewBox='0 0 264 264' fill='none'%3E%3Cpath d='M131.706 263.876C204.705 263.876 263.876 204.81 263.876 131.938C263.876 59.066 204.705 0 131.706 0C62.4541 0 5.64694 53.1764 0 120.845H174.697V143.032H0C5.64694 210.7 62.4541 263.876 131.706 263.876Z' fill='%230052FF'/%3E%3C/svg%3E";
   chainOrder.forEach(function(c) {
@@ -558,9 +558,9 @@ if (window.innerWidth <= 768) {
         if (typeof LIVE_TOKENS !== 'undefined') {
           LIVE_TOKENS.forEach(function(t) { if (t.net) activeChains[t.net] = (activeChains[t.net] || 0) + 1; });
         }
-        var chainOrder = ['solana','eth','base','bsc','sui','tron','arbitrum','avalanche','polygon','optimism','blast','ton','pulsechain','seiv2'];
-        var chainNames = {'solana':'Solana','eth':'Ethereum','base':'Base','bsc':'BSC','sui':'Sui','tron':'Tron','arbitrum':'Arbitrum','avalanche':'Avalanche','polygon':'Polygon','optimism':'Optimism','blast':'Blast','ton':'TON','pulsechain':'Pulsechain','seiv2':'Sei'};
-        var chainDexImg = {'solana':'solana','eth':'ethereum','base':'base','bsc':'bsc','sui':'sui','tron':'tron','arbitrum':'arbitrum','avalanche':'avalanche','polygon':'polygon','optimism':'optimism','blast':'blast','ton':'ton','pulsechain':'pulsechain','seiv2':'seiv2'};
+        var chainOrder = ['solana','eth','base','bsc','sui','tron','arbitrum','avalanche','polygon','optimism','blast','ton','pulsechain','seiv2','sonic','hyperliquid','berachain','monad','cronos','aptos','linea','zksync','fantom','mantle','scroll','manta','starknet'];
+        var chainNames = {'solana':'Solana','eth':'Ethereum','base':'Base','bsc':'BSC','sui':'Sui','tron':'Tron','arbitrum':'Arbitrum','avalanche':'Avalanche','polygon':'Polygon','optimism':'Optimism','blast':'Blast','ton':'TON','pulsechain':'Pulsechain','seiv2':'Sei','sonic':'Sonic','hyperliquid':'Hyperliquid','berachain':'Berachain','monad':'Monad','cronos':'Cronos','aptos':'Aptos','linea':'Linea','zksync':'zkSync','fantom':'Fantom','mantle':'Mantle','scroll':'Scroll','manta':'Manta','starknet':'Starknet'};
+        var chainDexImg = {'solana':'solana','eth':'ethereum','base':'base','bsc':'bsc','sui':'sui','tron':'tron','arbitrum':'arbitrum','avalanche':'avalanche','polygon':'polygon','optimism':'optimism','blast':'blast','ton':'ton','pulsechain':'pulsechain','seiv2':'seiv2','sonic':'sonic','hyperliquid':'hyperliquid','berachain':'berachain','monad':'monad','cronos':'cronos','aptos':'aptos','linea':'linea','zksync':'zksync','fantom':'fantom','mantle':'mantle','scroll':'scroll','manta':'manta','starknet':'starknet'};
         var baseLogoSvg = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='264' height='264' viewBox='0 0 264 264' fill='none'%3E%3Cpath d='M131.706 263.876C204.705 263.876 263.876 204.81 263.876 131.938C263.876 59.066 204.705 0 131.706 0C62.4541 0 5.64694 53.1764 0 120.845H174.697V143.032H0C5.64694 210.7 62.4541 263.876 131.706 263.876Z' fill='%230052FF'/%3E%3C/svg%3E";
         var html = '<button class="dropdown-item' + (currentChain === 'all' ? ' active' : '') + '" onclick="toggleChain(this,\'all\')">All Chains</button>';
         chainOrder.forEach(function(c) {
@@ -627,11 +627,14 @@ function toggleChain(el, chain) {
   document.getElementById('chain-dropdown-menu').querySelectorAll('.dropdown-item').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.ms-nav-link[onclick*="toggleChain"], .ms-mobile-item[onclick*="toggleChain"]').forEach(b => b.classList.remove('active'));
   el.classList.add('active');
+  // Sync sidebar active state when chain is selected from dropdown
+  var sidebarMatch = document.querySelector('.ms-nav-link[onclick*="toggleChain(this,\'' + chain + '\')"]');
+  if (sidebarMatch) sidebarMatch.classList.add('active');
   var ddEl = document.getElementById('chain-dropdown-menu');
   ddEl.classList.remove('open');
   ddEl.style.display = '';
   // Update button label to show selected chain with logo
-  var chainNames = {'all':'Hot Chains','solana':'Solana','eth':'Ethereum','base':'Base','bsc':'BSC','sui':'Sui','arbitrum':'Arbitrum','avalanche':'Avalanche','polygon':'Polygon','optimism':'Optimism','blast':'Blast','ton':'TON','tron':'Tron','pulsechain':'Pulsechain','seiv2':'Sei'};
+  var chainNames = {'all':'Hot Chains','solana':'Solana','eth':'Ethereum','base':'Base','bsc':'BSC','sui':'Sui','arbitrum':'Arbitrum','avalanche':'Avalanche','polygon':'Polygon','optimism':'Optimism','blast':'Blast','ton':'TON','tron':'Tron','pulsechain':'Pulsechain','seiv2':'Sei','sonic':'Sonic','hyperliquid':'Hyperliquid','berachain':'Berachain','monad':'Monad','cronos':'Cronos','aptos':'Aptos','linea':'Linea','zksync':'zkSync','fantom':'Fantom','mantle':'Mantle','scroll':'Scroll','manta':'Manta','starknet':'Starknet'};
   var _clogo = function(c){ return '<img src="https://dd.dexscreener.com/ds-data/chains/'+c+'.png" width="14" height="14" style="border-radius:50%;vertical-align:-2px;margin-right:4px">'; };
   var chainLogos = {
     'solana':_clogo('solana'),'eth':_clogo('ethereum'),'base':'<img src="data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'264\' height=\'264\' viewBox=\'0 0 264 264\' fill=\'none\'%3E%3Cpath d=\'M131.706 263.876C204.705 263.876 263.876 204.81 263.876 131.938C263.876 59.066 204.705 0 131.706 0C62.4541 0 5.64694 53.1764 0 120.845H174.697V143.032H0C5.64694 210.7 62.4541 263.876 131.706 263.876Z\' fill=\'%230052FF\'/%3E%3C/svg%3E" width="14" height="14" style="border-radius:50%;vertical-align:-2px;margin-right:4px">',
@@ -639,7 +642,11 @@ function toggleChain(el, chain) {
     'arbitrum':_clogo('arbitrum'),'avalanche':_clogo('avalanche'),
     'polygon':_clogo('polygon'),'optimism':_clogo('optimism'),
     'blast':_clogo('blast'),'ton':_clogo('ton'),
-    'tron':_clogo('tron'),'pulsechain':_clogo('pulsechain'),'seiv2':_clogo('seiv2')
+    'tron':_clogo('tron'),'pulsechain':_clogo('pulsechain'),'seiv2':_clogo('seiv2'),
+    'sonic':_clogo('sonic'),'hyperliquid':_clogo('hyperliquid'),'berachain':_clogo('berachain'),
+    'monad':_clogo('monad'),'cronos':_clogo('cronos'),'aptos':_clogo('aptos'),
+    'linea':_clogo('linea'),'zksync':_clogo('zksync'),'fantom':_clogo('fantom'),
+    'mantle':_clogo('mantle'),'scroll':_clogo('scroll'),'manta':_clogo('manta'),'starknet':_clogo('starknet')
   };
   var btn = document.querySelector('.topbar-btn[onclick*="toggleChainFilter"]');
   if(btn) {
@@ -805,7 +812,7 @@ var SCANNER_URLS = {
   'sonic': 'https://sonicscan.org/token/',
   'hyperliquid': 'https://hyperscan.xyz/token/',
   'berachain': 'https://berascan.com/token/',
-  'monad': 'https://explorer.monad.xyz/token/',
+  'monad': 'https://monadscan.com/token/',
   'cronos': 'https://cronoscan.com/token/',
   'aptos': 'https://explorer.aptoslabs.com/account/',
   'linea': 'https://lineascan.build/token/',
@@ -3805,7 +3812,7 @@ function showRowMenu(dotsEl, idx) {
     sonic: { url:'https://sonicscan.org/token/'+t.ca, name:'Sonicscan' },
     hyperliquid: { url:'https://hyperscan.xyz/token/'+t.ca, name:'HyperScan' },
     berachain: { url:'https://berascan.com/token/'+t.ca, name:'Berascan' },
-    monad: { url:'https://explorer.monad.xyz/token/'+t.ca, name:'Monad Explorer' },
+    monad: { url:'https://monadscan.com/token/'+t.ca, name:'MonadScan' },
     cronos: { url:'https://cronoscan.com/token/'+t.ca, name:'CronoScan' },
     aptos: { url:'https://explorer.aptoslabs.com/account/'+t.ca, name:'Aptos Explorer' },
     linea: { url:'https://lineascan.build/token/'+t.ca, name:'LineaScan' },
@@ -4164,7 +4171,7 @@ function openBubbleModal(t) {
     'blast':'https://blastscan.io/token/','ton':'https://tonviewer.com/',
     'pulsechain':'https://scan.pulsechain.com/token/','seiv2':'https://seitrace.com/token/',
     'sonic':'https://sonicscan.org/token/','hyperliquid':'https://hyperscan.xyz/token/',
-    'berachain':'https://berascan.com/token/','monad':'https://explorer.monad.xyz/token/',
+    'berachain':'https://berascan.com/token/','monad':'https://monadscan.com/token/',
     'cronos':'https://cronoscan.com/token/','aptos':'https://explorer.aptoslabs.com/account/',
     'linea':'https://lineascan.build/token/','zksync':'https://explorer.zksync.io/address/',
     'fantom':'https://ftmscan.com/token/','mantle':'https://mantlescan.xyz/token/',
@@ -4174,7 +4181,7 @@ function openBubbleModal(t) {
   var solscanLink = document.getElementById("bmLinkSolscan");
   if (solscanLink) {
     solscanLink.href = (chainExplorer[t.net] || 'https://solscan.io/token/') + (t.ca || '');
-    var explorerNames = {'solana':'Solscan','eth':'Etherscan','base':'Basescan','bsc':'BscScan','arbitrum':'Arbiscan','avalanche':'Snowtrace','polygon':'Polygonscan','optimism':'OP Explorer','blast':'Blastscan','ton':'TON Viewer','pulsechain':'PulseScan','seiv2':'Seitrace','sonic':'Sonicscan','hyperliquid':'HyperScan','berachain':'Berascan','monad':'Monad Explorer','cronos':'CronoScan','aptos':'Aptos Explorer','linea':'LineaScan','zksync':'zkSync Explorer','fantom':'FTMScan','mantle':'Mantle Explorer','scroll':'ScrollScan','manta':'Manta Explorer','starknet':'Starkscan'};
+    var explorerNames = {'solana':'Solscan','eth':'Etherscan','base':'Basescan','bsc':'BscScan','arbitrum':'Arbiscan','avalanche':'Snowtrace','polygon':'Polygonscan','optimism':'OP Explorer','blast':'Blastscan','ton':'TON Viewer','pulsechain':'PulseScan','seiv2':'Seitrace','sonic':'Sonicscan','hyperliquid':'HyperScan','berachain':'Berascan','monad':'MonadScan','cronos':'CronoScan','aptos':'Aptos Explorer','linea':'LineaScan','zksync':'zkSync Explorer','fantom':'FTMScan','mantle':'Mantle Explorer','scroll':'ScrollScan','manta':'Manta Explorer','starknet':'Starkscan'};
     try {
       var scanIcon = document.getElementById('bmSolscanIcon');
       if (scanIcon && typeof SCANNER_ICONS !== 'undefined') scanIcon.src = SCANNER_ICONS[t.net] || SCANNER_ICONS['solana'];
@@ -4326,7 +4333,7 @@ function toggleModalMenu() {
     sonic:{url:'https://sonicscan.org/token/'+t.ca,name:'Sonicscan'},
     hyperliquid:{url:'https://hyperscan.xyz/token/'+t.ca,name:'HyperScan'},
     berachain:{url:'https://berascan.com/token/'+t.ca,name:'Berascan'},
-    monad:{url:'https://explorer.monad.xyz/token/'+t.ca,name:'Monad Explorer'},
+    monad:{url:'https://monadscan.com/token/'+t.ca,name:'MonadScan'},
     cronos:{url:'https://cronoscan.com/token/'+t.ca,name:'CronoScan'},
     aptos:{url:'https://explorer.aptoslabs.com/account/'+t.ca,name:'Aptos Explorer'},
     linea:{url:'https://lineascan.build/token/'+t.ca,name:'LineaScan'},
