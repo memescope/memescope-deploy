@@ -254,20 +254,13 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
       <svg width="24" height="24" viewBox="0 -960 960 960" fill="#e6e1e3"><path d="m370-80-16-128q-13-5-24.5-12T307-235l-119 50L78-375l103-78q-1-7-1-13.5v-27q0-6.5 1-13.5L78-585l110-190 119 50q11-8 23-15t24-12l16-128h220l16 128q13 5 24.5 12t22.5 15l119-50 110 190-103 78q1 7 1 13.5v27q0 6.5-2 13.5l103 78-110 190-118-50q-11 8-23 15t-24 12L590-80H370Zm70-80h79l14-106q31-8 57.5-23.5T639-327l99 41 39-68-86-65q5-14 7-29.5t2-31.5q0-16-2-31.5t-7-29.5l86-65-39-68-99 42q-22-23-48.5-38.5T533-694l-13-106h-79l-14 106q-31 8-57.5 23.5T321-633l-99-41-39 68 86 64q-5 15-7 30t-2 32q0 16 2 31t7 30l-86 65 39 68 99-42q22 23 48.5 38.5T427-266l13 106Zm42-180q58 0 99-41t41-99q0-58-41-99t-99-41q-59 0-99.5 41T342-480q0 58 40.5 99t99.5 41Zm-2-140Z"/></svg>
     </div>
     <div class="ms-utility-expanded">
-      <div class="ms-flags">
+      <div class="ms-flags" style="width:100%;justify-content:center;">
         <div class="ms-flag active" data-lang="en" onclick="setLanguage('en')"><img src="https://flagcdn.com/w80/us.png" alt="US"></div>
         <div class="ms-flag" data-lang="zh" onclick="setLanguage('zh')"><img src="https://flagcdn.com/w80/cn.png" alt="CN"></div>
         <div class="ms-flag" data-lang="ko" onclick="setLanguage('ko')"><img src="https://flagcdn.com/w80/kr.png" alt="KR"></div>
         <div class="ms-flag" data-lang="es" onclick="setLanguage('es')"><img src="https://flagcdn.com/w80/es.png" alt="ES"></div>
       </div>
-      <div style="display:flex;align-items:center;gap:6px;margin-left:auto;">
-        <button class="ms-theme-toggle" onclick="document.getElementById('msBrightnessSlider').focus()" title="Brightness">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-          </svg>
-        </button>
-        <input type="range" id="msBrightnessSlider" class="ms-brightness-slider" min="60" max="140" value="100" oninput="setBrightness(this.value)">
-      </div>
+      <input type="range" id="msBrightnessSlider" class="ms-brightness-slider" min="60" max="140" value="110" oninput="setBrightness(this.value)" style="display:none;">
     </div>
   </div>
 
@@ -494,7 +487,7 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
           <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
         </svg>
       </button>
-      <input type="range" class="ms-brightness-slider" min="60" max="140" value="100" oninput="setBrightness(this.value)">
+      <input type="range" class="ms-brightness-slider" min="60" max="140" value="110" oninput="setBrightness(this.value)">
     </div>
   </div>
 </div>
@@ -654,7 +647,7 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
     </div>
 
   <div style="text-align:center;padding:24px 16px 32px;border-top:1px solid rgba(255,255,255,0.04);margin-top:20px">
-    <div style="font-size:11px;color:rgba(255,255,255,0.25);font-family:'Inter',sans-serif;margin-bottom:6px">memescope.eth &middot; <span data-version>v2.5.51</span></div>
+    <div style="font-size:11px;color:rgba(255,255,255,0.25);font-family:'Inter',sans-serif;margin-bottom:6px">memescope.eth &middot; <span data-version>v2.5.53</span></div>
     <div style="font-size:11px;color:rgba(255,255,255,0.2);font-family:'Inter',sans-serif">&copy; 2026 Memescope.io. All rights reserved.</div>
   </div>
 
@@ -1208,8 +1201,8 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
             <span class="bm-sym" id="bmSym"></span>
             <span class="bm-chain-badge" id="bmChain"></span>
             <span class="bm-age-badge" id="bmAgeBadge" style="display:none"></span>
-            <button class="bm-star" id="bmStar" onclick="event.stopPropagation();toggleModalWatchlist(this)"><svg class="bm-star-outline" width="20" height="20" viewBox="0 -960 960 960" fill="currentColor"><path d="m354-287 126-76 126 77-33-144 111-96-146-13-58-136-58 135-146 13 111 97-33 143ZM233-120l65-281L80-590l288-25 112-265 112 265 288 25-218 189 65 281-247-149-247 149Zm247-350Z"/></svg><svg class="bm-star-filled" width="20" height="20" viewBox="0 -960 960 960" fill="currentColor"><path d="m233-120 65-281L80-590l288-25 112-265 112 265 288 25-218 189 65 281-247-149-247 149Z"/></svg></button>
-            <span class="bm-dots" id="bmDots" onclick="event.stopPropagation();toggleModalMenu()"><svg class="dots-outline" width="20" height="20" viewBox="0 -960 960 960" fill="currentColor"><path d="M322.5-437.5Q340-455 340-480t-17.5-42.5Q305-540 280-540t-42.5 17.5Q220-505 220-480t17.5 42.5Q255-420 280-420t42.5-17.5Zm200 0Q540-455 540-480t-17.5-42.5Q505-540 480-540t-42.5 17.5Q420-505 420-480t17.5 42.5Q455-420 480-420t42.5-17.5Zm200 0Q740-455 740-480t-17.5-42.5Q705-540 680-540t-42.5 17.5Q620-505 620-480t17.5 42.5Q655-420 680-420t42.5-17.5ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"/></svg><svg class="dots-filled" width="20" height="20" viewBox="0 -960 960 960" fill="currentColor"><path d="M322.5-437.5Q340-455 340-480t-17.5-42.5Q305-540 280-540t-42.5 17.5Q220-505 220-480t17.5 42.5Q255-420 280-420t42.5-17.5Zm200 0Q540-455 540-480t-17.5-42.5Q505-540 480-540t-42.5 17.5Q420-505 420-480t17.5 42.5Q455-420 480-420t42.5-17.5Zm200 0Q740-455 740-480t-17.5-42.5Q705-540 680-540t-42.5 17.5Q620-505 620-480t17.5 42.5Q655-420 680-420t42.5-17.5ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Z"/></svg></span>
+            <button class="bm-star" id="bmStar" onclick="event.stopPropagation();toggleModalWatchlist(this)"><svg class="bm-star-outline" width="21" height="21" viewBox="0 -960 960 960" fill="currentColor"><path d="M200-120v-640q0-33 23.5-56.5T280-840h240v80H280v518l200-86 200 86v-278h80v400L480-240 200-120Zm80-640h240-240Zm400 160v-80h-80v-80h80v-80h80v80h80v80h-80v80h-80Z"/></svg><svg class="bm-star-filled" width="21" height="21" viewBox="0 -960 960 960" fill="currentColor"><path d="M713-600 600-713l56-57 57 57 141-142 57 57-198 198ZM200-120v-640q0-33 23.5-56.5T280-840h280q-20 30-30 57.5T520-720q0 72 45.5 127T680-524q23 3 40 3t40-3v404L480-240 200-120Z"/></svg></button>
+            <span class="bm-dots" id="bmDots" onclick="event.stopPropagation();toggleModalMenu()"><svg class="dots-outline" width="21" height="21" viewBox="0 -960 960 960" fill="currentColor"><path d="M322.5-437.5Q340-455 340-480t-17.5-42.5Q305-540 280-540t-42.5 17.5Q220-505 220-480t17.5 42.5Q255-420 280-420t42.5-17.5Zm200 0Q540-455 540-480t-17.5-42.5Q505-540 480-540t-42.5 17.5Q420-505 420-480t17.5 42.5Q455-420 480-420t42.5-17.5Zm200 0Q740-455 740-480t-17.5-42.5Q705-540 680-540t-42.5 17.5Q620-505 620-480t17.5 42.5Q655-420 680-420t42.5-17.5ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"/></svg><svg class="dots-filled" width="21" height="21" viewBox="0 -960 960 960" fill="currentColor"><path d="M322.5-437.5Q340-455 340-480t-17.5-42.5Q305-540 280-540t-42.5 17.5Q220-505 220-480t17.5 42.5Q255-420 280-420t42.5-17.5Zm200 0Q540-455 540-480t-17.5-42.5Q505-540 480-540t-42.5 17.5Q420-505 420-480t17.5 42.5Q455-420 480-420t42.5-17.5Zm200 0Q740-455 740-480t-17.5-42.5Q705-540 680-540t-42.5 17.5Q620-505 620-480t17.5 42.5Q655-420 680-420t42.5-17.5ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Z"/></svg></span>
           </div>
           <span class="bm-fullname" id="bmFullname"></span>
         </div>

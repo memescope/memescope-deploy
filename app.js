@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.51';
+var APP_VERSION = '2.5.53';
 (function() {
   document.addEventListener('DOMContentLoaded', function() {
     var meta = document.querySelector('meta[name="version"]');
@@ -1567,6 +1567,7 @@ function animateWatchlistRemove(el, sym) {
 
 function toggleWatchlist(sym, btnEl) {
   const idx = watchlist.indexOf(sym);
+  var wasAdded = idx === -1;
   if (idx > -1) watchlist.splice(idx, 1);
   else if (watchlist.length < 20) watchlist.push(sym);
   localStorage.setItem('msWatchlist', JSON.stringify(watchlist));
@@ -1585,6 +1586,16 @@ function toggleWatchlist(sym, btnEl) {
   renderWatchlist();
   // Sync alerts panel if open
   if (alertsVisible) renderAlerts();
+  // Toast
+  var et = document.getElementById('bmCopyToast');
+  if (et) et.remove();
+  var toast = document.createElement('div');
+  toast.id = 'bmCopyToast';
+  toast.textContent = wasAdded ? sym + ' added to watchlist' : sym + ' removed from watchlist';
+  toast.style.cssText = 'position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-60px);background:#4a4fd8;color:#fff;padding:10px 24px;border-radius:14px;font-size:14px;font-weight:600;z-index:100000;transition:transform 0.3s ease;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,0.4);';
+  document.body.appendChild(toast);
+  requestAnimationFrame(function() { requestAnimationFrame(function() { toast.style.transform = 'translateX(-50%) translateY(0)'; }); });
+  setTimeout(function() { toast.style.transform = 'translateX(-50%) translateY(-60px)'; setTimeout(function() { if (toast.parentNode) toast.remove(); }, 300); }, 1500);
 }
 
 function toggleWlShareMenu(btn) {
@@ -4300,9 +4311,6 @@ function toggleModalWatchlist(btnEl) {
   toggleWatchlist(t.sym, null);
   var isActive = watchlist.includes(t.sym);
   btnEl.classList.toggle('active', isActive);
-  // Pop animation
-  btnEl.style.transform = 'scale(1.3)';
-  setTimeout(function() { btnEl.style.transform = ''; }, 200);
 }
 
 // ── Modal 3-dot dropdown ──
