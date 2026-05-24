@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.23';
+var APP_VERSION = '2.5.48';
 (function() {
   document.addEventListener('DOMContentLoaded', function() {
     var meta = document.querySelector('meta[name="version"]');
@@ -38,10 +38,12 @@ var APP_VERSION = '2.5.23';
     }
     btn.addEventListener('click', function(e){
       e.stopPropagation();
+      btn.classList.add('lock-animate');
       sidebar.classList.toggle('sidebar-locked');
       var locked = sidebar.classList.contains('sidebar-locked');
       btn.title = locked ? 'Unlock sidebar' : 'Lock sidebar';
       localStorage.setItem('sidebarLocked', locked ? '1' : '0');
+      setTimeout(function(){ btn.classList.remove('lock-animate'); }, 600);
     });
   });
 })();
@@ -435,23 +437,6 @@ document.addEventListener('click', function(e) {
   if(fg && !fg.contains(e.target)) fg.classList.remove('mobile-expanded');
 });
 
-// Scroll hint: detect scroll end to hide fade edge
-(function() {
-  function initScrollHint() {
-    var bar = document.querySelector('.filter-bar');
-    if (!bar || window.innerWidth > 768) return;
-
-    bar.addEventListener('scroll', function() {
-      var atEnd = bar.scrollLeft + bar.clientWidth >= bar.scrollWidth - 10;
-      bar.classList.toggle('scrolled-end', atEnd);
-    });
-  }
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initScrollHint);
-  } else {
-    setTimeout(initScrollHint, 500);
-  }
-})();
 
 function setCategory(el, cat) {
   currentCategory = cat;
@@ -595,7 +580,7 @@ function toggleLaunchpadFilter() {
   dd.classList.remove('open');
 }
 
-var _chainLinkSvg = '<svg width="14" height="14" viewBox="0 -960 960 960" fill="currentColor" style="vertical-align:-2px;margin-right:4px"><path d="M318-120q-82 0-140-58t-58-140q0-40 15-76t43-64l134-133 56 56-134 134q-17 17-25.5 38.5T200-318q0 49 34.5 83.5T318-200q23 0 45-8.5t39-25.5l133-134 57 57-134 133q-28 28-64 43t-76 15Zm79-220-57-57 223-223 57 57-223 223Zm251-28-56-57 134-133q17-17 25-38t8-44q0-50-34-85t-84-35q-23 0-44.5 8.5T558-726L425-592l-57-56 134-134q28-28 64-43t76-15q82 0 139.5 58T839-641q0 39-14.5 75T782-502L648-368Z"/></svg>';
+var _chainLinkSvg = '<svg width="14" height="14" viewBox="0 0 100 100" fill="currentColor" style="vertical-align:-2px;margin-right:4px"><path d="M34.971 61.094l-11.303 11.303c-1.087 1.087-2.85 1.087-3.937 0l-4.497-4.497c-1.087-1.087-1.087-2.85 0-3.937l24.364-24.364c1.087-1.087 2.85-1.087 3.937 0l14.709 14.71c3.874-5.72 3.283-13.583-1.779-18.646l-4.497-4.497c-5.735-5.735-15.067-5.735-20.803 0L6.802 55.53c-5.735 5.735-5.735 15.067 0 20.803l4.497 4.497c5.735 5.735 15.067 5.735 20.803 0l10.027-10.027-2.53-2.53c-2.09-2.09-3.638-4.546-4.627-7.18z"/><path d="M93.198 23.668l-4.497-4.497c-5.735-5.735-15.067-5.735-20.803 0L57.872 29.197l2.53 2.53c2.09 2.09 3.637 4.547 4.627 7.18l11.303-11.303c1.087-1.087 2.85-1.087 3.937 0l4.497 4.497c1.087 1.087 1.087 2.85 0 3.937L60.402 60.401c-1.087 1.087-2.85 1.087-3.937 0l-14.709-14.71c-3.874 5.72-3.284 13.583 1.779 18.646l4.497 4.497c5.735 5.735 15.068 5.735 20.803 0l24.364-24.364c5.735-5.735 5.735-15.067 0-20.803z"/></svg>';
 
 function toggleChain(el, chain) {
   currentChain = chain;
@@ -1557,12 +1542,33 @@ function toggleWatchlist(sym, btnEl) {
 }
 
 function toggleWlShareMenu(btn) {
+  // On mobile, use native share API (works on HTTPS)
+  if (window.innerWidth <= 768 && navigator.share) {
+    var text = '🔭 My MemeScope Watchlist:\n\n';
+    if (typeof watchlist !== 'undefined' && watchlist && watchlist.length > 0) {
+      watchlist.forEach(function(sym) {
+        var token = (typeof LIVE_TOKENS !== 'undefined') ? LIVE_TOKENS.find(function(t) { return t.sym === sym; }) : null;
+        if (token) {
+          var change = token.p24h || 0;
+          var arrow = change >= 0 ? '🟢' : '🔴';
+          text += arrow + ' $' + sym + ' — ' + (change >= 0 ? '+' : '') + change.toFixed(1) + '%\n';
+        } else {
+          text += '⚪ $' + sym + '\n';
+        }
+      });
+    }
+    text += '\nTrack yours at memescope.io';
+    navigator.share({ title: 'My MemeScope Watchlist', text: text, url: 'https://memescope.io' }).catch(function(){});
+    return;
+  }
+  // Desktop or fallback: use dropdown menu
   var menu = document.getElementById('wlShareMenu');
   if (menu.classList.contains('open')) {
     menu.classList.remove('open');
   } else {
     var rect = btn.getBoundingClientRect();
     menu.style.top = (rect.bottom + 6) + 'px';
+    menu.style.bottom = 'auto';
     menu.style.right = (window.innerWidth - rect.right) + 'px';
     menu.classList.add('open');
   }
@@ -1702,7 +1708,7 @@ function renderWatchlist() {
         '<span class="wl-modal-token-sym">' + sym + '</span>' +
         '<span class="wl-modal-token-delete" onclick="event.stopPropagation();animateWatchlistRemove(this,\'' + sym + '\')"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 1.5V2.5H3C2.44772 2.5 2 2.94772 2 3.5V4.5C2 5.05228 2.44772 5.5 3 5.5H21C21.5523 5.5 22 5.05228 22 4.5V3.5C22 2.94772 21.5523 2.5 21 2.5H16V1.5C16 0.947715 15.5523 0.5 15 0.5H9C8.44772 0.5 8 0.947715 8 1.5Z"/><path d="M3.9231 7.5H20.0767L19.1344 20.2216C19.0183 21.7882 17.7135 23 16.1426 23H7.85724C6.28636 23 4.98148 21.7882 4.86544 20.2216L3.9231 7.5Z"/></svg></span>' +
       '</div>' +
-      '<span class="wl-modal-val">' + fmt(token.vol || 0) + '</span>' +
+      '<span class="wl-modal-val">' + fmtPrice(token.price || 0) + '</span>' +
       '<span class="wl-modal-val ' + pctCls(token.p5m) + '">' + pctFmt(token.p5m) + '</span>' +
       '<span class="wl-modal-val ' + pctCls(token.p1h) + '">' + pctFmt(token.p1h) + '</span>' +
       '<span class="wl-modal-val ' + pctCls(token.p6h) + '">' + pctFmt(token.p6h) + '</span>' +
@@ -2798,7 +2804,27 @@ function showSearchDefault() {
   list.innerHTML = trending.map(function(t) {
     return buildSearchItem(t);
   }).join('');
-  
+
+  // Show boosted tokens as pills
+  var boosted = LIVE_TOKENS.filter(function(t) { return t.boosted; });
+  var boostedSection = document.getElementById('search-boosted');
+  var boostedList = document.getElementById('search-boosted-list');
+  if (boosted.length > 0) {
+    boostedList.innerHTML = boosted.map(function(t) {
+      var imgHtml = t.img
+        ? '<img class="boosted-chip-img" src="' + t.img + '" onerror="this.style.display=\'none\'">'
+        : '';
+      return '<div class="boosted-chip" onclick="selectSearchResult(\'' + (t.ca || '').replace(/'/g,'') + '\',\'' + t.sym + '\')">' +
+        imgHtml +
+        '<span class="boosted-chip-sym">' + t.sym + '</span>' +
+        '<span class="boosted-chip-count">⚡' + (t.boostCount || '') + '</span>' +
+      '</div>';
+    }).join('');
+    boostedSection.style.display = '';
+  } else {
+    boostedSection.style.display = 'none';
+  }
+
   renderRecentSearches();
   document.getElementById('search-trending').style.display = '';
   document.getElementById('search-recent').style.display = '';
@@ -2839,6 +2865,7 @@ function handleSearchInput(query) {
   
   document.getElementById('search-trending').style.display = 'none';
   document.getElementById('search-recent').style.display = 'none';
+  document.getElementById('search-boosted').style.display = 'none';
   document.getElementById('search-results').style.display = '';
   searchHighlightIdx = -1;
 }
@@ -4117,7 +4144,7 @@ function openBubbleModal(t) {
 
   // Show modal
   ov.classList.add("open");
-  loadTradingView(function() { setTimeout(function() { _initModalChart(t); }, 100); });
+  loadTradingView(function() { _initModalChart(t); });
 
   // Update URL
   try {
@@ -4433,6 +4460,9 @@ function _initModalChart(t) {
   var bmNd = document.getElementById('bmNoDataOverlay');
   if (bmNd) bmNd.style.display = 'none';
   container.innerHTML = '';
+  // Show chart loading overlay
+  var chartLoad = document.getElementById('bmChartLoading');
+  if (chartLoad) { chartLoad.classList.remove('hidden'); chartLoad.style.display = ''; }
 
   var chain = (t.net || 'solana').toLowerCase();
   var pairTokenMap2 = { solana:'SOL', eth:'WETH', base:'WETH', bsc:'BNB', sui:'SUI', tron:'TRX', arbitrum:'WETH', avalanche:'WAVAX', polygon:'WMATIC', optimism:'WETH', blast:'WETH', ton:'TON', pulsechain:'PLS', seiv2:'WSEI' };
@@ -4737,6 +4767,19 @@ function _initModalChart(t) {
     enabled_features: ['side_toolbar_in_fullscreen_mode','header_in_fullscreen_mode','create_volume_indicator_by_default','items_favoriting'],
     favorites: { intervals: ['1','5','15','60','240','1D'], chartTypes: ['Candles','Line','Area'] },
   });
+
+  // Hide custom loading overlay once TradingView iframe appears (TV spinner takes over)
+  if (window._bmIframePoll) clearInterval(window._bmIframePoll);
+  window._bmIframePoll = setInterval(function() {
+    var iframe = container.querySelector('iframe');
+    if (iframe) {
+      clearInterval(window._bmIframePoll);
+      window._bmIframePoll = null;
+      var cl = document.getElementById('bmChartLoading');
+      if (cl) cl.classList.add('hidden');
+    }
+  }, 50);
+  setTimeout(function() { if (window._bmIframePoll) { clearInterval(window._bmIframePoll); window._bmIframePoll = null; } var cl3 = document.getElementById('bmChartLoading'); if (cl3) cl3.classList.add('hidden'); }, 15000);
 
   // Poll for chart readiness — just resize/paint, no view reset
   if (window._bmChartPoll) clearInterval(window._bmChartPoll);
