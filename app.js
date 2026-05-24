@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.48';
+var APP_VERSION = '2.5.50';
 (function() {
   document.addEventListener('DOMContentLoaded', function() {
     var meta = document.querySelector('meta[name="version"]');
@@ -138,7 +138,7 @@ function _injectMissingBoostedTokens() {
         }
         var pc = pair.priceChange || {};
         var vol = pair.volume || {};
-        var netMap = { solana: 'solana', ethereum: 'eth', base: 'base', bsc: 'bsc', sui: 'sui', tron: 'tron', arbitrum: 'arbitrum', avalanche: 'avalanche', polygon: 'polygon', optimism: 'optimism', blast: 'blast', ton: 'ton', seiv2: 'seiv2', pulsechain: 'pulsechain' };
+        var netMap = { solana: 'solana', ethereum: 'eth', base: 'base', bsc: 'bsc', sui: 'sui', tron: 'tron', arbitrum: 'arbitrum', avalanche: 'avalanche', polygon: 'polygon', optimism: 'optimism', blast: 'blast', ton: 'ton', seiv2: 'seiv2', pulsechain: 'pulsechain', sonic: 'sonic', hyperliquid: 'hyperliquid', berachain: 'berachain', monad: 'monad', cronos: 'cronos', aptos: 'aptos', linea: 'linea', zksync: 'zksync', fantom: 'fantom', mantle: 'mantle', scroll: 'scroll', manta: 'manta', starknet: 'starknet' };
         var token = {
           sym: pair.baseToken ? pair.baseToken.symbol : (b.sym || ''),
           name: pair.baseToken ? pair.baseToken.name : '',
@@ -277,6 +277,19 @@ const CHAIN_ICONS = {
   'ton': 'https://dd.dexscreener.com/ds-data/chains/ton.png',
   'pulsechain': 'https://dd.dexscreener.com/ds-data/chains/pulsechain.png',
   'seiv2': 'https://dd.dexscreener.com/ds-data/chains/seiv2.png',
+  'sonic': 'https://dd.dexscreener.com/ds-data/chains/sonic.png',
+  'hyperliquid': 'https://dd.dexscreener.com/ds-data/chains/hyperliquid.png',
+  'berachain': 'https://dd.dexscreener.com/ds-data/chains/berachain.png',
+  'monad': 'https://dd.dexscreener.com/ds-data/chains/monad.png',
+  'cronos': 'https://dd.dexscreener.com/ds-data/chains/cronos.png',
+  'aptos': 'https://dd.dexscreener.com/ds-data/chains/aptos.png',
+  'linea': 'https://dd.dexscreener.com/ds-data/chains/linea.png',
+  'zksync': 'https://dd.dexscreener.com/ds-data/chains/zksync.png',
+  'fantom': 'https://dd.dexscreener.com/ds-data/chains/fantom.png',
+  'mantle': 'https://dd.dexscreener.com/ds-data/chains/mantle.png',
+  'scroll': 'https://dd.dexscreener.com/ds-data/chains/scroll.png',
+  'manta': 'https://dd.dexscreener.com/ds-data/chains/manta.png',
+  'starknet': 'https://dd.dexscreener.com/ds-data/chains/starknet.png',
 };
 const CHAIN_COLORS = {
   'solana': '#3dc0bc',
@@ -293,6 +306,19 @@ const CHAIN_COLORS = {
   'ton': '#0099e8',
   'pulsechain': '#ec11a5',
   'seiv2': '#9c1d18',
+  'sonic': '#1db1f5',
+  'hyperliquid': '#00e676',
+  'berachain': '#d4a24e',
+  'monad': '#836EF9',
+  'cronos': '#002D74',
+  'aptos': '#2dd8a3',
+  'linea': '#61dfff',
+  'zksync': '#8c8dfc',
+  'fantom': '#1969ff',
+  'mantle': '#000000',
+  'scroll': '#ffeeda',
+  'manta': '#1e7cdb',
+  'starknet': '#ec796b',
 };
 const DEX_ICONS = {
   'raydium': 'https://dd.dexscreener.com/ds-data/dexes/raydium.png',
@@ -738,7 +764,7 @@ function calcBubbleSizes(items, W, H, tfField, getToken) {
 }
 
 
-var _CHAIN_LABELS = {'all':'this filter','solana':'Solana','eth':'Ethereum','base':'Base','bsc':'BSC','sui':'Sui','tron':'Tron','arbitrum':'Arbitrum','avalanche':'Avalanche','polygon':'Polygon','optimism':'Optimism','blast':'Blast','ton':'TON','pulsechain':'Pulsechain','seiv2':'Sei'};
+var _CHAIN_LABELS = {'all':'this filter','solana':'Solana','eth':'Ethereum','base':'Base','bsc':'BSC','sui':'Sui','tron':'Tron','arbitrum':'Arbitrum','avalanche':'Avalanche','polygon':'Polygon','optimism':'Optimism','blast':'Blast','ton':'TON','pulsechain':'Pulsechain','seiv2':'Sei','sonic':'Sonic','hyperliquid':'Hyperliquid','berachain':'Berachain','monad':'Monad','cronos':'Cronos','aptos':'Aptos','linea':'Linea','zksync':'zkSync','fantom':'Fantom','mantle':'Mantle','scroll':'Scroll','manta':'Manta','starknet':'Starknet'};
 function showEmptyBubbleState() {
   var world = document.getElementById('bubbleWorld');
   if (!world) return;
@@ -775,7 +801,20 @@ var SCANNER_URLS = {
   'blast': 'https://blastscan.io/token/',
   'ton': 'https://tonviewer.com/',
   'pulsechain': 'https://scan.pulsechain.com/token/',
-  'seiv2': 'https://seitrace.com/token/'
+  'seiv2': 'https://seitrace.com/token/',
+  'sonic': 'https://sonicscan.org/token/',
+  'hyperliquid': 'https://hyperscan.xyz/token/',
+  'berachain': 'https://berascan.com/token/',
+  'monad': 'https://explorer.monad.xyz/token/',
+  'cronos': 'https://cronoscan.com/token/',
+  'aptos': 'https://explorer.aptoslabs.com/account/',
+  'linea': 'https://lineascan.build/token/',
+  'zksync': 'https://explorer.zksync.io/address/',
+  'fantom': 'https://ftmscan.com/token/',
+  'mantle': 'https://mantlescan.xyz/token/',
+  'scroll': 'https://scrollscan.com/token/',
+  'manta': 'https://pacific-explorer.manta.network/token/',
+  'starknet': 'https://starkscan.co/token/'
 };
 
 
@@ -1137,7 +1176,7 @@ function loadData() {
       }
       var pairEl = tr.querySelector('.token-pair');
       if (pairEl) {
-        var pairText = '/' + (t.pair||t.quoteSymbol||({solana:'SOL',eth:'WETH',base:'WETH',bsc:'BNB',sui:'SUI',tron:'TRX',arbitrum:'WETH',avalanche:'WAVAX',polygon:'WMATIC',optimism:'WETH',blast:'WETH',ton:'TON'}[t.net])||'SOL');
+        var pairText = '/' + (t.pair||t.quoteSymbol||({solana:'SOL',eth:'WETH',base:'WETH',bsc:'BNB',sui:'SUI',tron:'TRX',arbitrum:'WETH',avalanche:'WAVAX',polygon:'WMATIC',optimism:'WETH',blast:'WETH',ton:'TON',sonic:'S',hyperliquid:'WHYPE',berachain:'WBERA',monad:'MON',cronos:'WCRO',aptos:'APT',linea:'WETH',zksync:'WETH',fantom:'WFTM',mantle:'WMNT',scroll:'WETH',manta:'WETH',starknet:'ETH'}[t.net])||'SOL');
         if (pairEl.textContent !== pairText) pairEl.textContent = pairText;
       }
       var badgeImg = tr.querySelector('.token-badge-icon');
@@ -1204,7 +1243,7 @@ function loadData() {
       var aChainColor = CHAIN_COLORS[at.net] || CHAIN_COLORS['solana'];
       var aCa = (at.ca || '').replace(/'/g, "\\'");
       var aRowNum = aIdx + 1;
-      var aRow = '<tr' + (at.boosted ? ' class="boosted-row"' : '') + ' style="cursor:pointer" onclick="openTokenModal(\'' + aCa + '\')"><td' + (at.boosted ? ' class="boosted-cell"' : '') + '><div class="token-cell"><span class="row-num">' + aRowNum + '</span><div class="token-badges"><img class="token-badge-icon" src="' + aChainImg + '"></div><div class="token-avatar-wrap' + (at.boosted ? ' boosted-avatar' : '') + '"><img class="token-avatar-img" style="outline:1px solid ' + aChainColor + '" src="' + (at.img || '') + '" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'"><div class="token-avatar" style="display:' + (at.img ? 'none' : 'flex') + ';background:linear-gradient(135deg,' + aGrad + ')">' + aLetter + '</div></div><div class="token-info"><div class="token-top-row"><span class="token-symbol">' + at.sym + '</span><span class="token-pair" style="color:rgba(255,255,255,0.3);font-size:14px;font-weight:400">/' + (at.pair||at.quoteSymbol||({solana:'SOL',eth:'WETH',base:'WETH',bsc:'BNB',sui:'SUI',tron:'TRX',arbitrum:'WETH',avalanche:'WAVAX',polygon:'WMATIC',optimism:'WETH',blast:'WETH',ton:'TON'}[at.net])||'SOL') + '</span>' + (at.boosted ? '<span class="boost-badge"><svg class="boost-badge-icon" viewBox="0 0 500 500" fill="none" stroke-linecap="round" stroke-linejoin="round"><g class="boost-bob"><g transform="translate(312.32 204.14) rotate(45) translate(-116.42 -151.35)"><g transform="translate(116.78 283.83) translate(-54.13 -30)"><g class="boost-fire"><g transform="translate(54.13 64.96)"><path d="M24.13-10.83C24.13 2.5 0 34.96 0 34.96S-24.13 2.5-24.13-10.83C-24.13-24.15-13.33-34.96 0-34.96 13.33-34.96 24.13-24.15 24.13-10.83Z" stroke="#ffb627" stroke-width="12"/></g></g></g><g transform="translate(47.31 232.35)"><path d="M14.22-40.34L-17.31-18.18-14.58 40.34 17.31 18.66Z" stroke="#ffb627" stroke-width="12"/></g><g transform="translate(185.53 232.35)"><path d="M-14.22-40.34L17.31-18.18 14.58 40.34-17.31 18.66Z" stroke="#ffb627" stroke-width="12"/></g><g transform="translate(116.56 146.22)"><path d="M0-116.22C3.97-116.22 7.83-114.81 10.84-112.22 23.12-101.62 53.64-69.63 55.4-12.18 57.09 43.31 51.08 116.22 51.08 116.22H-51.08S-57.09 43.31-55.4-12.18C-53.64-69.63-23.12-101.62-10.84-112.22-7.83-114.81-3.97-116.22 0-116.22Z" stroke="#ffd539" stroke-width="12"/><path class="boost-shine" d="M0-116.22C3.97-116.22 7.83-114.81 10.84-112.22 23.12-101.62 53.64-69.63 55.4-12.18 57.09 43.31 51.08 116.22 51.08 116.22H-51.08S-57.09 43.31-55.4-12.18C-53.64-69.63-23.12-101.62-10.84-112.22-7.83-114.81-3.97-116.22 0-116.22Z"/><g transform="translate(0 -116.22)"><g class="boost-sparkle"><path d="M0,-22 L4,-4 L22,0 L4,4 L0,22 L-4,4 L-22,0 L-4,-4 Z" fill="#fff8d1"/><path d="M0,-12 L2,-2 L12,0 L2,2 L0,12 L-2,2 L-12,0 L-2,-2 Z" fill="#fff"/></g></g></g><g transform="translate(116.56 273.13)"><path d="M32.09 10.7H-32.09V-10.7H32.09Z" stroke="#ffd539" stroke-width="12"/></g><circle cx="116.56" cy="105.92" r="23.48" stroke="#ffb627" stroke-width="12"/></g></g></svg>' + (at.boostCount || '') + '</span>' : '') + '</div></div></div></div></div></td><td class="price-col">' + (window._priceColMode === 'mcap' ? fmt(at.mcap) : fmtPrice(at.price)) + '</td><td class="age-col">' + fmtAge(at.age) + '</td><td class="vol-col">' + fmt(at.vol) + '</td>' + pctTd(at.p5m) + pctTd(at.p5m) + pctTd(at.p1h) + pctTd(at.p6h) + pctTd(at.p24h) + '<td class="mcap-col">' + (window._priceColMode === 'mcap' ? fmtPrice(at.price) : fmt(at.mcap)) + '</td><td class="row-dots-col"><span class="token-dots" onclick="event.stopPropagation();showRowMenu(this, ' + aIdx + ')"><svg class="dots-outline" width="20" height="20" viewBox="0 -960 960 960" fill="currentColor"><path d="M322.5-437.5Q340-455 340-480t-17.5-42.5Q305-540 280-540t-42.5 17.5Q220-505 220-480t17.5 42.5Q255-420 280-420t42.5-17.5Zm200 0Q540-455 540-480t-17.5-42.5Q505-540 480-540t-42.5 17.5Q420-505 420-480t17.5 42.5Q455-420 480-420t42.5-17.5Zm200 0Q740-455 740-480t-17.5-42.5Q705-540 680-540t-42.5 17.5Q620-505 620-480t17.5 42.5Q655-420 680-420t42.5-17.5ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"/></svg><svg class="dots-filled" width="20" height="20" viewBox="0 -960 960 960" fill="currentColor"><path d="M322.5-437.5Q340-455 340-480t-17.5-42.5Q305-540 280-540t-42.5 17.5Q220-505 220-480t17.5 42.5Q255-420 280-420t42.5-17.5Zm200 0Q540-455 540-480t-17.5-42.5Q505-540 480-540t-42.5 17.5Q420-505 420-480t17.5 42.5Q455-420 480-420t42.5-17.5Zm200 0Q740-455 740-480t-17.5-42.5Q705-540 680-540t-42.5 17.5Q620-505 620-480t17.5 42.5Q655-420 680-420t42.5-17.5ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Z"/></svg></span></td></tr>';
+      var aRow = '<tr' + (at.boosted ? ' class="boosted-row"' : '') + ' style="cursor:pointer" onclick="openTokenModal(\'' + aCa + '\')"><td' + (at.boosted ? ' class="boosted-cell"' : '') + '><div class="token-cell"><span class="row-num">' + aRowNum + '</span><div class="token-badges"><img class="token-badge-icon" src="' + aChainImg + '"></div><div class="token-avatar-wrap' + (at.boosted ? ' boosted-avatar' : '') + '"><img class="token-avatar-img" style="outline:1px solid ' + aChainColor + '" src="' + (at.img || '') + '" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'"><div class="token-avatar" style="display:' + (at.img ? 'none' : 'flex') + ';background:linear-gradient(135deg,' + aGrad + ')">' + aLetter + '</div></div><div class="token-info"><div class="token-top-row"><span class="token-symbol">' + at.sym + '</span><span class="token-pair" style="color:rgba(255,255,255,0.3);font-size:14px;font-weight:400">/' + (at.pair||at.quoteSymbol||({solana:'SOL',eth:'WETH',base:'WETH',bsc:'BNB',sui:'SUI',tron:'TRX',arbitrum:'WETH',avalanche:'WAVAX',polygon:'WMATIC',optimism:'WETH',blast:'WETH',ton:'TON',sonic:'S',hyperliquid:'WHYPE',berachain:'WBERA',monad:'MON',cronos:'WCRO',aptos:'APT',linea:'WETH',zksync:'WETH',fantom:'WFTM',mantle:'WMNT',scroll:'WETH',manta:'WETH',starknet:'ETH'}[at.net])||'SOL') + '</span>' + (at.boosted ? '<span class="boost-badge"><svg class="boost-badge-icon" viewBox="0 0 500 500" fill="none" stroke-linecap="round" stroke-linejoin="round"><g class="boost-bob"><g transform="translate(312.32 204.14) rotate(45) translate(-116.42 -151.35)"><g transform="translate(116.78 283.83) translate(-54.13 -30)"><g class="boost-fire"><g transform="translate(54.13 64.96)"><path d="M24.13-10.83C24.13 2.5 0 34.96 0 34.96S-24.13 2.5-24.13-10.83C-24.13-24.15-13.33-34.96 0-34.96 13.33-34.96 24.13-24.15 24.13-10.83Z" stroke="#ffb627" stroke-width="12"/></g></g></g><g transform="translate(47.31 232.35)"><path d="M14.22-40.34L-17.31-18.18-14.58 40.34 17.31 18.66Z" stroke="#ffb627" stroke-width="12"/></g><g transform="translate(185.53 232.35)"><path d="M-14.22-40.34L17.31-18.18 14.58 40.34-17.31 18.66Z" stroke="#ffb627" stroke-width="12"/></g><g transform="translate(116.56 146.22)"><path d="M0-116.22C3.97-116.22 7.83-114.81 10.84-112.22 23.12-101.62 53.64-69.63 55.4-12.18 57.09 43.31 51.08 116.22 51.08 116.22H-51.08S-57.09 43.31-55.4-12.18C-53.64-69.63-23.12-101.62-10.84-112.22-7.83-114.81-3.97-116.22 0-116.22Z" stroke="#ffd539" stroke-width="12"/><path class="boost-shine" d="M0-116.22C3.97-116.22 7.83-114.81 10.84-112.22 23.12-101.62 53.64-69.63 55.4-12.18 57.09 43.31 51.08 116.22 51.08 116.22H-51.08S-57.09 43.31-55.4-12.18C-53.64-69.63-23.12-101.62-10.84-112.22-7.83-114.81-3.97-116.22 0-116.22Z"/><g transform="translate(0 -116.22)"><g class="boost-sparkle"><path d="M0,-22 L4,-4 L22,0 L4,4 L0,22 L-4,4 L-22,0 L-4,-4 Z" fill="#fff8d1"/><path d="M0,-12 L2,-2 L12,0 L2,2 L0,12 L-2,2 L-12,0 L-2,-2 Z" fill="#fff"/></g></g></g><g transform="translate(116.56 273.13)"><path d="M32.09 10.7H-32.09V-10.7H32.09Z" stroke="#ffd539" stroke-width="12"/></g><circle cx="116.56" cy="105.92" r="23.48" stroke="#ffb627" stroke-width="12"/></g></g></svg>' + (at.boostCount || '') + '</span>' : '') + '</div></div></div></div></div></td><td class="price-col">' + (window._priceColMode === 'mcap' ? fmt(at.mcap) : fmtPrice(at.price)) + '</td><td class="age-col">' + fmtAge(at.age) + '</td><td class="vol-col">' + fmt(at.vol) + '</td>' + pctTd(at.p5m) + pctTd(at.p5m) + pctTd(at.p1h) + pctTd(at.p6h) + pctTd(at.p24h) + '<td class="mcap-col">' + (window._priceColMode === 'mcap' ? fmtPrice(at.price) : fmt(at.mcap)) + '</td><td class="row-dots-col"><span class="token-dots" onclick="event.stopPropagation();showRowMenu(this, ' + aIdx + ')"><svg class="dots-outline" width="20" height="20" viewBox="0 -960 960 960" fill="currentColor"><path d="M322.5-437.5Q340-455 340-480t-17.5-42.5Q305-540 280-540t-42.5 17.5Q220-505 220-480t17.5 42.5Q255-420 280-420t42.5-17.5Zm200 0Q540-455 540-480t-17.5-42.5Q505-540 480-540t-42.5 17.5Q420-505 420-480t17.5 42.5Q455-420 480-420t42.5-17.5Zm200 0Q740-455 740-480t-17.5-42.5Q705-540 680-540t-42.5 17.5Q620-505 620-480t17.5 42.5Q655-420 680-420t42.5-17.5ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"/></svg><svg class="dots-filled" width="20" height="20" viewBox="0 -960 960 960" fill="currentColor"><path d="M322.5-437.5Q340-455 340-480t-17.5-42.5Q305-540 280-540t-42.5 17.5Q220-505 220-480t17.5 42.5Q255-420 280-420t42.5-17.5Zm200 0Q540-455 540-480t-17.5-42.5Q505-540 480-540t-42.5 17.5Q420-505 420-480t17.5 42.5Q455-420 480-420t42.5-17.5Zm200 0Q740-455 740-480t-17.5-42.5Q705-540 680-540t-42.5 17.5Q620-505 620-480t17.5 42.5Q655-420 680-420t42.5-17.5ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Z"/></svg></span></td></tr>';
       tbody.insertAdjacentHTML('beforeend', aRow);
     }
   } else {
@@ -1227,7 +1266,7 @@ function loadData() {
           <span class="row-num">${rowNum}</span>
           <div class="token-badges"><img class="token-badge-icon" src="${chainImg}"></div>
           <div class="token-avatar-wrap${t.boosted ? ' boosted-avatar' : ''}"><img class="token-avatar-img" style="outline:1px solid ${chainColor}" loading="lazy" src="${t.img || ''}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="token-avatar" style="display:${t.img ? 'none' : 'flex'};background:linear-gradient(135deg,${grad})">${letter}</div></div>
-          <div class="token-info"><div class="token-top-row"><span class="token-symbol">${t.sym}</span><span class="token-pair" style="color:rgba(255,255,255,0.3);font-size:14px;font-weight:400">/${t.pair||t.quoteSymbol||({solana:'SOL',eth:'WETH',base:'WETH',bsc:'BNB',sui:'SUI',tron:'TRX',arbitrum:'WETH',avalanche:'WAVAX',polygon:'WMATIC',optimism:'WETH',blast:'WETH',ton:'TON'}[t.net])||'SOL'}</span>${t.boosted ? '<span class="boost-badge"><svg class="boost-badge-icon" viewBox="0 0 500 500" fill="none" stroke-linecap="round" stroke-linejoin="round"><g class="boost-bob"><g transform="translate(312.32 204.14) rotate(45) translate(-116.42 -151.35)"><g transform="translate(116.78 283.83) translate(-54.13 -30)"><g class="boost-fire"><g transform="translate(54.13 64.96)"><path d="M24.13-10.83C24.13 2.5 0 34.96 0 34.96S-24.13 2.5-24.13-10.83C-24.13-24.15-13.33-34.96 0-34.96 13.33-34.96 24.13-24.15 24.13-10.83Z" stroke="#ffb627" stroke-width="12"/></g></g></g><g transform="translate(47.31 232.35)"><path d="M14.22-40.34L-17.31-18.18-14.58 40.34 17.31 18.66Z" stroke="#ffb627" stroke-width="12"/></g><g transform="translate(185.53 232.35)"><path d="M-14.22-40.34L17.31-18.18 14.58 40.34-17.31 18.66Z" stroke="#ffb627" stroke-width="12"/></g><g transform="translate(116.56 146.22)"><path d="M0-116.22C3.97-116.22 7.83-114.81 10.84-112.22 23.12-101.62 53.64-69.63 55.4-12.18 57.09 43.31 51.08 116.22 51.08 116.22H-51.08S-57.09 43.31-55.4-12.18C-53.64-69.63-23.12-101.62-10.84-112.22-7.83-114.81-3.97-116.22 0-116.22Z" stroke="#ffd539" stroke-width="12"/><path class="boost-shine" d="M0-116.22C3.97-116.22 7.83-114.81 10.84-112.22 23.12-101.62 53.64-69.63 55.4-12.18 57.09 43.31 51.08 116.22 51.08 116.22H-51.08S-57.09 43.31-55.4-12.18C-53.64-69.63-23.12-101.62-10.84-112.22-7.83-114.81-3.97-116.22 0-116.22Z"/><g transform="translate(0 -116.22)"><g class="boost-sparkle"><path d="M0,-22 L4,-4 L22,0 L4,4 L0,22 L-4,4 L-22,0 L-4,-4 Z" fill="#fff8d1"/><path d="M0,-12 L2,-2 L12,0 L2,2 L0,12 L-2,2 L-12,0 L-2,-2 Z" fill="#fff"/></g></g></g><g transform="translate(116.56 273.13)"><path d="M32.09 10.7H-32.09V-10.7H32.09Z" stroke="#ffd539" stroke-width="12"/></g><circle cx="116.56" cy="105.92" r="23.48" stroke="#ffb627" stroke-width="12"/></g></g></svg>' + (t.boostCount || '') + '</span>' : ''}</div></div>
+          <div class="token-info"><div class="token-top-row"><span class="token-symbol">${t.sym}</span><span class="token-pair" style="color:rgba(255,255,255,0.3);font-size:14px;font-weight:400">/${t.pair||t.quoteSymbol||({solana:'SOL',eth:'WETH',base:'WETH',bsc:'BNB',sui:'SUI',tron:'TRX',arbitrum:'WETH',avalanche:'WAVAX',polygon:'WMATIC',optimism:'WETH',blast:'WETH',ton:'TON',sonic:'S',hyperliquid:'WHYPE',berachain:'WBERA',monad:'MON',cronos:'WCRO',aptos:'APT',linea:'WETH',zksync:'WETH',fantom:'WFTM',mantle:'WMNT',scroll:'WETH',manta:'WETH',starknet:'ETH'}[t.net])||'SOL'}</span>${t.boosted ? '<span class="boost-badge"><svg class="boost-badge-icon" viewBox="0 0 500 500" fill="none" stroke-linecap="round" stroke-linejoin="round"><g class="boost-bob"><g transform="translate(312.32 204.14) rotate(45) translate(-116.42 -151.35)"><g transform="translate(116.78 283.83) translate(-54.13 -30)"><g class="boost-fire"><g transform="translate(54.13 64.96)"><path d="M24.13-10.83C24.13 2.5 0 34.96 0 34.96S-24.13 2.5-24.13-10.83C-24.13-24.15-13.33-34.96 0-34.96 13.33-34.96 24.13-24.15 24.13-10.83Z" stroke="#ffb627" stroke-width="12"/></g></g></g><g transform="translate(47.31 232.35)"><path d="M14.22-40.34L-17.31-18.18-14.58 40.34 17.31 18.66Z" stroke="#ffb627" stroke-width="12"/></g><g transform="translate(185.53 232.35)"><path d="M-14.22-40.34L17.31-18.18 14.58 40.34-17.31 18.66Z" stroke="#ffb627" stroke-width="12"/></g><g transform="translate(116.56 146.22)"><path d="M0-116.22C3.97-116.22 7.83-114.81 10.84-112.22 23.12-101.62 53.64-69.63 55.4-12.18 57.09 43.31 51.08 116.22 51.08 116.22H-51.08S-57.09 43.31-55.4-12.18C-53.64-69.63-23.12-101.62-10.84-112.22-7.83-114.81-3.97-116.22 0-116.22Z" stroke="#ffd539" stroke-width="12"/><path class="boost-shine" d="M0-116.22C3.97-116.22 7.83-114.81 10.84-112.22 23.12-101.62 53.64-69.63 55.4-12.18 57.09 43.31 51.08 116.22 51.08 116.22H-51.08S-57.09 43.31-55.4-12.18C-53.64-69.63-23.12-101.62-10.84-112.22-7.83-114.81-3.97-116.22 0-116.22Z"/><g transform="translate(0 -116.22)"><g class="boost-sparkle"><path d="M0,-22 L4,-4 L22,0 L4,4 L0,22 L-4,4 L-22,0 L-4,-4 Z" fill="#fff8d1"/><path d="M0,-12 L2,-2 L12,0 L2,2 L0,12 L-2,2 L-12,0 L-2,-2 Z" fill="#fff"/></g></g></g><g transform="translate(116.56 273.13)"><path d="M32.09 10.7H-32.09V-10.7H32.09Z" stroke="#ffd539" stroke-width="12"/></g><circle cx="116.56" cy="105.92" r="23.48" stroke="#ffb627" stroke-width="12"/></g></g></svg>' + (t.boostCount || '') + '</span>' : ''}</div></div>
           </div></div>
         </td>
         <td class="price-col">${window._priceColMode === 'mcap' ? fmt(t.mcap) : fmtPrice(t.price)}</td>
@@ -3762,7 +3801,20 @@ function showRowMenu(dotsEl, idx) {
     blast: { url:'https://blastscan.io/token/'+t.ca, name:'Blastscan' },
     ton: { url:'https://tonviewer.com/'+t.ca, name:'TON Viewer' },
     pulsechain: { url:'https://scan.pulsechain.com/token/'+t.ca, name:'PulseScan' },
-    seiv2: { url:'https://seitrace.com/token/'+t.ca, name:'Seitrace' }
+    seiv2: { url:'https://seitrace.com/token/'+t.ca, name:'Seitrace' },
+    sonic: { url:'https://sonicscan.org/token/'+t.ca, name:'Sonicscan' },
+    hyperliquid: { url:'https://hyperscan.xyz/token/'+t.ca, name:'HyperScan' },
+    berachain: { url:'https://berascan.com/token/'+t.ca, name:'Berascan' },
+    monad: { url:'https://explorer.monad.xyz/token/'+t.ca, name:'Monad Explorer' },
+    cronos: { url:'https://cronoscan.com/token/'+t.ca, name:'CronoScan' },
+    aptos: { url:'https://explorer.aptoslabs.com/account/'+t.ca, name:'Aptos Explorer' },
+    linea: { url:'https://lineascan.build/token/'+t.ca, name:'LineaScan' },
+    zksync: { url:'https://explorer.zksync.io/address/'+t.ca, name:'zkSync Explorer' },
+    fantom: { url:'https://ftmscan.com/token/'+t.ca, name:'FTMScan' },
+    mantle: { url:'https://mantlescan.xyz/token/'+t.ca, name:'Mantle Explorer' },
+    scroll: { url:'https://scrollscan.com/token/'+t.ca, name:'ScrollScan' },
+    manta: { url:'https://pacific-explorer.manta.network/token/'+t.ca, name:'Manta Explorer' },
+    starknet: { url:'https://starkscan.co/token/'+t.ca, name:'Starkscan' }
   };
   var exp = explorers[net] || explorers.solana;
   var expIcon = '';
@@ -4109,12 +4161,20 @@ function openBubbleModal(t) {
     'sui':'https://suiscan.xyz/mainnet/coin/','tron':'https://tronscan.org/#/token20/',
     'arbitrum':'https://arbiscan.io/token/','avalanche':'https://snowtrace.io/token/',
     'polygon':'https://polygonscan.com/token/','optimism':'https://optimistic.etherscan.io/token/',
-    'blast':'https://blastscan.io/token/','ton':'https://tonviewer.com/'
+    'blast':'https://blastscan.io/token/','ton':'https://tonviewer.com/',
+    'pulsechain':'https://scan.pulsechain.com/token/','seiv2':'https://seitrace.com/token/',
+    'sonic':'https://sonicscan.org/token/','hyperliquid':'https://hyperscan.xyz/token/',
+    'berachain':'https://berascan.com/token/','monad':'https://explorer.monad.xyz/token/',
+    'cronos':'https://cronoscan.com/token/','aptos':'https://explorer.aptoslabs.com/account/',
+    'linea':'https://lineascan.build/token/','zksync':'https://explorer.zksync.io/address/',
+    'fantom':'https://ftmscan.com/token/','mantle':'https://mantlescan.xyz/token/',
+    'scroll':'https://scrollscan.com/token/','manta':'https://pacific-explorer.manta.network/token/',
+    'starknet':'https://starkscan.co/token/'
   };
   var solscanLink = document.getElementById("bmLinkSolscan");
   if (solscanLink) {
     solscanLink.href = (chainExplorer[t.net] || 'https://solscan.io/token/') + (t.ca || '');
-    var explorerNames = {'solana':'Solscan','eth':'Etherscan','base':'Basescan','bsc':'BscScan','arbitrum':'Arbiscan','avalanche':'Snowtrace','polygon':'Polygonscan','optimism':'OP Explorer','blast':'Blastscan','ton':'TON Viewer'};
+    var explorerNames = {'solana':'Solscan','eth':'Etherscan','base':'Basescan','bsc':'BscScan','arbitrum':'Arbiscan','avalanche':'Snowtrace','polygon':'Polygonscan','optimism':'OP Explorer','blast':'Blastscan','ton':'TON Viewer','pulsechain':'PulseScan','seiv2':'Seitrace','sonic':'Sonicscan','hyperliquid':'HyperScan','berachain':'Berascan','monad':'Monad Explorer','cronos':'CronoScan','aptos':'Aptos Explorer','linea':'LineaScan','zksync':'zkSync Explorer','fantom':'FTMScan','mantle':'Mantle Explorer','scroll':'ScrollScan','manta':'Manta Explorer','starknet':'Starkscan'};
     try {
       var scanIcon = document.getElementById('bmSolscanIcon');
       if (scanIcon && typeof SCANNER_ICONS !== 'undefined') scanIcon.src = SCANNER_ICONS[t.net] || SCANNER_ICONS['solana'];
@@ -4260,7 +4320,22 @@ function toggleModalMenu() {
     polygon:{url:'https://polygonscan.com/token/'+t.ca,name:'Polygonscan'},
     optimism:{url:'https://optimistic.etherscan.io/token/'+t.ca,name:'Optimism Explorer'},
     blast:{url:'https://blastscan.io/token/'+t.ca,name:'Blastscan'},
-    ton:{url:'https://tonviewer.com/'+t.ca,name:'TON Viewer'}
+    ton:{url:'https://tonviewer.com/'+t.ca,name:'TON Viewer'},
+    pulsechain:{url:'https://scan.pulsechain.com/token/'+t.ca,name:'PulseScan'},
+    seiv2:{url:'https://seitrace.com/token/'+t.ca,name:'Seitrace'},
+    sonic:{url:'https://sonicscan.org/token/'+t.ca,name:'Sonicscan'},
+    hyperliquid:{url:'https://hyperscan.xyz/token/'+t.ca,name:'HyperScan'},
+    berachain:{url:'https://berascan.com/token/'+t.ca,name:'Berascan'},
+    monad:{url:'https://explorer.monad.xyz/token/'+t.ca,name:'Monad Explorer'},
+    cronos:{url:'https://cronoscan.com/token/'+t.ca,name:'CronoScan'},
+    aptos:{url:'https://explorer.aptoslabs.com/account/'+t.ca,name:'Aptos Explorer'},
+    linea:{url:'https://lineascan.build/token/'+t.ca,name:'LineaScan'},
+    zksync:{url:'https://explorer.zksync.io/address/'+t.ca,name:'zkSync Explorer'},
+    fantom:{url:'https://ftmscan.com/token/'+t.ca,name:'FTMScan'},
+    mantle:{url:'https://mantlescan.xyz/token/'+t.ca,name:'Mantle Explorer'},
+    scroll:{url:'https://scrollscan.com/token/'+t.ca,name:'ScrollScan'},
+    manta:{url:'https://pacific-explorer.manta.network/token/'+t.ca,name:'Manta Explorer'},
+    starknet:{url:'https://starkscan.co/token/'+t.ca,name:'Starkscan'}
   };
   var exp = explorers[net] || explorers.solana;
   var expIcon = (typeof SCANNER_ICONS !== 'undefined' && SCANNER_ICONS[net]) ? SCANNER_ICONS[net] : ((typeof CHAIN_ICONS !== 'undefined' && CHAIN_ICONS[net]) ? CHAIN_ICONS[net] : '');
@@ -4466,7 +4541,7 @@ function _initModalChart(t) {
 
   var chain = (t.net || 'solana').toLowerCase();
   var pairTokenMap2 = { solana:'SOL', eth:'WETH', base:'WETH', bsc:'BNB', sui:'SUI', tron:'TRX', arbitrum:'WETH', avalanche:'WAVAX', polygon:'WMATIC', optimism:'WETH', blast:'WETH', ton:'TON', pulsechain:'PLS', seiv2:'WSEI' };
-  var geckoChainMap = { solana:'solana', eth:'eth', base:'base', bsc:'bsc', sui:'sui-network', tron:'tron', arbitrum:'arbitrum', avalanche:'avax', polygon:'polygon_pos', optimism:'optimism', blast:'blast', ton:'ton', pulsechain:'pulsechain', seiv2:'sei-evm' };
+  var geckoChainMap = { solana:'solana', eth:'eth', base:'base', bsc:'bsc', sui:'sui-network', tron:'tron', arbitrum:'arbitrum', avalanche:'avax', polygon:'polygon_pos', optimism:'optimism', blast:'blast', ton:'ton', pulsechain:'pulsechain', seiv2:'sei-evm', sonic:'sonic', hyperliquid:'hyperliquid', berachain:'berachain', monad:'monad', cronos:'cro', aptos:'aptos', linea:'linea', zksync:'zksync', fantom:'ftm', mantle:'mantle', scroll:'scroll', manta:'manta-pacific', starknet:'starknet-alpha' };
   var dexChainMap2 = { solana:'solana', eth:'ethereum', base:'base', bsc:'bsc', sui:'sui', tron:'tron', arbitrum:'arbitrum', avalanche:'avalanche', polygon:'polygon', optimism:'optimism', blast:'blast', ton:'ton', pulsechain:'pulsechain', seiv2:'seiv2' };
   var geckoNet = geckoChainMap[chain] || chain;
   var dexNet = dexChainMap2[chain] || chain;
@@ -5140,7 +5215,7 @@ function initTokenPageChart(t) {
 
   var chain = (t.net || 'solana').toLowerCase();
   var pairTokenMap = { solana:'SOL', eth:'WETH', base:'WETH', bsc:'BNB', sui:'SUI', tron:'TRX', arbitrum:'WETH', avalanche:'WAVAX', polygon:'WMATIC', optimism:'WETH', blast:'WETH', ton:'TON', pulsechain:'PLS', seiv2:'WSEI' };
-  var geckoChainMap = { solana:'solana', eth:'eth', base:'base', bsc:'bsc', sui:'sui-network', tron:'tron', arbitrum:'arbitrum', avalanche:'avax', polygon:'polygon_pos', optimism:'optimism', blast:'blast', ton:'ton', pulsechain:'pulsechain', seiv2:'sei-evm' };
+  var geckoChainMap = { solana:'solana', eth:'eth', base:'base', bsc:'bsc', sui:'sui-network', tron:'tron', arbitrum:'arbitrum', avalanche:'avax', polygon:'polygon_pos', optimism:'optimism', blast:'blast', ton:'ton', pulsechain:'pulsechain', seiv2:'sei-evm', sonic:'sonic', hyperliquid:'hyperliquid', berachain:'berachain', monad:'monad', cronos:'cro', aptos:'aptos', linea:'linea', zksync:'zksync', fantom:'ftm', mantle:'mantle', scroll:'scroll', manta:'manta-pacific', starknet:'starknet-alpha' };
   var dexChainMap2 = { solana:'solana', eth:'ethereum', base:'base', bsc:'bsc', sui:'sui', tron:'tron', arbitrum:'arbitrum', avalanche:'avalanche', polygon:'polygon', optimism:'optimism', blast:'blast', ton:'ton', pulsechain:'pulsechain', seiv2:'seiv2' };
   var geckoNet = geckoChainMap[chain] || chain;
   var dexNet = dexChainMap2[chain] || chain;
@@ -5491,7 +5566,7 @@ function _fetchAndRenderTxns(t) {
   var body = document.getElementById('tpTxnBody');
   if (!body) return;
   var chain = (t.net || 'solana').toLowerCase();
-  var geckoChainMap2 = { solana:'solana', eth:'eth', base:'base', bsc:'bsc', sui:'sui-network', tron:'tron', arbitrum:'arbitrum', avalanche:'avax', polygon:'polygon_pos', optimism:'optimism', blast:'blast', ton:'ton', pulsechain:'pulsechain', seiv2:'sei-evm' };
+  var geckoChainMap2 = { solana:'solana', eth:'eth', base:'base', bsc:'bsc', sui:'sui-network', tron:'tron', arbitrum:'arbitrum', avalanche:'avax', polygon:'polygon_pos', optimism:'optimism', blast:'blast', ton:'ton', pulsechain:'pulsechain', seiv2:'sei-evm', sonic:'sonic', hyperliquid:'hyperliquid', berachain:'berachain', monad:'monad', cronos:'cro', aptos:'aptos', linea:'linea', zksync:'zksync', fantom:'ftm', mantle:'mantle', scroll:'scroll', manta:'manta-pacific', starknet:'starknet-alpha' };
   var dexChainMap3 = { solana:'solana', eth:'ethereum', base:'base', bsc:'bsc', sui:'sui', tron:'tron', arbitrum:'arbitrum', avalanche:'avalanche', polygon:'polygon', optimism:'optimism', blast:'blast', ton:'ton', pulsechain:'pulsechain', seiv2:'seiv2' };
   var gNet = geckoChainMap2[chain] || chain;
   var dNet = dexChainMap3[chain] || chain;
