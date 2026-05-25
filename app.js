@@ -1,5 +1,17 @@
 
-var APP_VERSION = '2.5.67';
+var APP_VERSION = '2.5.68';
+var _scrollLockY = 0;
+function lockScroll() {
+  _scrollLockY = window.scrollY;
+  document.body.classList.add('modal-open');
+  document.body.style.top = -_scrollLockY + 'px';
+}
+function unlockScroll() {
+  if (!document.body.classList.contains('modal-open')) return;
+  document.body.classList.remove('modal-open');
+  document.body.style.top = '';
+  window.scrollTo(0, _scrollLockY);
+}
 (function() {
   document.addEventListener('DOMContentLoaded', function() {
     var meta = document.querySelector('meta[name="version"]');
@@ -714,11 +726,11 @@ function openTableCustomizer() {
   _tcCols = _tcGetCols();
   _tcRender();
   document.getElementById('tcOverlay').classList.add('open');
-  document.body.style.overflow = 'hidden';
+  lockScroll();
 }
 function closeTableCustomizer() {
   document.getElementById('tcOverlay').classList.remove('open');
-  document.body.style.overflow = '';
+  unlockScroll();
   var btn = document.querySelector('.table-edit-btn');
   if (btn) {
     var outline = btn.querySelector('.table-edit-outline');
@@ -1948,11 +1960,11 @@ document.addEventListener('click', function(e) {
 function openWatchlistModal() {
   renderWatchlist();
   document.getElementById('wlOverlay').classList.add('open');
-  document.body.style.overflow = 'hidden';
+  lockScroll();
 }
 function closeWatchlistModal() {
   document.getElementById('wlOverlay').classList.remove('open');
-  document.body.style.overflow = '';
+  unlockScroll();
   var shareMenu = document.getElementById('wlShareMenu');
   if (shareMenu) shareMenu.classList.remove('open');
   var wlNav = document.querySelector('.ms-watchlist-nav');
@@ -2951,7 +2963,7 @@ function openSearchModal() {
     document.body.style.top = -window._scrollY + 'px';
   }
   overlay.classList.add('open');
-  document.body.style.overflow = 'hidden';
+  lockScroll();
   var input = document.getElementById('search-modal-input');
   input.value = '';
   if (!isMobile) input.focus();
@@ -2962,7 +2974,7 @@ function openSearchModal() {
 
 function closeSearchModal() {
   document.getElementById('search-overlay').classList.remove('open');
-  document.body.style.overflow = '';
+  unlockScroll();
   if (document.body.classList.contains('modal-scroll-lock')) {
     document.body.classList.remove('modal-scroll-lock');
     document.body.style.top = '';
@@ -4255,7 +4267,7 @@ function openBubbleModal(t) {
   if (!t) return;
   try {
   var ov = document.getElementById("bubbleModalOverlay");
-  document.body.style.overflow = 'hidden';
+  lockScroll();
   var _isMobile = window.innerWidth <= 768;
   if (_isMobile) {
     window._scrollY = window.scrollY;
@@ -4748,7 +4760,7 @@ function closeBubbleModal() {
   var ov = document.getElementById("bubbleModalOverlay");
   if(!ov || !ov.classList.contains("open")) return;
   ov.classList.remove("open");
-  document.body.style.overflow = '';
+  unlockScroll();
   document.title = 'MemeScope — The Meme Coin Scope & Scanner';
   if (document.body.classList.contains('modal-scroll-lock')) {
     document.body.classList.remove('modal-scroll-lock');
@@ -5286,7 +5298,7 @@ function openTokenPage(t) {
   if (tableContainer) tableContainer.style.display = 'none';
   if (pagBar) pagBar.style.display = 'none';
   if (disclaimer) disclaimer.style.display = 'none';
-  document.body.style.overflow = 'hidden';
+  lockScroll();
 
   // Update URL
   var chain = (t.net || 'solana').toLowerCase();
@@ -5432,7 +5444,7 @@ function closeTokenPage() {
     var el = sel.startsWith('#') ? document.getElementById(sel.slice(1)) : document.querySelector(sel);
     if (el) el.style.display = '';
   });
-  document.body.style.overflow = '';
+  unlockScroll();
 
   // Destroy chart — kill chart poll, subscribeBars intervals, then widget
   if (window._tpChartPoll) { clearInterval(window._tpChartPoll); window._tpChartPoll = null; }
@@ -6449,7 +6461,7 @@ function toggleBubbleFilter() {
     closeBubbleFilter();
   } else {
     ov.classList.add('open');
-    document.body.style.overflow = 'hidden';
+    lockScroll();
     document.body.style.touchAction = 'none';
     _bfUpdateLiveCount();
   }
@@ -6459,7 +6471,7 @@ function closeBubbleFilter() {
   document.getElementById('bubbleFilterOverlay').classList.remove('open');
   var bm = document.getElementById('bubbleModal');
   if (!bm || !bm.classList.contains('open')) {
-    document.body.style.overflow = '';
+    unlockScroll();
     document.body.style.touchAction = '';
   }
 }
@@ -6730,7 +6742,7 @@ function mobNavGo(tab) {
     var navEl = document.getElementById('mobileBottomNav');
     if ((wl && wl.classList.contains('open')) || (navEl && navEl.classList.contains('watchlist-open'))) closeWatchlistModal();
     if (navEl) { navEl.classList.remove('menu-open','search-open'); }
-    document.body.style.overflow = '';
+    unlockScroll();
     // Reset New Pairs if active
     if (currentCategory === 'new') {
       currentCategory = 'trending';
@@ -6757,7 +6769,7 @@ function mobNavGo(tab) {
     // Close any open panels first
     var navEl = document.getElementById('mobileBottomNav');
     if (navEl) { navEl.classList.remove('menu-open','watchlist-open','search-open'); }
-    document.body.style.overflow = '';
+    unlockScroll();
     // Always activate new pairs (don't toggle off from nav bar)
     if (currentCategory !== 'new') {
       toggleNewPairs();
@@ -6776,7 +6788,7 @@ function mobNavGo(tab) {
         window._wlModalParent = wlModal.parentNode;
         container.appendChild(wlModal);
         nav.classList.add('watchlist-open');
-        document.body.style.overflow = 'hidden';
+        lockScroll();
         renderWatchlist();
       }
     } else {
@@ -6795,7 +6807,7 @@ function mobNavGo(tab) {
         window._searchModalParent = searchModal.parentNode;
         container.appendChild(searchModal);
         nav.classList.add('search-open');
-        document.body.style.overflow = 'hidden';
+        lockScroll();
         var input = document.getElementById('search-modal-input');
         if (input) { input.value = ''; setTimeout(function() { input.focus(); }, 350); }
         searchHighlightIdx = -1;
@@ -6812,7 +6824,7 @@ function mobNavGo(tab) {
     var nav = document.getElementById('mobileBottomNav');
     if (nav) {
       nav.classList.add('menu-open');
-      document.body.style.overflow = 'hidden';
+      lockScroll();
     }
   }
 }
@@ -6821,7 +6833,7 @@ function closeMobMenu() {
   var nav = document.getElementById('mobileBottomNav');
   if (nav) {
     nav.classList.remove('menu-open');
-    document.body.style.overflow = '';
+    unlockScroll();
     var btns = nav.querySelectorAll('.mob-nav-item');
     btns.forEach(function(b) { b.classList.remove('active'); });
     if (btns[0]) btns[0].classList.add('active');
@@ -6835,7 +6847,7 @@ function closeMobMenu() {
     var nav = document.getElementById('mobileBottomNav');
     if (nav && window.innerWidth <= 768 && nav.classList.contains('watchlist-open')) {
       nav.classList.remove('watchlist-open');
-      document.body.style.overflow = '';
+      unlockScroll();
       // Move modal back to its original parent
       var wlModal = document.querySelector('.wl-modal');
       if (wlModal && window._wlModalParent) {
@@ -6861,7 +6873,7 @@ function closeMobMenu() {
       window._searchModalParent.appendChild(searchModal);
       window._searchModalParent = null;
       nav.classList.remove('search-open');
-      document.body.style.overflow = '';
+      unlockScroll();
       var btns = nav.querySelectorAll('.mob-nav-item');
       btns.forEach(function(b) { b.classList.remove('active'); });
       if (btns[0]) btns[0].classList.add('active');

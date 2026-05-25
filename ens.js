@@ -187,7 +187,7 @@
     var overlay = document.getElementById('ensOverlay');
     if (!overlay) return;
     overlay.classList.add('open');
-    document.body.style.overflow = 'hidden';
+    lockScroll();
 
     var input = document.getElementById('ensNameInput');
     if (input) { input.value = ''; input.focus(); }
@@ -200,7 +200,7 @@
     var overlay = document.getElementById('ensOverlay');
     if (!overlay) return;
     overlay.classList.remove('open');
-    document.body.style.overflow = '';
+    unlockScroll();
     if (_ensCheckTimer) clearTimeout(_ensCheckTimer);
   }
   window.closeEnsModal = closeEnsModal;
@@ -318,7 +318,7 @@
     var overlay = document.getElementById('ensRegOverlay');
     if (!overlay) return;
     overlay.classList.add('open');
-    document.body.style.overflow = 'hidden';
+    lockScroll();
 
     var preview = document.getElementById('ensRegPreviewName');
     if (preview) preview.textContent = _ensSelectedLabel + '.memescope.eth';
@@ -334,7 +334,7 @@
     var overlay = document.getElementById('ensRegOverlay');
     if (!overlay) return;
     overlay.classList.remove('open');
-    document.body.style.overflow = '';
+    unlockScroll();
   }
   window.closeEnsRegModal = closeEnsRegModal;
 

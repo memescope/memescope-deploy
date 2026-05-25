@@ -90,12 +90,12 @@ function copyDirectLink() {
   function openMsMenu() {
     document.getElementById('msMobileMenu').classList.add('open');
     document.getElementById('msMobileOverlay').classList.add('open');
-    document.body.style.overflow = 'hidden';
+    lockScroll();
   }
   function closeMsMenu() {
     document.getElementById('msMobileMenu').classList.remove('open');
     document.getElementById('msMobileOverlay').classList.remove('open');
-    document.body.style.overflow = '';
+    unlockScroll();
   }
 
   // Toggle body class on sidebar hover for header-logo hide

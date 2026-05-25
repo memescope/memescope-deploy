@@ -83,7 +83,7 @@ var WALLETS = [
 ];
 
 function openWalletModal() {
-  document.body.style.overflow = 'hidden';
+  lockScroll();
   var overlay = document.getElementById('wcOverlay');
   var installedEl = document.getElementById('wcInstalled');
   var availableEl = document.getElementById('wcAvailable');
@@ -136,7 +136,7 @@ function openWalletModal() {
 
 function closeWalletModal() {
   document.getElementById('wcOverlay').classList.remove('open');
-  document.body.style.overflow = '';
+  unlockScroll();
   // Restore modal structure if it was replaced by connecting animation
   var modal = document.querySelector('.wc-modal');
   if (modal && !document.getElementById('wcInstalled')) {

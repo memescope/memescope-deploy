@@ -96,7 +96,7 @@ function openBoostModal() {
   fetchSolPrice();
 
   var scrollY = window.scrollY;
-  document.body.style.overflow = 'hidden';
+  lockScroll();
   document.body.style.position = 'fixed';
   document.body.style.top = '-' + scrollY + 'px';
   document.body.style.width = '100%';
@@ -106,7 +106,7 @@ function openBoostModal() {
 
 function closeBoostModal() {
   var scrollY = Math.abs(parseInt(document.body.style.top || '0'));
-  document.body.style.overflow = '';
+  unlockScroll();
   document.body.style.position = '';
   document.body.style.top = '';
   document.body.style.width = '';
@@ -118,7 +118,7 @@ function closeBoostModal() {
 /* ── Contact Modal ── */
 function openContactModal() {
   var scrollY = window.scrollY;
-  document.body.style.overflow = 'hidden';
+  lockScroll();
   document.body.style.position = 'fixed';
   document.body.style.top = '-' + scrollY + 'px';
   document.body.style.width = '100%';
@@ -133,7 +133,7 @@ function openContactModal() {
 }
 function closeContactModal() {
   var scrollY = Math.abs(parseInt(document.body.style.top || '0'));
-  document.body.style.overflow = '';
+  unlockScroll();
   document.body.style.position = '';
   document.body.style.top = '';
   document.body.style.width = '';
@@ -179,7 +179,7 @@ function submitContact() {
 
 /* ── Bug Report Modal ── */
 function openBugReportModal() {
-  document.body.style.overflow = 'hidden';
+  lockScroll();
   document.body.style.position = 'fixed';
   document.body.style.width = '100%';
   document.body.style.touchAction = 'none';
@@ -191,7 +191,7 @@ function openBugReportModal() {
   document.getElementById('bugreportSubmitBtn').disabled = false;
 }
 function closeBugReportModal() {
-  document.body.style.overflow = '';
+  unlockScroll();
   document.body.style.position = '';
   document.body.style.width = '';
   document.body.style.touchAction = '';
