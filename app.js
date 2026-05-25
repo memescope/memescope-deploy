@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.56';
+var APP_VERSION = '2.5.57';
 (function() {
   document.addEventListener('DOMContentLoaded', function() {
     var meta = document.querySelector('meta[name="version"]');
@@ -832,7 +832,16 @@ function _tcBindDrag() {
 }
 function resetTableColumns() {
   _tcCols = TC_DEFAULT_COLS.map(function(c) { return {key:c.key, label:c.label, locked:c.locked, visible:c.visible}; });
-  _tcRender();
+  _tcSave(_tcCols);
+  closeTableCustomizer();
+  _tcApplyToDOM();
+  var toast = document.createElement('div');
+  toast.id = 'bmCopyToast';
+  toast.textContent = 'Table reset to default';
+  toast.style.cssText = 'position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-60px);background:#4a4fd8;color:#fff;padding:10px 24px;border-radius:14px;font-size:14px;font-weight:600;z-index:100000;transition:transform 0.3s ease;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,0.4);';
+  document.body.appendChild(toast);
+  requestAnimationFrame(function() { toast.style.transform = 'translateX(-50%) translateY(0)'; });
+  setTimeout(function() { toast.style.transform = 'translateX(-50%) translateY(-60px)'; setTimeout(function() { toast.remove(); }, 300); }, 2000);
 }
 function applyTableColumns() {
   _tcSave(_tcCols);
