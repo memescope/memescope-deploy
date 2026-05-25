@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.64';
+var APP_VERSION = '2.5.65';
 (function() {
   document.addEventListener('DOMContentLoaded', function() {
     var meta = document.querySelector('meta[name="version"]');
@@ -6729,6 +6729,25 @@ function mobNavGo(tab) {
     var wl = document.getElementById('wlOverlay');
     var navEl = document.getElementById('mobileBottomNav');
     if ((wl && wl.classList.contains('open')) || (navEl && navEl.classList.contains('watchlist-open'))) closeWatchlistModal();
+    if (navEl) { navEl.classList.remove('menu-open','search-open'); }
+    document.body.style.overflow = '';
+    // Reset New Pairs if active
+    if (currentCategory === 'new') {
+      currentCategory = 'trending';
+      var leaf = document.getElementById('navNewPairs');
+      var mobileLeaf = document.getElementById('mobileNavNewPairs');
+      if (leaf) leaf.classList.remove('active');
+      if (mobileLeaf) mobileLeaf.classList.remove('active');
+      var chips = document.querySelectorAll('.filter-chip');
+      chips.forEach(function(c) {
+        c.classList.remove('active-chip');
+        if (c.textContent.trim().indexOf('Top') !== -1 || (c.getAttribute('onclick') && c.getAttribute('onclick').indexOf("'trending'") !== -1)) c.classList.add('active-chip');
+      });
+      currentPage = 1;
+      _lastRowOrder = null;
+      loadData();
+      if (typeof init === 'function') init();
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -6739,7 +6758,10 @@ function mobNavGo(tab) {
     var navEl = document.getElementById('mobileBottomNav');
     if (navEl) { navEl.classList.remove('menu-open','watchlist-open','search-open'); }
     document.body.style.overflow = '';
-    toggleNewPairs();
+    // Always activate new pairs (don't toggle off from nav bar)
+    if (currentCategory !== 'new') {
+      toggleNewPairs();
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
