@@ -6272,6 +6272,7 @@
     color: var(--text-secondary);
     font-size: 13px;
     gap: 12px;
+    opacity: 0.45;
   }
   .wl-modal-empty svg { opacity: 0.2; }
 
@@ -8172,6 +8173,7 @@
       right: 0;
       z-index: 9000;
       height: 52px;
+      box-sizing: border-box;
       background: #141314;
       border-radius: 0;
       border-top: 1px solid rgba(255,255,255,0.1);
@@ -8190,8 +8192,8 @@
       display: flex;
       align-items: center;
       justify-content: space-around;
-      height: 52px;
-      padding: 0 8px;
+      flex: 1;
+      padding: 0 8px 3px;
       flex-shrink: 0;
     }
     .mobile-bottom-nav.menu-open .mob-nav-icons {
