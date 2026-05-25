@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.69';
+var APP_VERSION = '2.5.70';
 var _scrollLockY = 0;
 function lockScroll() {
   _scrollLockY = window.scrollY;
@@ -1107,6 +1107,15 @@ var SCANNER_URLS = {
 function updateBubblesSmooth() {
   var tfField = getTimeframeField();
   var tokens = (typeof getFilteredTokens === 'function') ? getFilteredTokens() : LIVE_TOKENS;
+
+  // Filter out truly dead tokens and show empty state if nothing matches
+  tokens = tokens.filter(function(t) {
+    return t.boosted || (t.p5m || 0) !== 0 || (t.p1h || 0) !== 0 || (t.p6h || 0) !== 0 || (t.p24h || 0) !== 0 || (t.mcap || 0) > 0;
+  });
+  if (!tokens.length && liveDataLoaded) {
+    showEmptyBubbleState();
+    return;
+  }
 
   // Build set of current filtered token syms for quick lookup
   var currentSyms = {};
@@ -3592,12 +3601,8 @@ var bubs = [];
     W = hero.offsetWidth;
     H = hero.offsetHeight;
     if(W < 10 || H < 10){ setTimeout(init, 100); return; }
-    
-    world.classList.remove('ready');
-    world.innerHTML = "";
-    bubs = [];
-    if(rafId) cancelAnimationFrame(rafId);
-    
+
+    // Run ALL filtering BEFORE clearing the world so the shrug never flashes
     var tokens = (typeof getFilteredTokens === 'function') ? getFilteredTokens().slice(0, 200) : ((typeof LIVE_TOKENS !== 'undefined') ? LIVE_TOKENS.slice(0, 200) : []);
 
     // Inject admin-boosted tokens that might not be in the top 100
@@ -3613,11 +3618,7 @@ var bubs = [];
         tokenCAs[ltCA] = true;
       }
     }
-    if(!tokens.length){
-      if (liveDataLoaded) { showEmptyBubbleState(); return; }
-      setTimeout(init, 100); return;
-    }
-    
+
     // Deduplicate: first by CA, then by symbol (keep highest volume per symbol)
     var caMap = {};
     tokens.forEach(function(t) {
@@ -3625,8 +3626,6 @@ var bubs = [];
       if (!caMap[key]) caMap[key] = t;
     });
     tokens = Object.values(caMap);
-    // Also dedup by symbol — multiple chains can have same-name tokens
-    // Boosted tokens always win the dedup
     var symMap = {};
     tokens.forEach(function(t) {
       var sym = (t.sym || '').toUpperCase();
@@ -3635,17 +3634,25 @@ var bubs = [];
       }
     });
     tokens = Object.values(symMap);
-    
+
     var tfField = getTimeframeField();
-    
+
     // Filter out tokens only if ALL timeframes are 0 (truly dead data)
     tokens = tokens.filter(function(t) {
       return t.boosted || (t.p5m || 0) !== 0 || (t.p1h || 0) !== 0 || (t.p6h || 0) !== 0 || (t.p24h || 0) !== 0 || (t.mcap || 0) > 0;
     });
+
+    // NOW we know if we have tokens — empty state or render
     if(!tokens.length){
-      if (liveDataLoaded) { showEmptyBubbleState(); return; }
+      if (liveDataLoaded) { showEmptyBubbleState(); if(rafId) cancelAnimationFrame(rafId); return; }
       setTimeout(init, 100); return;
     }
+
+    // We have tokens — now safe to clear the world and render
+    world.classList.remove('ready');
+    world.innerHTML = "";
+    bubs = [];
+    if(rafId) cancelAnimationFrame(rafId);
 
     // Re-check admin boosts at render time (bulletproof against flag loss)
     _applyAdminBoosts(tokens);
