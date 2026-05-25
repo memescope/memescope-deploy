@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.55';
+var APP_VERSION = '2.5.56';
 (function() {
   document.addEventListener('DOMContentLoaded', function() {
     var meta = document.querySelector('meta[name="version"]');
@@ -689,13 +689,13 @@ var TC_DEFAULT_COLS = [
 var _tcCols = null;
 function _tcLoad() {
   try {
-    var s = localStorage.getItem('ms-table-cols-v2');
+    var s = localStorage.getItem('ms-table-cols-v3');
     if (s) return JSON.parse(s);
   } catch(e) {}
   return null;
 }
 function _tcSave(cols) {
-  try { localStorage.setItem('ms-table-cols-v2', JSON.stringify(cols)); } catch(e) {}
+  try { localStorage.setItem('ms-table-cols-v3', JSON.stringify(cols)); } catch(e) {}
 }
 function _tcGetCols() {
   if (!_tcCols) _tcCols = _tcLoad() || TC_DEFAULT_COLS.map(function(c) { return {key:c.key, label:c.label, locked:c.locked, visible:c.visible}; });
@@ -847,71 +847,74 @@ function applyTableColumns() {
   setTimeout(function() { toast.style.transform = 'translateX(-50%) translateY(-60px)'; setTimeout(function() { toast.remove(); }, 300); }, 2000);
 }
 
-// Column key → default td index (0=token, 10=dots — these stay fixed)
-var TC_COL_MAP = { price: 1, age: 2, vol: 3, p5m: 4, p15m: 5, p1h: 6, p6h: 7, p24h: 8, mcap: 9 };
+// Default td index → col key (for tagging new rows)
+var TC_DEFAULT_ORDER = ['token', 'price', 'age', 'vol', 'p5m', 'p15m', 'p1h', 'p6h', 'p24h', 'mcap', 'dots'];
+// Class-based lookup for tds
+var TC_TD_CLASS = { 'price-col': 'price', 'age-col': 'age', 'vol-col': 'vol', 'mcap-col': 'mcap', 'row-dots-col': 'dots' };
+
+function _tcTagRow(tr) {
+  if (tr.dataset.tcTagged) return;
+  var tds = Array.from(tr.children);
+  tds.forEach(function(td, i) {
+    if (td.dataset.col) return;
+    // Try class-based lookup first
+    var found = false;
+    for (var cls in TC_TD_CLASS) {
+      if (td.classList.contains(cls)) { td.dataset.col = TC_TD_CLASS[cls]; found = true; break; }
+    }
+    if (!found && i === 0) td.dataset.col = 'token';
+    if (!found && !td.dataset.col && i < TC_DEFAULT_ORDER.length) td.dataset.col = TC_DEFAULT_ORDER[i];
+  });
+  tr.dataset.tcTagged = '1';
+}
 
 function _tcApplyToDOM() {
   var cols = _tcGetCols();
-  // Build new order: [0=token, ...reordered middle cols..., 10=dots]
-  var newOrder = [0]; // token always first
+  // Build desired order: token first, then user config, dots last
+  var order = ['token'];
+  var hidden = {};
   cols.forEach(function(c) {
-    newOrder.push(TC_COL_MAP[c.key]);
+    order.push(c.key);
+    if (!c.visible) hidden[c.key] = true;
   });
-  newOrder.push(10); // dots always last
-
-  // Build visibility map
-  var hiddenIdxs = {};
-  cols.forEach(function(c) {
-    if (!c.visible) hiddenIdxs[TC_COL_MAP[c.key]] = true;
-  });
+  order.push('dots');
 
   // Reorder header
   var headerRow = document.querySelector('thead tr');
   if (headerRow) {
-    var ths = Array.from(headerRow.children);
-    if (ths.length >= 11) {
-      newOrder.forEach(function(origIdx) {
-        var th = ths[origIdx];
-        if (th) {
-          th.style.display = hiddenIdxs[origIdx] ? 'none' : '';
-          headerRow.appendChild(th);
-        }
+    // Tag headers if they don't have data-col yet (cached HTML)
+    if (!headerRow.dataset.tcTagged) {
+      var ths = Array.from(headerRow.children);
+      ths.forEach(function(th, i) {
+        if (!th.dataset.col && i < TC_DEFAULT_ORDER.length) th.dataset.col = TC_DEFAULT_ORDER[i];
       });
+      headerRow.dataset.tcTagged = '1';
     }
+    order.forEach(function(key) {
+      var th = headerRow.querySelector('[data-col="' + key + '"]');
+      if (th) {
+        th.style.display = hidden[key] ? 'none' : '';
+        headerRow.appendChild(th);
+      }
+    });
   }
 
   // Reorder each body row
   var rows = document.querySelectorAll('tbody tr');
   rows.forEach(function(tr) {
-    var tds = Array.from(tr.children);
-    if (tds.length < 11) return;
-    newOrder.forEach(function(origIdx) {
-      var td = tds[origIdx];
+    if (tr.classList.contains('skeleton-row')) return;
+    _tcTagRow(tr);
+    order.forEach(function(key) {
+      var td = tr.querySelector('[data-col="' + key + '"]');
       if (td) {
-        td.style.display = hiddenIdxs[origIdx] ? 'none' : '';
+        td.style.display = hidden[key] ? 'none' : '';
         tr.appendChild(td);
       }
     });
   });
 }
 
-// Apply saved column config on page load and after each data refresh
-var _origLoadData = typeof loadData === 'function' ? loadData : null;
-(function() {
-  // Apply on initial load after data renders
-  var saved = _tcLoad();
-  if (saved) {
-    var _checkInterval = setInterval(function() {
-      var rows = document.querySelectorAll('tbody tr:not(.skeleton-row)');
-      if (rows.length > 0) {
-        clearInterval(_checkInterval);
-        _tcApplyToDOM();
-      }
-    }, 500);
-  }
-})();
-
-// Hook into MutationObserver to re-apply after table refreshes
+// Apply saved column config after data renders
 (function() {
   var tbody = document.querySelector('tbody');
   if (!tbody) return;
