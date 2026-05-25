@@ -6705,6 +6705,108 @@
     flex-direction: column;
   }
   .ms-mobile-spacer { flex: 1; }
+  .mob-menu-actions {
+    display: flex;
+    justify-content: space-evenly;
+    padding: 16px 8px 8px;
+  }
+  .mob-menu-circle {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .mob-menu-circle-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+    color: #e6e1e3;
+    transition: background 0.2s ease;
+  }
+  .mob-menu-circle:active .mob-menu-circle-icon {
+    background: rgba(255,255,255,0.16);
+  }
+  .mob-menu-circle-icon img,
+  .mob-menu-circle-icon svg {
+    width: 26px !important;
+    height: 26px !important;
+  }
+  .mob-menu-circle-icon img {
+    border-radius: 0;
+  }
+  .mob-menu-circle-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.7);
+    white-space: nowrap;
+  }
+  .mob-menu-chains-section {
+    background: rgba(255,255,255,0.04);
+    border-radius: 16px;
+    margin: 4px 8px;
+    padding: 12px 4px 8px;
+  }
+  .mob-menu-section-title {
+    display: block;
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.4);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    padding: 0 12px 8px;
+    text-align: center;
+  }
+  .mob-menu-chains-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px 0;
+    padding: 4px 0;
+    justify-items: center;
+  }
+  .mob-menu-chain {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    text-decoration: none;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .mob-menu-chain-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.06);
+    transition: background 0.2s ease;
+  }
+  .mob-menu-chain:active .mob-menu-chain-icon {
+    background: rgba(255,255,255,0.14);
+  }
+  .mob-menu-chain.active .mob-menu-chain-icon {
+    background: rgba(255,255,255,0.14);
+    box-shadow: 0 0 0 2px rgba(255,255,255,0.2);
+  }
+  .mob-menu-chain.active .mob-menu-circle-label {
+    color: #fff;
+    font-weight: 600;
+  }
+  .mob-menu-chain-icon img {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+  }
   .ms-mobile-divider {
     height: 1px;
     background: rgba(255,255,255,0.06);
@@ -8234,7 +8336,7 @@
       border-radius: 50%;
       background: #1a1a1a;
       border: 2px solid #00c600;
-      box-shadow: 0 0 12px rgba(0,198,0,0.25);
+      box-shadow: none;
     }
     .mob-nav-newpairs {
       padding: 0 8px !important;
@@ -8328,6 +8430,19 @@
       overflow-y: auto;
       padding: 0 8px 16px;
       -webkit-overflow-scrolling: touch;
+    }
+    .mob-menu-footer-circles {
+      display: flex;
+      justify-content: space-evenly;
+      padding: 12px 8px 16px;
+    }
+    .mob-menu-footer-circles .mob-menu-circle-icon {
+      width: 32px;
+      height: 32px;
+    }
+    .mob-menu-footer-circles .mob-menu-circle-icon svg {
+      width: 16px !important;
+      height: 16px !important;
     }
 
     /* Watchlist panel inside nav */
