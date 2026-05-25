@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.54';
+var APP_VERSION = '2.5.55';
 (function() {
   document.addEventListener('DOMContentLoaded', function() {
     var meta = document.querySelector('meta[name="version"]');
@@ -837,7 +837,7 @@ function resetTableColumns() {
 function applyTableColumns() {
   _tcSave(_tcCols);
   closeTableCustomizer();
-  // TODO: actually reorder table columns in DOM
+  _tcApplyToDOM();
   var toast = document.createElement('div');
   toast.id = 'bmCopyToast';
   toast.textContent = 'Table layout saved';
@@ -846,6 +846,87 @@ function applyTableColumns() {
   requestAnimationFrame(function() { toast.style.transform = 'translateX(-50%) translateY(0)'; });
   setTimeout(function() { toast.style.transform = 'translateX(-50%) translateY(-60px)'; setTimeout(function() { toast.remove(); }, 300); }, 2000);
 }
+
+// Column key → default td index (0=token, 10=dots — these stay fixed)
+var TC_COL_MAP = { price: 1, age: 2, vol: 3, p5m: 4, p15m: 5, p1h: 6, p6h: 7, p24h: 8, mcap: 9 };
+
+function _tcApplyToDOM() {
+  var cols = _tcGetCols();
+  // Build new order: [0=token, ...reordered middle cols..., 10=dots]
+  var newOrder = [0]; // token always first
+  cols.forEach(function(c) {
+    newOrder.push(TC_COL_MAP[c.key]);
+  });
+  newOrder.push(10); // dots always last
+
+  // Build visibility map
+  var hiddenIdxs = {};
+  cols.forEach(function(c) {
+    if (!c.visible) hiddenIdxs[TC_COL_MAP[c.key]] = true;
+  });
+
+  // Reorder header
+  var headerRow = document.querySelector('thead tr');
+  if (headerRow) {
+    var ths = Array.from(headerRow.children);
+    if (ths.length >= 11) {
+      newOrder.forEach(function(origIdx) {
+        var th = ths[origIdx];
+        if (th) {
+          th.style.display = hiddenIdxs[origIdx] ? 'none' : '';
+          headerRow.appendChild(th);
+        }
+      });
+    }
+  }
+
+  // Reorder each body row
+  var rows = document.querySelectorAll('tbody tr');
+  rows.forEach(function(tr) {
+    var tds = Array.from(tr.children);
+    if (tds.length < 11) return;
+    newOrder.forEach(function(origIdx) {
+      var td = tds[origIdx];
+      if (td) {
+        td.style.display = hiddenIdxs[origIdx] ? 'none' : '';
+        tr.appendChild(td);
+      }
+    });
+  });
+}
+
+// Apply saved column config on page load and after each data refresh
+var _origLoadData = typeof loadData === 'function' ? loadData : null;
+(function() {
+  // Apply on initial load after data renders
+  var saved = _tcLoad();
+  if (saved) {
+    var _checkInterval = setInterval(function() {
+      var rows = document.querySelectorAll('tbody tr:not(.skeleton-row)');
+      if (rows.length > 0) {
+        clearInterval(_checkInterval);
+        _tcApplyToDOM();
+      }
+    }, 500);
+  }
+})();
+
+// Hook into MutationObserver to re-apply after table refreshes
+(function() {
+  var tbody = document.querySelector('tbody');
+  if (!tbody) return;
+  var _tcDebounce = null;
+  var observer = new MutationObserver(function() {
+    var saved = _tcLoad();
+    if (!saved) return;
+    clearTimeout(_tcDebounce);
+    _tcDebounce = setTimeout(function() {
+      var rows = tbody.querySelectorAll('tr:not(.skeleton-row)');
+      if (rows.length > 0) _tcApplyToDOM();
+    }, 100);
+  });
+  observer.observe(tbody, { childList: true });
+})();
 
 window._priceColMode = 'price';
 function togglePriceCol() {
