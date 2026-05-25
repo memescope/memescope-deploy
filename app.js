@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.63';
+var APP_VERSION = '2.5.64';
 (function() {
   document.addEventListener('DOMContentLoaded', function() {
     var meta = document.querySelector('meta[name="version"]');
@@ -838,7 +838,7 @@ function resetTableColumns() {
   var toast = document.createElement('div');
   toast.id = 'bmCopyToast';
   toast.textContent = 'Table reset to default';
-  toast.style.cssText = 'position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-60px);background:#4a4fd8;color:#fff;padding:10px 24px;border-radius:14px;font-size:14px;font-weight:600;z-index:100000;transition:transform 0.3s ease;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,0.4);';
+  toast.style.cssText = 'position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-60px);background:#45455a;color:#fff;padding:10px 24px;border-radius:14px;font-size:14px;font-weight:600;z-index:100000;transition:transform 0.3s ease;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,0.4);';
   document.body.appendChild(toast);
   requestAnimationFrame(function() { toast.style.transform = 'translateX(-50%) translateY(0)'; });
   setTimeout(function() { toast.style.transform = 'translateX(-50%) translateY(-60px)'; setTimeout(function() { toast.remove(); }, 300); }, 2000);
@@ -850,7 +850,7 @@ function applyTableColumns() {
   var toast = document.createElement('div');
   toast.id = 'bmCopyToast';
   toast.textContent = 'Table layout saved';
-  toast.style.cssText = 'position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-60px);background:#4a4fd8;color:#fff;padding:10px 24px;border-radius:14px;font-size:14px;font-weight:600;z-index:100000;transition:transform 0.3s ease;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,0.4);';
+  toast.style.cssText = 'position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-60px);background:#45455a;color:#fff;padding:10px 24px;border-radius:14px;font-size:14px;font-weight:600;z-index:100000;transition:transform 0.3s ease;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,0.4);';
   document.body.appendChild(toast);
   requestAnimationFrame(function() { toast.style.transform = 'translateX(-50%) translateY(0)'; });
   setTimeout(function() { toast.style.transform = 'translateX(-50%) translateY(-60px)'; setTimeout(function() { toast.remove(); }, 300); }, 2000);
@@ -1858,7 +1858,7 @@ function toggleWatchlist(sym, btnEl) {
   var toast = document.createElement('div');
   toast.id = 'bmCopyToast';
   toast.textContent = wasAdded ? sym + ' added to watchlist' : sym + ' removed from watchlist';
-  toast.style.cssText = 'position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-60px);background:#4a4fd8;color:#fff;padding:10px 24px;border-radius:14px;font-size:14px;font-weight:600;z-index:100000;transition:transform 0.3s ease;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,0.4);';
+  toast.style.cssText = 'position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-60px);background:#45455a;color:#fff;padding:10px 24px;border-radius:14px;font-size:14px;font-weight:600;z-index:100000;transition:transform 0.3s ease;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,0.4);';
   document.body.appendChild(toast);
   requestAnimationFrame(function() { requestAnimationFrame(function() { toast.style.transform = 'translateX(-50%) translateY(0)'; }); });
   setTimeout(function() { toast.style.transform = 'translateX(-50%) translateY(-60px)'; setTimeout(function() { if (toast.parentNode) toast.remove(); }, 300); }, 1500);
@@ -4329,7 +4329,7 @@ function openBubbleModal(t) {
       var toast = document.createElement('div');
       toast.id = 'bmCopyToast';
       toast.textContent = 'CA copied to clipboard';
-      toast.style.cssText = 'position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-60px);background:#4a4fd8;color:#fff;padding:10px 24px;border-radius:14px;font-size:14px;font-weight:600;z-index:100000;transition:transform 0.3s ease;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,0.4);';
+      toast.style.cssText = 'position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-60px);background:#45455a;color:#fff;padding:10px 24px;border-radius:14px;font-size:14px;font-weight:600;z-index:100000;transition:transform 0.3s ease;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,0.4);';
       document.body.appendChild(toast);
       requestAnimationFrame(function() { requestAnimationFrame(function() { toast.style.transform = 'translateX(-50%) translateY(0)'; }); });
       setTimeout(function() {
@@ -6732,9 +6732,20 @@ function mobNavGo(tab) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  if (tab === 'watchlist') {
+  if (tab === 'newpairs') {
     btns.forEach(function(b) { b.classList.remove('active'); });
     if (btns[2]) btns[2].classList.add('active');
+    // Close any open panels first
+    var navEl = document.getElementById('mobileBottomNav');
+    if (navEl) { navEl.classList.remove('menu-open','watchlist-open','search-open'); }
+    document.body.style.overflow = '';
+    toggleNewPairs();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  if (tab === 'watchlist') {
+    btns.forEach(function(b) { b.classList.remove('active'); });
+    if (btns[1]) btns[1].classList.add('active');
     if (window.innerWidth <= 768) {
       var nav = document.getElementById('mobileBottomNav');
       var wlModal = document.querySelector('.wl-modal');
@@ -6753,7 +6764,7 @@ function mobNavGo(tab) {
 
   if (tab === 'search') {
     btns.forEach(function(b) { b.classList.remove('active'); });
-    if (btns[1]) btns[1].classList.add('active');
+    if (btns[3]) btns[3].classList.add('active');
     if (window.innerWidth <= 768) {
       var nav = document.getElementById('mobileBottomNav');
       var searchModal = document.getElementById('search-modal');
@@ -6775,7 +6786,7 @@ function mobNavGo(tab) {
 
   if (tab === 'menu') {
     btns.forEach(function(b) { b.classList.remove('active'); });
-    if (btns[3]) btns[3].classList.add('active');
+    if (btns[4]) btns[4].classList.add('active');
     var nav = document.getElementById('mobileBottomNav');
     if (nav) {
       nav.classList.add('menu-open');
