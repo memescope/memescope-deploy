@@ -1,4 +1,4 @@
-var CACHE_NAME = 'memescope-v2.5.60';
+var CACHE_NAME = 'memescope-v2.5.59';
 var STATIC_ASSETS = [
   '/',
   '/styles.css',
