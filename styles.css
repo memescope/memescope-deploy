@@ -8171,10 +8171,10 @@
       left: 0;
       right: 0;
       z-index: 9000;
-      height: 56px;
+      height: 54px;
       background: #141314;
       border-radius: 0;
-      border-top: none;
+      border-top: 1px solid rgba(255,255,255,0.1);
       padding-bottom: env(safe-area-inset-bottom, 0px);
       overflow: hidden;
       will-change: height;
@@ -8190,7 +8190,7 @@
       display: flex;
       align-items: center;
       justify-content: space-around;
-      height: 56px;
+      height: 54px;
       padding: 0 8px;
       flex-shrink: 0;
     }
