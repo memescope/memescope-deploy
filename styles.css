@@ -8215,11 +8215,29 @@
       width: 24px;
       height: 24px;
     }
+    .mob-nav-green-circle svg {
+      width: 20px;
+      height: 20px;
+    }
     .mob-nav-label {
       font-family: 'Inter', sans-serif;
       font-size: 10px;
       font-weight: 500;
       line-height: 1;
+    }
+    .mob-nav-green-circle {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: #1a1a1a;
+      border: 2px solid #00c600;
+      box-shadow: 0 0 12px rgba(0,198,0,0.25);
+    }
+    .mob-nav-newpairs {
+      padding: 0 8px !important;
     }
     /* Mobile watchlist badge */
     .mob-wl-badge {

@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.65';
+var APP_VERSION = '2.5.66';
 (function() {
   document.addEventListener('DOMContentLoaded', function() {
     var meta = document.querySelector('meta[name="version"]');
