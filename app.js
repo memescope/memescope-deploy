@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.68';
+var APP_VERSION = '2.5.69';
 var _scrollLockY = 0;
 function lockScroll() {
   _scrollLockY = window.scrollY;

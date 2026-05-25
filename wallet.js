@@ -23,7 +23,7 @@ var WALLETS = [
   {
     id: 'metamask',
     name: 'MetaMask',
-    icon: 'https://upload.wikimedia.org/wikipedia/commons/3/36/MetaMask_Fox.svg',
+    icon: '/img/metamask_logo.svg',
     detect: function() {
       if (window.ethereum && window.ethereum.providers) {
         return !!window.ethereum.providers.find(function(p) { return p.isMetaMask && !p.isPhantom; });
@@ -45,7 +45,7 @@ var WALLETS = [
   {
     id: 'coinbase',
     name: 'Coinbase Wallet',
-    icon: 'https://altcoinsbox.com/wp-content/uploads/2022/12/coinbase-logo.webp',
+    icon: '/img/coinbase_logo.webp',
     detect: function() { return !!(window.ethereum && window.ethereum.isCoinbaseWallet); },
     connect: async function() {
       var provider = window.ethereum.providers ? window.ethereum.providers.find(function(p) { return p.isCoinbaseWallet; }) : window.ethereum;
@@ -58,7 +58,7 @@ var WALLETS = [
   {
     id: 'trust',
     name: 'Trust Wallet',
-    icon: 'https://avatars.githubusercontent.com/u/32179889?s=200&v=4',
+    icon: '/img/trust_logo.png',
     detect: function() { return !!(window.trustwallet || (window.ethereum && window.ethereum.isTrust)); },
     connect: async function() {
       var provider = window.trustwallet || window.ethereum;
@@ -71,7 +71,7 @@ var WALLETS = [
   {
     id: 'okx',
     name: 'OKX Wallet',
-    icon: 'https://avatars.githubusercontent.com/u/59078187?s=200&v=4',
+    icon: '/img/okx_logo.png',
     detect: function() { return !!(window.okxwallet); },
     connect: async function() {
       var accounts = await window.okxwallet.request({ method: 'eth_requestAccounts' });
