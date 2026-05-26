@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.76';
+var APP_VERSION = '2.5.77';
 var _scrollLockY = 0;
 function lockScroll() {
   _scrollLockY = window.scrollY;
@@ -2970,9 +2970,11 @@ function openSearchModal() {
     window._scrollY = window.scrollY;
     document.body.classList.add('modal-scroll-lock');
     document.body.style.top = -window._scrollY + 'px';
+    lockScroll();
+  } else {
+    document.body.style.overflow = 'hidden';
   }
   overlay.classList.add('open');
-  lockScroll();
   var input = document.getElementById('search-modal-input');
   input.value = '';
   if (!isMobile) input.focus();
@@ -2983,7 +2985,8 @@ function openSearchModal() {
 
 function closeSearchModal() {
   document.getElementById('search-overlay').classList.remove('open');
-  unlockScroll();
+  if (window.innerWidth <= 768) unlockScroll();
+  else document.body.style.overflow = '';
   if (document.body.classList.contains('modal-scroll-lock')) {
     document.body.classList.remove('modal-scroll-lock');
     document.body.style.top = '';
