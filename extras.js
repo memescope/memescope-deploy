@@ -37,8 +37,8 @@ function copyDirectLink() {
     document.querySelectorAll('.ms-brightness-slider').forEach(function(s) { s.value = val; });
     try { localStorage.setItem('ms-brightness', val); } catch(e) {}
   }
-  /* brightness: apply default 115% on load */
-  setBrightness(110);
+  /* brightness: apply default 100% on load */
+  setBrightness(100);
 
   // Sidebar watchlist — no panel, just adds to sidebar bottom
   function renderSidebarWatchlist() {

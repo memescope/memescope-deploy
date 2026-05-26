@@ -8291,7 +8291,7 @@
     }
     .mobile-bottom-nav.menu-open {
       height: calc(100% - 28px);
-      background: #1c1b1c;
+      background: #211f21;
       border-radius: 28px 28px 0 0;
       border-top: 1px solid rgba(255,255,255,0.06);
     }
@@ -8419,6 +8419,7 @@
       justify-content: space-between;
       padding: 16px 20px 12px;
       flex-shrink: 0;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
     }
     .mob-nav-menu-close {
       width: 32px;

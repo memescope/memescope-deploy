@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.74';
+var APP_VERSION = '2.5.75';
 var _scrollLockY = 0;
 function lockScroll() {
   _scrollLockY = window.scrollY;
@@ -6766,18 +6766,33 @@ function mobNavGo(tab) {
       document.querySelectorAll('.mob-menu-chain').forEach(function(c) { c.classList.remove('active'); });
       _needsRefresh = true;
     }
-    // Reset New Pairs if active
-    if (currentCategory === 'new') {
+    // Reset category to trending (top/gainers/losers/new → trending)
+    if (currentCategory !== 'trending') {
       currentCategory = 'trending';
       var leaf = document.getElementById('navNewPairs');
       var mobileLeaf = document.getElementById('mobileNavNewPairs');
       if (leaf) leaf.classList.remove('active');
       if (mobileLeaf) mobileLeaf.classList.remove('active');
-      var chips = document.querySelectorAll('.filter-chip');
-      chips.forEach(function(c) {
-        c.classList.remove('active-chip');
-        if (c.textContent.trim().indexOf('Top') !== -1 || (c.getAttribute('onclick') && c.getAttribute('onclick').indexOf("'trending'") !== -1)) c.classList.add('active-chip');
-      });
+      _needsRefresh = true;
+    }
+    // Reset filter chips UI back to Top
+    var chips = document.querySelectorAll('.filter-chip');
+    chips.forEach(function(c) {
+      c.classList.remove('active-chip', 'chip-animate');
+      if (c.textContent.trim().indexOf('Top') !== -1 || (c.getAttribute('onclick') && c.getAttribute('onclick').indexOf("'trending'") !== -1)) c.classList.add('active-chip');
+    });
+    // Reset filter pills UI (gainers/losers)
+    document.querySelectorAll('.filter-pill').forEach(function(p) { p.classList.remove('active-pill'); });
+    // Reset timeframe to 1h
+    if (currentTimeframe !== '1h') {
+      currentTimeframe = '1h';
+      var tfGroup = document.getElementById('tfGroup');
+      if (tfGroup) {
+        tfGroup.querySelectorAll('.filter-btn').forEach(function(b) { b.classList.remove('active'); });
+        var h1Btn = tfGroup.querySelector('.filter-btn[onclick*="\'1h\'"]');
+        if (h1Btn) h1Btn.classList.add('active');
+        updateTfSlider();
+      }
       _needsRefresh = true;
     }
     // Reset launchpad filter
