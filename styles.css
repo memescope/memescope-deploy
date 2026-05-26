@@ -5110,6 +5110,11 @@
     .ms-header-connect-split,
     .ms-header-connect-wrap { display: none !important; }
     .ms-header-ens-btn { display: none !important; }
+
+    /* === MODAL WIDTHS — all edge-to-edge on mobile === */
+    .wc-modal { width: calc(100vw - 24px) !important; }
+    .wl-modal { width: calc(100vw - 24px) !important; left: 50% !important; transform: translate(-50%, -50%) !important; }
+
     /* === PREVENT HORIZONTAL PAGE SCROLL === */
     html, body {
       overflow-x: hidden !important;
