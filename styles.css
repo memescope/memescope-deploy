@@ -6755,10 +6755,10 @@
     white-space: nowrap;
   }
   .mob-menu-chains-section {
-    background: rgba(255,255,255,0.04);
-    border-radius: 16px;
+    background: #141314;
+    border-radius: 28px;
     margin: 4px 8px;
-    padding: 12px 4px 8px;
+    padding: 16px 4px 12px;
   }
   .mob-menu-section-title {
     display: block;
@@ -6814,9 +6814,9 @@
     border-radius: 50%;
   }
   .ms-mobile-divider {
-    height: 1px;
-    background: rgba(255,255,255,0.06);
-    margin: 8px 4px;
+    height: 0;
+    background: none;
+    margin: 4px 0;
   }
   .ms-mobile-item {
     display: flex;
@@ -8290,7 +8290,7 @@
     }
     .mobile-bottom-nav.menu-open {
       height: calc(100% - 28px);
-      background: #141314;
+      background: #1c1b1c;
       border-radius: 28px 28px 0 0;
       border-top: 1px solid rgba(255,255,255,0.06);
     }
@@ -8459,7 +8459,7 @@
       overflow: hidden;
     }
     .mobile-bottom-nav.watchlist-open {
-      height: 50%;
+      height: 70%;
       background: #211f21;
       border-radius: 28px 28px 0 0;
       border-top: 1px solid rgba(255,255,255,0.06);
