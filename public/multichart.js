@@ -66,7 +66,7 @@
     var overlay = document.getElementById('mcOverlay');
     if (!overlay) return;
     overlay.classList.add('open');
-    document.body.style.overflow = 'hidden';
+    if (typeof lockScroll === 'function') lockScroll();
     // Load saved charts on first open
     var saved = _load();
     if (saved.length && !_mcTokens.length) {
@@ -100,7 +100,7 @@
   window.closeMultichart = function() {
     var overlay = document.getElementById('mcOverlay');
     if (overlay) overlay.classList.remove('open');
-    document.body.style.overflow = '';
+    if (typeof unlockScroll === 'function') unlockScroll();
     mcCloseSearch();
     var mcNav = document.getElementById('navMultichart');
     if(mcNav) { mcNav.classList.remove('pill-animate'); mcNav.classList.remove('active'); }

@@ -5735,11 +5735,12 @@
     background: var(--md-sys-color-surface-container-highest);
     border-radius: 14px;
     padding: 0 16px;
-    border: 1px solid rgba(255,255,255,0.08);
-    transition: border-color 0.15s;
+    border: none;
+    transition: background 0.15s;
   }
-  .ens-input-wrap:focus-within {
-    border-color: #4A9EFF;
+  .ens-input-wrap:hover {
+    outline: 1px solid #4a4fd8;
+    outline-offset: -1px;
   }
   .ens-input {
     flex: 1;

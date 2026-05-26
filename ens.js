@@ -190,7 +190,7 @@
     lockScroll();
 
     var input = document.getElementById('ensNameInput');
-    if (input) { input.value = ''; input.focus(); }
+    if (input) { input.value = ''; }
     setEnsStatus('idle', '');
     hideEnsResult();
   }
