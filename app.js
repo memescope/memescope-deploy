@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.70';
+var APP_VERSION = '2.5.71';
 var _scrollLockY = 0;
 function lockScroll() {
   _scrollLockY = window.scrollY;
@@ -6750,6 +6750,22 @@ function mobNavGo(tab) {
     if ((wl && wl.classList.contains('open')) || (navEl && navEl.classList.contains('watchlist-open'))) closeWatchlistModal();
     if (navEl) { navEl.classList.remove('menu-open','search-open'); }
     unlockScroll();
+    // Reset everything back to default home state
+    var _needsRefresh = false;
+    // Reset chain to All
+    if (currentChain !== 'all') {
+      currentChain = 'all';
+      // Update sidebar active state
+      document.querySelectorAll('.ms-nav-link[onclick*="toggleChain"], .ms-mobile-item[onclick*="toggleChain"]').forEach(function(b) { b.classList.remove('active'); });
+      var allBtn = document.querySelector('.ms-nav-link[onclick*="toggleChain(this,\'all\')"]');
+      if (allBtn) allBtn.classList.add('active');
+      // Update dropdown button label
+      var chainBtn = document.querySelector('.topbar-btn[onclick*="toggleChainFilter"]');
+      if (chainBtn) chainBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 100 100" fill="currentColor" style="vertical-align:-2px;margin-right:4px"><path d="M34.971 61.094l-11.303 11.303c-1.087 1.087-2.85 1.087-3.937 0l-4.497-4.497c-1.087-1.087-1.087-2.85 0-3.937l24.364-24.364c1.087-1.087 2.85-1.087 3.937 0l14.709 14.71c3.874-5.72 3.283-13.583-1.779-18.646l-4.497-4.497c-5.735-5.735-15.067-5.735-20.803 0L6.802 55.53c-5.735 5.735-5.735 15.067 0 20.803l4.497 4.497c5.735 5.735 15.067 5.735 20.803 0l10.027-10.027-2.53-2.53c-2.09-2.09-3.638-4.546-4.627-7.18z"/><path d="M93.198 23.668l-4.497-4.497c-5.735-5.735-15.067-5.735-20.803 0L57.872 29.197l2.53 2.53c2.09 2.09 3.637 4.547 4.627 7.18l11.303-11.303c1.087-1.087 2.85-1.087 3.937 0l4.497 4.497c1.087 1.087 1.087 2.85 0 3.937L60.402 60.401c-1.087 1.087-2.85 1.087-3.937 0l-14.709-14.71c-3.874 5.72-3.284 13.583 1.779 18.646l4.497 4.497c5.735 5.735 15.068 5.735 20.803 0l24.364-24.364c5.735-5.735 5.735-15.067 0-20.803z"/></svg>Hot Chains ▾';
+      // Sync mobile menu chain active state
+      document.querySelectorAll('.mob-menu-chain').forEach(function(c) { c.classList.remove('active'); });
+      _needsRefresh = true;
+    }
     // Reset New Pairs if active
     if (currentCategory === 'new') {
       currentCategory = 'trending';
@@ -6762,11 +6778,17 @@ function mobNavGo(tab) {
         c.classList.remove('active-chip');
         if (c.textContent.trim().indexOf('Top') !== -1 || (c.getAttribute('onclick') && c.getAttribute('onclick').indexOf("'trending'") !== -1)) c.classList.add('active-chip');
       });
-      currentPage = 1;
-      _lastRowOrder = null;
-      loadData();
-      if (typeof init === 'function') init();
+      _needsRefresh = true;
     }
+    // Reset launchpad filter
+    if (currentLaunchpad !== 'all') {
+      currentLaunchpad = 'all';
+      _needsRefresh = true;
+    }
+    currentPage = 1;
+    _lastRowOrder = null;
+    loadData();
+    if (typeof init === 'function') init();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
