@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.77';
+var APP_VERSION = '2.5.78';
 var _scrollLockY = 0;
 function lockScroll() {
   _scrollLockY = window.scrollY;
@@ -765,32 +765,26 @@ function _tcBindDrag() {
   var rows = list.querySelectorAll('.tc-row[data-idx]');
   rows.forEach(function(row) {
     row.removeAttribute('draggable');
-    row.addEventListener('mousedown', function(e) {
-      if (e.target.closest('.tc-toggle')) return;
-      e.preventDefault();
+    function startDrag(row, startY) {
       var idx = parseInt(row.dataset.idx);
       var rect = row.getBoundingClientRect();
-      var offsetY = e.clientY - rect.top;
+      var offsetY = startY - rect.top;
       var rowH = rect.height;
-      // Create placeholder
       var placeholder = document.createElement('div');
       placeholder.className = 'tc-row tc-placeholder-gap';
       placeholder.style.height = rowH + 'px';
-      // Clone for floating
       var clone = row.cloneNode(true);
       clone.classList.add('tc-dragging');
       clone.style.width = rect.width + 'px';
       clone.style.left = rect.left + 'px';
-      clone.style.top = (e.clientY - offsetY) + 'px';
+      clone.style.top = (startY - offsetY) + 'px';
       document.body.appendChild(clone);
-      // Replace original with placeholder
       row.style.display = 'none';
       row.parentNode.insertBefore(placeholder, row);
       list.classList.add('is-dragging');
 
-      function onMove(ev) {
-        clone.style.top = (ev.clientY - offsetY) + 'px';
-        // Find which row we're hovering over
+      function onMove(clientY) {
+        clone.style.top = (clientY - offsetY) + 'px';
         var draggableRows = Array.from(list.querySelectorAll('.tc-row[data-idx]'));
         var targetRow = null;
         var insertAfter = false;
@@ -800,11 +794,10 @@ function _tcBindDrag() {
           var rr = r.getBoundingClientRect();
           if (rr.height === 0) continue;
           var mid = rr.top + rr.height / 2;
-          if (ev.clientY < mid) { targetRow = r; insertAfter = false; break; }
+          if (clientY < mid) { targetRow = r; insertAfter = false; break; }
           targetRow = r;
           insertAfter = true;
         }
-        // Move placeholder to new position
         if (targetRow) {
           if (insertAfter && targetRow.nextSibling !== placeholder) {
             targetRow.parentNode.insertBefore(placeholder, targetRow.nextSibling);
@@ -815,20 +808,13 @@ function _tcBindDrag() {
       }
 
       function onUp() {
-        document.removeEventListener('mousemove', onMove);
-        document.removeEventListener('mouseup', onUp);
         clone.remove();
         list.classList.remove('is-dragging');
-        // Figure out new position from placeholder location
-        var allDataRows = Array.from(list.querySelectorAll('.tc-row[data-idx]'));
         var siblings = Array.from(list.children).filter(function(c) { return c.dataset.idx || c === placeholder; });
-        var newPos = siblings.indexOf(placeholder);
-        // Account for separator and locked row
         var dataOnlySiblings = siblings.filter(function(c) { return c.dataset.idx || c === placeholder; });
         var dropPos = dataOnlySiblings.indexOf(placeholder);
         placeholder.remove();
         row.style.display = '';
-        // Reorder
         if (dropPos !== idx && dropPos >= 0) {
           var item = _tcCols.splice(idx, 1)[0];
           if (dropPos > idx) dropPos--;
@@ -836,10 +822,26 @@ function _tcBindDrag() {
         }
         _tcRender();
       }
-
-      document.addEventListener('mousemove', onMove);
-      document.addEventListener('mouseup', onUp);
+      return { onMove: onMove, onUp: onUp };
+    }
+    row.addEventListener('mousedown', function(e) {
+      if (e.target.closest('.tc-toggle')) return;
+      e.preventDefault();
+      var drag = startDrag(row, e.clientY);
+      function mm(ev) { drag.onMove(ev.clientY); }
+      function mu() { document.removeEventListener('mousemove', mm); document.removeEventListener('mouseup', mu); drag.onUp(); }
+      document.addEventListener('mousemove', mm);
+      document.addEventListener('mouseup', mu);
     });
+    row.addEventListener('touchstart', function(e) {
+      if (e.target.closest('.tc-toggle')) return;
+      var touch = e.touches[0];
+      var drag = startDrag(row, touch.clientY);
+      function tm(ev) { ev.preventDefault(); drag.onMove(ev.touches[0].clientY); }
+      function te() { document.removeEventListener('touchmove', tm); document.removeEventListener('touchend', te); drag.onUp(); }
+      document.addEventListener('touchmove', tm, { passive: false });
+      document.addEventListener('touchend', te);
+    }, { passive: true });
   });
 }
 function resetTableColumns() {
