@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.81';
+var APP_VERSION = '2.5.82';
 var _scrollLockY = 0;
 function lockScroll() {
   _scrollLockY = window.scrollY;
@@ -852,7 +852,7 @@ function resetTableColumns() {
   var toast = document.createElement('div');
   toast.id = 'bmCopyToast';
   toast.textContent = 'Table reset to default';
-  toast.style.cssText = 'position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-60px);background:#45455a;color:#fff;padding:10px 24px;border-radius:14px;font-size:14px;font-weight:600;z-index:100000;transition:transform 0.3s ease;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,0.4);';
+  toast.style.cssText = 'position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-60px);background:#2b2930;color:#fff;padding:10px 24px;border-radius:14px;font-size:14px;font-weight:600;z-index:100000;transition:transform 0.3s ease;white-space:nowrap;box-shadow:none;';
   document.body.appendChild(toast);
   requestAnimationFrame(function() { toast.style.transform = 'translateX(-50%) translateY(0)'; });
   setTimeout(function() { toast.style.transform = 'translateX(-50%) translateY(-60px)'; setTimeout(function() { toast.remove(); }, 300); }, 2000);
@@ -864,7 +864,7 @@ function applyTableColumns() {
   var toast = document.createElement('div');
   toast.id = 'bmCopyToast';
   toast.textContent = 'Table layout saved';
-  toast.style.cssText = 'position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-60px);background:#45455a;color:#fff;padding:10px 24px;border-radius:14px;font-size:14px;font-weight:600;z-index:100000;transition:transform 0.3s ease;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,0.4);';
+  toast.style.cssText = 'position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-60px);background:#2b2930;color:#fff;padding:10px 24px;border-radius:14px;font-size:14px;font-weight:600;z-index:100000;transition:transform 0.3s ease;white-space:nowrap;box-shadow:none;';
   document.body.appendChild(toast);
   requestAnimationFrame(function() { toast.style.transform = 'translateX(-50%) translateY(0)'; });
   setTimeout(function() { toast.style.transform = 'translateX(-50%) translateY(-60px)'; setTimeout(function() { toast.remove(); }, 300); }, 2000);
@@ -1881,7 +1881,7 @@ function toggleWatchlist(sym, btnEl) {
   var toast = document.createElement('div');
   toast.id = 'bmCopyToast';
   toast.textContent = wasAdded ? sym + ' added to watchlist' : sym + ' removed from watchlist';
-  toast.style.cssText = 'position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-60px);background:#45455a;color:#fff;padding:10px 24px;border-radius:14px;font-size:14px;font-weight:600;z-index:100000;transition:transform 0.3s ease;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,0.4);';
+  toast.style.cssText = 'position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-60px);background:#2b2930;color:#fff;padding:10px 24px;border-radius:14px;font-size:14px;font-weight:600;z-index:100000;transition:transform 0.3s ease;white-space:nowrap;box-shadow:none;';
   document.body.appendChild(toast);
   requestAnimationFrame(function() { requestAnimationFrame(function() { toast.style.transform = 'translateX(-50%) translateY(0)'; }); });
   setTimeout(function() { toast.style.transform = 'translateX(-50%) translateY(-60px)'; setTimeout(function() { if (toast.parentNode) toast.remove(); }, 300); }, 1500);
@@ -4353,7 +4353,7 @@ function openBubbleModal(t) {
       var toast = document.createElement('div');
       toast.id = 'bmCopyToast';
       toast.textContent = 'CA copied to clipboard';
-      toast.style.cssText = 'position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-60px);background:#45455a;color:#fff;padding:10px 24px;border-radius:14px;font-size:14px;font-weight:600;z-index:100000;transition:transform 0.3s ease;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,0.4);';
+      toast.style.cssText = 'position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-60px);background:#2b2930;color:#fff;padding:10px 24px;border-radius:14px;font-size:14px;font-weight:600;z-index:100000;transition:transform 0.3s ease;white-space:nowrap;box-shadow:none;';
       document.body.appendChild(toast);
       requestAnimationFrame(function() { requestAnimationFrame(function() { toast.style.transform = 'translateX(-50%) translateY(0)'; }); });
       setTimeout(function() {
