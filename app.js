@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.82';
+var APP_VERSION = '2.5.83';
 var _scrollLockY = 0;
 function lockScroll() {
   _scrollLockY = window.scrollY;
@@ -1757,19 +1757,7 @@ let watchlist = JSON.parse(localStorage.getItem('msWatchlist') || '[]');
 let watchlistVisible = false;
 // Update nav star on load
 setTimeout(function() { if (typeof renderWatchlist === 'function') renderWatchlist(); }, 100);
-// Auto-clean stale watchlist entries once tokens load
-setTimeout(function() {
-  if (typeof LIVE_TOKENS !== 'undefined' && LIVE_TOKENS.length > 0) {
-    var before = watchlist.length;
-    watchlist = watchlist.filter(function(sym) {
-      return LIVE_TOKENS.some(function(t) { return t.sym === sym; });
-    });
-    if (watchlist.length !== before) {
-      localStorage.setItem('msWatchlist', JSON.stringify(watchlist));
-      if (typeof renderWatchlist === 'function') renderWatchlist();
-    }
-  }
-}, 5000);
+// Watchlist entries persist even if token leaves the feed
 
 function toggleWatchlistPanel() {}
 
@@ -2042,23 +2030,26 @@ function renderWatchlist() {
   var html = '';
   watchlist.forEach(function(sym) {
     var token = LIVE_TOKENS.find(function(t) { return t.sym === sym; });
-    if (!token) return;
-    var imgSrc = token.img || '';
+    var imgSrc = token ? (token.img || '') : '';
     var letter = sym.charAt(0).toUpperCase();
     var avatarHtml = imgSrc
       ? '<img class="wl-modal-token-img" src="' + imgSrc + '" onerror="this.style.display=\'none\'">'
       : '<div class="wl-modal-token-img" style="background:#333;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff">' + letter + '</div>';
 
-    html += '<div class="wl-modal-row" onclick="closeWatchlistModal();openBubbleModal(LIVE_TOKENS.find(function(t){return t.sym===\'' + sym + '\'}))">' +
+    var clickAction = token
+      ? ' onclick="closeWatchlistModal();openBubbleModal(LIVE_TOKENS.find(function(t){return t.sym===\'' + sym + '\'}))"'
+      : ' style="opacity:0.6;cursor:default"';
+
+    html += '<div class="wl-modal-row"' + clickAction + '>' +
       '<div class="wl-modal-token">' + avatarHtml +
         '<span class="wl-modal-token-sym">' + sym + '</span>' +
         '<span class="wl-modal-token-delete" onclick="event.stopPropagation();animateWatchlistRemove(this,\'' + sym + '\')"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 1.5V2.5H3C2.44772 2.5 2 2.94772 2 3.5V4.5C2 5.05228 2.44772 5.5 3 5.5H21C21.5523 5.5 22 5.05228 22 4.5V3.5C22 2.94772 21.5523 2.5 21 2.5H16V1.5C16 0.947715 15.5523 0.5 15 0.5H9C8.44772 0.5 8 0.947715 8 1.5Z"/><path d="M3.9231 7.5H20.0767L19.1344 20.2216C19.0183 21.7882 17.7135 23 16.1426 23H7.85724C6.28636 23 4.98148 21.7882 4.86544 20.2216L3.9231 7.5Z"/></svg></span>' +
       '</div>' +
-      '<span class="wl-modal-val">' + fmtPrice(token.price || 0) + '</span>' +
-      '<span class="wl-modal-val ' + pctCls(token.p5m) + '">' + pctFmt(token.p5m) + '</span>' +
-      '<span class="wl-modal-val ' + pctCls(token.p1h) + '">' + pctFmt(token.p1h) + '</span>' +
-      '<span class="wl-modal-val ' + pctCls(token.p6h) + '">' + pctFmt(token.p6h) + '</span>' +
-      '<span class="wl-modal-val ' + pctCls(token.p24h) + '">' + pctFmt(token.p24h) + '</span>' +
+      '<span class="wl-modal-val">' + (token ? fmtPrice(token.price || 0) : '—') + '</span>' +
+      '<span class="wl-modal-val ' + (token ? pctCls(token.p5m) : '') + '">' + (token ? pctFmt(token.p5m) : '—') + '</span>' +
+      '<span class="wl-modal-val ' + (token ? pctCls(token.p1h) : '') + '">' + (token ? pctFmt(token.p1h) : '—') + '</span>' +
+      '<span class="wl-modal-val ' + (token ? pctCls(token.p6h) : '') + '">' + (token ? pctFmt(token.p6h) : '—') + '</span>' +
+      '<span class="wl-modal-val ' + (token ? pctCls(token.p24h) : '') + '">' + (token ? pctFmt(token.p24h) : '—') + '</span>' +
     '</div>';
   });
   body.innerHTML = html;
