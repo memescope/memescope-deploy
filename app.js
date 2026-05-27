@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.79';
+var APP_VERSION = '2.5.80';
 var _scrollLockY = 0;
 function lockScroll() {
   _scrollLockY = window.scrollY;
@@ -4456,11 +4456,8 @@ function openBubbleModal(t) {
   pFmt(t.p6h, "bmTf6h");
   pFmt(t.p24h, "bmTf24h");
 
-  // Converter
-  document.getElementById("bmConvSym").textContent = t.sym;
-  document.getElementById("bmConvAmount").value = 1;
-  document.getElementById("bmConvUsd").value = '';
-  updateConverter('token');
+  // Converter V3
+  initConverterV3();
 
   // Explorer links
   var chainExplorer = {
@@ -4713,26 +4710,153 @@ function closeBubblemapsView() {
   if (footer) footer.style.display = '';
 }
 
-function updateConverter(direction) {
-  var t = window._modalToken;
-  if(!t || !t.price) return;
-  if(direction === 'usd') {
-    var usd = parseFloat(document.getElementById("bmConvUsd").value) || 0;
-    var tokens = usd / t.price;
-    document.getElementById("bmConvAmount").value = tokens > 0 ? (tokens >= 1 ? tokens.toFixed(2) : tokens.toFixed(6)) : '';
-  } else {
-    var amount = parseFloat(document.getElementById("bmConvAmount").value) || 0;
-    var usd = amount * t.price;
-    document.getElementById("bmConvUsd").value = usd > 0 ? (usd >= 1 ? usd.toFixed(2) : usd >= 0.01 ? usd.toFixed(4) : usd.toFixed(8)) : '';
-  }
+/* ── Converter V3 ── */
+var _convFrom = 'USD';
+var _convTo = '';
+var _convCurrency = 'usd'; // 'usd' or 'native'
+
+function _convFormatPlain(n) {
+  if (!isFinite(n) || n === 0) return '0';
+  if (n >= 1000) return n.toLocaleString('en-US', { maximumFractionDigits: 2 });
+  if (n >= 1)    return n.toLocaleString('en-US', { maximumFractionDigits: 4 });
+  return n.toPrecision(4);
 }
 
-function swapConverter() {
-  var tokenInput = document.getElementById("bmConvAmount");
-  var usdInput = document.getElementById("bmConvUsd");
-  var temp = tokenInput.value;
-  tokenInput.value = usdInput.value;
-  usdInput.value = temp;
+function _convFormatDisplay(n, unit) {
+  if (unit === 'USD') {
+    if (n >= 1) return n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    return n.toFixed(8).replace(/0+$/, '').replace(/\.$/, '');
+  }
+  return _convFormatPlain(n);
+}
+
+function updateConverterV3() {
+  var t = window._modalToken;
+  if (!t || !t.price) return;
+  var input = document.getElementById('bmConvInput');
+  var output = document.getElementById('bmConvOutput');
+  var rateEl = document.getElementById('bmConvRate');
+  var sym = t.sym || 'TOKEN';
+  var amount = parseFloat(String(input.value).replace(/,/g, '')) || 0;
+  var rate, result;
+  if (_convCurrency === 'native' && t.priceNative) {
+    // Native coin mode: convert native → token or token → native
+    if (_convFrom !== sym) {
+      rate = 1 / t.priceNative;
+      result = amount * rate;
+    } else {
+      rate = t.priceNative;
+      result = amount * rate;
+    }
+  } else {
+    // USD mode
+    if (_convFrom === 'USD') {
+      rate = 1 / t.price;
+      result = amount * rate;
+    } else {
+      rate = t.price;
+      result = amount * rate;
+    }
+  }
+  output.textContent = _convFormatDisplay(result, _convTo);
+  var unitRate = result / (amount || 1);
+  rateEl.textContent = ' · 1 ' + _convFrom + ' ≈ ' + _convFormatDisplay(unitRate, _convTo) + ' ' + _convTo;
+}
+
+function swapConverterV3() {
+  var t = window._modalToken;
+  if (!t || !t.price) return;
+  var sym = t.sym || 'TOKEN';
+  var input = document.getElementById('bmConvInput');
+  var output = document.getElementById('bmConvOutput');
+  // Get current result to move into input
+  var curAmount = parseFloat(String(input.value).replace(/,/g, '')) || 0;
+  var rate;
+  if (_convCurrency === 'native' && t.priceNative) {
+    rate = (_convFrom !== sym) ? (1 / t.priceNative) : t.priceNative;
+  } else {
+    rate = (_convFrom === 'USD') ? (1 / t.price) : t.price;
+  }
+  var result = curAmount * rate;
+  // Swap
+  var tmp = _convFrom;
+  _convFrom = _convTo;
+  _convTo = tmp;
+  input.value = _convFormatPlain(result);
+  document.getElementById('bmConvFromUnit').textContent = _convFrom;
+  document.getElementById('bmConvToUnit').textContent = _convTo;
+  updateConverterV3();
+}
+
+function convPreset(p) {
+  var t = window._modalToken;
+  if (!t) return;
+  var input = document.getElementById('bmConvInput');
+  var map = { '1K': '1000', '10K': '10000', '20K': '20000' };
+  input.value = map[p] || p;
+  updateConverterV3();
+}
+
+function toggleConvCurrency() {
+  var t = window._modalToken;
+  if (!t) return;
+  var sym = t.sym || 'TOKEN';
+  var nativeSym = t.quoteSymbol || _nativeTokenMap[(t.net || 'solana').toLowerCase()] || 'SOL';
+  var presetsEl = document.getElementById('bmConvPresets');
+  var fromUnit = document.getElementById('bmConvFromUnit');
+  var input = document.getElementById('bmConvInput');
+
+  if (_convCurrency === 'usd') {
+    // Switch to native coin
+    _convCurrency = 'native';
+    _convFrom = nativeSym;
+    _convTo = sym;
+    fromUnit.textContent = nativeSym;
+    document.getElementById('bmConvToUnit').textContent = sym;
+    input.value = '1';
+    presetsEl.innerHTML =
+      '<button class="bm-conv-chip" onclick="convPreset(\'1\')">1</button>' +
+      '<button class="bm-conv-chip" onclick="convPreset(\'2\')">2</button>' +
+      '<button class="bm-conv-chip" onclick="convPreset(\'3\')">3</button>' +
+      '<button class="bm-conv-chip" onclick="convPreset(\'4\')">4</button>' +
+      '<button class="bm-conv-chip" onclick="convPreset(\'5\')">5</button>';
+  } else {
+    // Switch back to USD
+    _convCurrency = 'usd';
+    _convFrom = 'USD';
+    _convTo = sym;
+    fromUnit.textContent = 'USD';
+    document.getElementById('bmConvToUnit').textContent = sym;
+    input.value = '1';
+    presetsEl.innerHTML =
+      '<button class="bm-conv-chip" onclick="convPreset(\'10\')">10</button>' +
+      '<button class="bm-conv-chip" onclick="convPreset(\'100\')">100</button>' +
+      '<button class="bm-conv-chip" onclick="convPreset(\'1K\')">1K</button>' +
+      '<button class="bm-conv-chip" onclick="convPreset(\'10K\')">10K</button>' +
+      '<button class="bm-conv-chip" onclick="convPreset(\'20K\')">20K</button>';
+  }
+  updateConverterV3();
+}
+
+function initConverterV3() {
+  var t = window._modalToken;
+  if (!t) return;
+  var sym = t.sym || 'TOKEN';
+  _convCurrency = 'usd';
+  _convFrom = 'USD';
+  _convTo = sym;
+  document.getElementById('bmConvInput').value = '1';
+  document.getElementById('bmConvFromUnit').textContent = 'USD';
+  document.getElementById('bmConvToUnit').textContent = sym;
+  // Reset presets to USD mode
+  var presetsEl = document.getElementById('bmConvPresets');
+  if (presetsEl) presetsEl.innerHTML =
+    '<button class="bm-conv-chip" onclick="convPreset(\'10\')">10</button>' +
+    '<button class="bm-conv-chip" onclick="convPreset(\'100\')">100</button>' +
+    '<button class="bm-conv-chip" onclick="convPreset(\'1K\')">1K</button>' +
+    '<button class="bm-conv-chip" onclick="convPreset(\'10K\')">10K</button>' +
+    '<button class="bm-conv-chip" onclick="convPreset(\'20K\')">20K</button>';
+  updateConverterV3();
 }
 
 function copyCA() {

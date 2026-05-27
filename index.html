@@ -647,7 +647,7 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
     </div>
 
   <div style="text-align:center;padding:24px 16px 32px;border-top:1px solid rgba(255,255,255,0.04);margin-top:20px">
-    <div style="font-size:11px;color:rgba(255,255,255,0.25);font-family:'Inter',sans-serif;margin-bottom:6px">memescope.eth &middot; <span data-version>v2.5.79</span></div>
+    <div style="font-size:11px;color:rgba(255,255,255,0.25);font-family:'Inter',sans-serif;margin-bottom:6px">memescope.eth &middot; <span data-version>v2.5.80</span></div>
     <div style="font-size:11px;color:rgba(255,255,255,0.2);font-family:'Inter',sans-serif">&copy; 2026 Memescope.io. All rights reserved.</div>
   </div>
 
@@ -1284,17 +1284,30 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
       </div>
 
 
-      <!-- Converter -->
-      <div class="bm-converter">
-        <div class="bm-conv-row">
-          <div class="bm-conv-input-wrap">
-            <input type="number" class="bm-conv-input" id="bmConvAmount" value="1" oninput="updateConverter('token')" placeholder="1">
-            <span class="bm-conv-sym" id="bmConvSym"></span>
+      <!-- Converter V3 -->
+      <div class="bm-converter" id="bmConverter">
+        <div class="bm-conv-left">
+          <div class="bm-conv-label">YOU PAY</div>
+          <div class="bm-conv-left-row">
+            <input type="text" inputmode="decimal" class="bm-conv-hero-input" id="bmConvInput" value="1" oninput="updateConverterV3()">
+            <span class="bm-conv-unit bm-conv-unit-click" id="bmConvFromUnit" onclick="toggleConvCurrency()">USD</span>
+            <div class="bm-conv-presets" id="bmConvPresets">
+              <button class="bm-conv-chip" onclick="convPreset('10')">10</button>
+              <button class="bm-conv-chip" onclick="convPreset('100')">100</button>
+              <button class="bm-conv-chip" onclick="convPreset('1K')">1K</button>
+              <button class="bm-conv-chip" onclick="convPreset('10K')">10K</button>
+              <button class="bm-conv-chip" onclick="convPreset('20K')">20K</button>
+            </div>
           </div>
-          <button class="bm-conv-swap" onclick="swapConverter()" title="Swap"><svg width="22" height="22" viewBox="0 -960 960 960" fill="currentColor"><path d="M280-120 80-320l200-200 57 56-104 104h607v80H233l104 104-57 56Zm400-320-57-56 104-104H120v-80h607L623-784l57-56 200 200-200 200Z"/></svg></button>
-          <div class="bm-conv-input-wrap">
-            <input type="number" class="bm-conv-input" id="bmConvUsd" value="" oninput="updateConverter('usd')" placeholder="0.00">
-            <span class="bm-conv-sym">USD</span>
+        </div>
+        <button class="bm-conv-fab" onclick="swapConverterV3()" title="Swap direction">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="#0A305F"><path d="M6.99 11L3 15l3.99 4v-3H14v-2H6.99v-3zM21 9l-3.99-4v3H10v2h7.01v3L21 9z"/></svg>
+        </button>
+        <div class="bm-conv-right">
+          <div class="bm-conv-label">YOU RECEIVE<span class="bm-conv-rate" id="bmConvRate"></span></div>
+          <div class="bm-conv-right-row">
+            <span class="bm-conv-unit" id="bmConvToUnit">GOSLINGS</span>
+            <span class="bm-conv-hero-output" id="bmConvOutput">4,694.84</span>
           </div>
         </div>
       </div>
