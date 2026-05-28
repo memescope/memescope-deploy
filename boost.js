@@ -106,13 +106,15 @@ function openBoostModal() {
 
 function closeBoostModal() {
   var scrollY = Math.abs(parseInt(document.body.style.top || '0'));
-  unlockScroll();
-  document.body.style.position = '';
-  document.body.style.top = '';
-  document.body.style.width = '';
-  document.body.style.touchAction = '';
-  window.scrollTo(0, scrollY);
-  document.getElementById('boostModalOverlay').classList.remove('open');
+  var ov = document.getElementById('boostModalOverlay');
+  m3CloseOverlay(ov, function() {
+    unlockScroll();
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.width = '';
+    document.body.style.touchAction = '';
+    window.scrollTo(0, scrollY);
+  });
 }
 
 /* ── Contact Modal ── */
@@ -133,13 +135,15 @@ function openContactModal() {
 }
 function closeContactModal() {
   var scrollY = Math.abs(parseInt(document.body.style.top || '0'));
-  unlockScroll();
-  document.body.style.position = '';
-  document.body.style.top = '';
-  document.body.style.width = '';
-  document.body.style.touchAction = '';
-  window.scrollTo(0, scrollY);
-  document.getElementById('contactOverlay').classList.remove('open');
+  var ov = document.getElementById('contactOverlay');
+  m3CloseOverlay(ov, function() {
+    unlockScroll();
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.width = '';
+    document.body.style.touchAction = '';
+    window.scrollTo(0, scrollY);
+  });
 }
 function submitContact() {
   var email = document.getElementById('contactEmail').value.trim();
@@ -191,11 +195,13 @@ function openBugReportModal() {
   document.getElementById('bugreportSubmitBtn').disabled = false;
 }
 function closeBugReportModal() {
-  unlockScroll();
-  document.body.style.position = '';
-  document.body.style.width = '';
-  document.body.style.touchAction = '';
-  document.getElementById('bugreportOverlay').classList.remove('open');
+  var ov = document.getElementById('bugreportOverlay');
+  m3CloseOverlay(ov, function() {
+    unlockScroll();
+    document.body.style.position = '';
+    document.body.style.width = '';
+    document.body.style.touchAction = '';
+  });
 }
 function submitBugReport() {
   var email = document.getElementById('bugreportEmail').value.trim();

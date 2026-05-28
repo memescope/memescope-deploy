@@ -199,8 +199,14 @@
   function closeEnsModal() {
     var overlay = document.getElementById('ensOverlay');
     if (!overlay) return;
-    overlay.classList.remove('open');
-    unlockScroll();
+    if (typeof m3CloseOverlay === 'function') {
+      m3CloseOverlay(overlay, function() {
+        unlockScroll();
+      });
+    } else {
+      overlay.classList.remove('open');
+      unlockScroll();
+    }
     if (_ensCheckTimer) clearTimeout(_ensCheckTimer);
   }
   window.closeEnsModal = closeEnsModal;
@@ -333,8 +339,14 @@
   function closeEnsRegModal() {
     var overlay = document.getElementById('ensRegOverlay');
     if (!overlay) return;
-    overlay.classList.remove('open');
-    unlockScroll();
+    if (typeof m3CloseOverlay === 'function') {
+      m3CloseOverlay(overlay, function() {
+        unlockScroll();
+      });
+    } else {
+      overlay.classList.remove('open');
+      unlockScroll();
+    }
   }
   window.closeEnsRegModal = closeEnsRegModal;
 

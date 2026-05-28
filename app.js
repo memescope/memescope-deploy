@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.83';
+var APP_VERSION = '2.5.84';
 var _scrollLockY = 0;
 function lockScroll() {
   _scrollLockY = window.scrollY;
@@ -11,6 +11,30 @@ function unlockScroll() {
   document.body.classList.remove('modal-open');
   document.body.style.top = '';
   window.scrollTo(0, _scrollLockY);
+}
+
+// M3 animated modal close helper
+// Adds .closing class, waits for animation/transition end, then removes both .open and .closing
+function m3CloseOverlay(el, cb) {
+  if (!el) { if (cb) cb(); return; }
+  if (!el.classList.contains('open')) { if (cb) cb(); return; }
+  var _fired = false;
+  el.classList.add('closing');
+  var onDone = function() {
+    if (_fired) return;
+    _fired = true;
+    el.removeEventListener('animationend', onDone);
+    el.removeEventListener('transitionend', onDone);
+    el.classList.remove('open');
+    el.classList.remove('closing');
+    if (cb) cb();
+  };
+  el.addEventListener('animationend', onDone);
+  el.addEventListener('transitionend', onDone);
+  // Safety fallback — if neither event fires, clean up after 250ms
+  setTimeout(function() {
+    if (!_fired) onDone();
+  }, 250);
 }
 (function() {
   document.addEventListener('DOMContentLoaded', function() {
@@ -729,15 +753,17 @@ function openTableCustomizer() {
   lockScroll();
 }
 function closeTableCustomizer() {
-  document.getElementById('tcOverlay').classList.remove('open');
-  unlockScroll();
-  var btn = document.querySelector('.table-edit-btn');
-  if (btn) {
-    var outline = btn.querySelector('.table-edit-outline');
-    var filled = btn.querySelector('.table-edit-filled');
-    if (outline) outline.style.display = '';
-    if (filled) filled.style.display = 'none';
-  }
+  var ov = document.getElementById('tcOverlay');
+  m3CloseOverlay(ov, function() {
+    unlockScroll();
+    var btn = document.querySelector('.table-edit-btn');
+    if (btn) {
+      var outline = btn.querySelector('.table-edit-outline');
+      var filled = btn.querySelector('.table-edit-filled');
+      if (outline) outline.style.display = '';
+      if (filled) filled.style.display = 'none';
+    }
+  });
 }
 function _tcRender() {
   var list = document.getElementById('tcList');
@@ -1962,12 +1988,14 @@ function openWatchlistModal() {
   lockScroll();
 }
 function closeWatchlistModal() {
-  document.getElementById('wlOverlay').classList.remove('open');
-  unlockScroll();
-  var shareMenu = document.getElementById('wlShareMenu');
-  if (shareMenu) shareMenu.classList.remove('open');
-  var wlNav = document.querySelector('.ms-watchlist-nav');
-  if(wlNav) { wlNav.classList.remove('pill-animate'); wlNav.classList.remove('active'); }
+  var ov = document.getElementById('wlOverlay');
+  m3CloseOverlay(ov, function() {
+    unlockScroll();
+    var shareMenu = document.getElementById('wlShareMenu');
+    if (shareMenu) shareMenu.classList.remove('open');
+    var wlNav = document.querySelector('.ms-watchlist-nav');
+    if(wlNav) { wlNav.classList.remove('pill-animate'); wlNav.classList.remove('active'); }
+  });
 }
 
 function renderWatchlist() {
@@ -4886,7 +4914,7 @@ document.addEventListener('click', function(e) {
 function closeBubbleModal() {
   var ov = document.getElementById("bubbleModalOverlay");
   if(!ov || !ov.classList.contains("open")) return;
-  ov.classList.remove("open");
+  m3CloseOverlay(ov);
   unlockScroll();
   document.title = 'MemeScope — The Meme Coin Scope & Scanner';
   if (document.body.classList.contains('modal-scroll-lock')) {

@@ -99,11 +99,20 @@
 
   window.closeMultichart = function() {
     var overlay = document.getElementById('mcOverlay');
-    if (overlay) overlay.classList.remove('open');
-    if (typeof unlockScroll === 'function') unlockScroll();
-    mcCloseSearch();
-    var mcNav = document.getElementById('navMultichart');
-    if(mcNav) { mcNav.classList.remove('pill-animate'); mcNav.classList.remove('active'); }
+    if (typeof m3CloseOverlay === 'function') {
+      m3CloseOverlay(overlay, function() {
+        if (typeof unlockScroll === 'function') unlockScroll();
+        mcCloseSearch();
+        var mcNav = document.getElementById('navMultichart');
+        if(mcNav) { mcNav.classList.remove('pill-animate'); mcNav.classList.remove('active'); }
+      });
+    } else {
+      if (overlay) overlay.classList.remove('open');
+      if (typeof unlockScroll === 'function') unlockScroll();
+      mcCloseSearch();
+      var mcNav = document.getElementById('navMultichart');
+      if(mcNav) { mcNav.classList.remove('pill-animate'); mcNav.classList.remove('active'); }
+    }
   };
 
   // ---- Floating search open / close ----

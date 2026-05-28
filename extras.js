@@ -10,7 +10,7 @@ function showEmbedCode() {
   document.getElementById('embedPopupOverlay').classList.add('open');
 }
 function closeEmbedPopup() {
-  document.getElementById('embedPopupOverlay').classList.remove('open');
+  m3CloseOverlay(document.getElementById('embedPopupOverlay'));
 }
 function copyEmbedCode() {
   var el = document.getElementById('embedCode');

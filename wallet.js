@@ -135,22 +135,24 @@ function openWalletModal() {
 }
 
 function closeWalletModal() {
-  document.getElementById('wcOverlay').classList.remove('open');
-  unlockScroll();
-  // Restore modal structure if it was replaced by connecting animation
-  var modal = document.querySelector('.wc-modal');
-  if (modal && !document.getElementById('wcInstalled')) {
-    modal.innerHTML =
-      '<div class="wc-header">' +
-        '<span class="wc-title">Connect a Wallet</span>' +
-        '<button class="wc-close" onclick="closeWalletModal()">' +
-          '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' +
-        '</button>' +
-      '</div>' +
-      '<div id="wcInstalled"></div>' +
-      '<div id="wcAvailable"></div>' +
-      '<div class="wc-footer">New to wallets? <a href="https://phantom.app/" target="_blank">Get started</a></div>';
-  }
+  var ov = document.getElementById('wcOverlay');
+  m3CloseOverlay(ov, function() {
+    unlockScroll();
+    // Restore modal structure if it was replaced by connecting animation
+    var modal = document.querySelector('.wc-modal');
+    if (modal && !document.getElementById('wcInstalled')) {
+      modal.innerHTML =
+        '<div class="wc-header">' +
+          '<span class="wc-title">Connect a Wallet</span>' +
+          '<button class="wc-close" onclick="closeWalletModal()">' +
+            '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' +
+          '</button>' +
+        '</div>' +
+        '<div id="wcInstalled"></div>' +
+        '<div id="wcAvailable"></div>' +
+        '<div class="wc-footer">New to wallets? <a href="https://phantom.app/" target="_blank">Get started</a></div>';
+    }
+  });
 }
 
 async function connectWallet(walletId) {
