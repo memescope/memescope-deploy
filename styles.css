@@ -287,13 +287,9 @@
     background: rgba(255, 255, 255, 0.12) !important;
   }
 
-  /* M3 state-layer transitions on all interactive elements */
+  /* M3 state-layer transitions on interactive elements */
   button, a, .dropdown-item, .nav-item, .pagination-btn {
-    transition: background var(--md-sys-motion-duration-short2) linear;
     -webkit-tap-highlight-color: transparent;
-  }
-  button:active, .dropdown-item:active, .nav-item:active, .pagination-btn:active {
-    background-image: linear-gradient(rgba(255,255,255,0.12), rgba(255,255,255,0.12));
   }
 
   /* Smoother scrollbar - hide on iOS style */
@@ -6611,14 +6607,15 @@
     height: 38px;
     background: none;
     border: none;
-    border-radius: 0;
+    border-radius: 50%;
     cursor: pointer;
     flex-shrink: 0;
-    transition: opacity 0.25s ease;
+    transition: background var(--md-sys-motion-duration-short2) linear, opacity 0.25s ease;
     -webkit-tap-highlight-color: transparent;
   }
   .ms-header-ens-btn img { height: 32px; width: 32px; }
-  .ms-header-ens-btn:hover { opacity: 0.8; }
+  .ms-header-ens-btn:hover { background: rgba(255,255,255,0.08); }
+  .ms-header-ens-btn:active { background: rgba(255,255,255,0.12); background-image: none; }
 
   .ms-header-connect-wrap {
     position: relative;
