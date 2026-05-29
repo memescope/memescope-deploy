@@ -1,5 +1,12 @@
 
 var APP_VERSION = '2.5.84';
+
+// Image proxy — routes token images through our Cloudflare edge for caching + resize
+function imgProxy(url, w, h) {
+  if (!url) return '';
+  return '/api/img?url=' + encodeURIComponent(url) + '&w=' + (w || 64) + '&h=' + (h || 64);
+}
+
 var _scrollLockY = 0;
 function lockScroll() {
   _scrollLockY = window.scrollY;
@@ -1258,7 +1265,7 @@ function updateBubblesSmooth() {
           (showScopeRing2 ? '<div class="hm-scope-ring"></div>' : '') +
           (showTicks2 ? '<div class="hm-ticks"></div>' : '') +
           '<div class="hm-content">' +
-            (nt.img ? '<img src="' + nt.img + '" style="width:' + (emojiSize2 + 4) + 'px;height:' + (emojiSize2 + 4) + 'px;border-radius:50%;object-fit:cover;margin-bottom:-1px;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5))" onerror="this.style.display=\'none\'">' : '') +
+            (nt.img ? '<img decoding="async" src="' + imgProxy(nt.img, 80, 80) + '" style="width:' + (emojiSize2 + 4) + 'px;height:' + (emojiSize2 + 4) + 'px;border-radius:50%;object-fit:cover;margin-bottom:-1px;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5))" onerror="this.style.display=\'none\'">' : '') +
             '<div class="hm-ticker" style="font-size:' + fsTicker2 + 'px">' + nt.sym + '</div>' +
             '<div class="hm-pct" style="font-size:' + fsPct2 + 'px;color:' + styles2.pctColor + '">' + (styles2.isUp ? '+' : '') + tfVal2.toFixed(1) + '%</div>' +
             (nt.boosted && newR > 25 ? '<div class="hm-boosted-badge">⚡' + (nt.boostCount || '') + '</div>' : '') +
@@ -1494,7 +1501,7 @@ function loadData() {
       if (symEl && symEl.textContent !== t.sym) {
         symEl.textContent = t.sym;
         var imgEl = tr.querySelector('.token-avatar-img');
-        if (imgEl && t.img) imgEl.src = t.img;
+        if (imgEl && t.img) imgEl.src = imgProxy(t.img, 56, 56);
       }
       var pairEl = tr.querySelector('.token-pair');
       if (pairEl) {
@@ -1565,7 +1572,7 @@ function loadData() {
       var aChainColor = CHAIN_COLORS[at.net] || CHAIN_COLORS['solana'];
       var aCa = (at.ca || '').replace(/'/g, "\\'");
       var aRowNum = aIdx + 1;
-      var aRow = '<tr' + (at.boosted ? ' class="boosted-row"' : '') + ' style="cursor:pointer" onclick="openTokenModal(\'' + aCa + '\')"><td' + (at.boosted ? ' class="boosted-cell"' : '') + '><div class="token-cell"><span class="row-num">' + aRowNum + '</span><div class="token-badges"><img class="token-badge-icon" src="' + aChainImg + '"></div><div class="token-avatar-wrap' + (at.boosted ? ' boosted-avatar' : '') + '"><img class="token-avatar-img" style="outline:1px solid ' + aChainColor + '" src="' + (at.img || '') + '" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'"><div class="token-avatar" style="display:' + (at.img ? 'none' : 'flex') + ';background:linear-gradient(135deg,' + aGrad + ')">' + aLetter + '</div></div><div class="token-info"><div class="token-top-row"><span class="token-symbol">' + at.sym + '</span><span class="token-pair" style="color:rgba(255,255,255,0.3);font-size:14px;font-weight:400">/' + (at.pair||at.quoteSymbol||({solana:'SOL',eth:'WETH',base:'WETH',bsc:'BNB',sui:'SUI',tron:'TRX',arbitrum:'WETH',avalanche:'WAVAX',polygon:'WMATIC',optimism:'WETH',blast:'WETH',ton:'TON',sonic:'S',hyperliquid:'WHYPE',berachain:'WBERA',monad:'MON',cronos:'WCRO',aptos:'APT',linea:'WETH',zksync:'WETH',fantom:'WFTM',mantle:'WMNT',scroll:'WETH',manta:'WETH',starknet:'ETH'}[at.net])||'SOL') + '</span>' + (at.boosted ? '<span class="boost-badge"><svg class="boost-badge-icon" viewBox="0 0 500 500" fill="none" stroke-linecap="round" stroke-linejoin="round"><g class="boost-bob"><g transform="translate(312.32 204.14) rotate(45) translate(-116.42 -151.35)"><g transform="translate(116.78 283.83) translate(-54.13 -30)"><g class="boost-fire"><g transform="translate(54.13 64.96)"><path d="M24.13-10.83C24.13 2.5 0 34.96 0 34.96S-24.13 2.5-24.13-10.83C-24.13-24.15-13.33-34.96 0-34.96 13.33-34.96 24.13-24.15 24.13-10.83Z" stroke="#ffb627" stroke-width="12"/></g></g></g><g transform="translate(47.31 232.35)"><path d="M14.22-40.34L-17.31-18.18-14.58 40.34 17.31 18.66Z" stroke="#ffb627" stroke-width="12"/></g><g transform="translate(185.53 232.35)"><path d="M-14.22-40.34L17.31-18.18 14.58 40.34-17.31 18.66Z" stroke="#ffb627" stroke-width="12"/></g><g transform="translate(116.56 146.22)"><path d="M0-116.22C3.97-116.22 7.83-114.81 10.84-112.22 23.12-101.62 53.64-69.63 55.4-12.18 57.09 43.31 51.08 116.22 51.08 116.22H-51.08S-57.09 43.31-55.4-12.18C-53.64-69.63-23.12-101.62-10.84-112.22-7.83-114.81-3.97-116.22 0-116.22Z" stroke="#ffd539" stroke-width="12"/><path class="boost-shine" d="M0-116.22C3.97-116.22 7.83-114.81 10.84-112.22 23.12-101.62 53.64-69.63 55.4-12.18 57.09 43.31 51.08 116.22 51.08 116.22H-51.08S-57.09 43.31-55.4-12.18C-53.64-69.63-23.12-101.62-10.84-112.22-7.83-114.81-3.97-116.22 0-116.22Z"/><g transform="translate(0 -116.22)"><g class="boost-sparkle"><path d="M0,-22 L4,-4 L22,0 L4,4 L0,22 L-4,4 L-22,0 L-4,-4 Z" fill="#fff8d1"/><path d="M0,-12 L2,-2 L12,0 L2,2 L0,12 L-2,2 L-12,0 L-2,-2 Z" fill="#fff"/></g></g></g><g transform="translate(116.56 273.13)"><path d="M32.09 10.7H-32.09V-10.7H32.09Z" stroke="#ffd539" stroke-width="12"/></g><circle cx="116.56" cy="105.92" r="23.48" stroke="#ffb627" stroke-width="12"/></g></g></svg>' + (at.boostCount || '') + '</span>' : '') + '</div></div></div></div></div></td><td class="price-col">' + (window._priceColMode === 'mcap' ? fmt(at.mcap) : fmtPrice(at.price)) + '</td><td class="age-col">' + fmtAge(at.age) + '</td><td class="vol-col">' + fmt(at.vol) + '</td>' + pctTd(at.p5m) + pctTd(at.p15m) + pctTd(at.p1h) + pctTd(at.p6h) + pctTd(at.p24h) + '<td class="mcap-col">' + (window._priceColMode === 'mcap' ? fmtPrice(at.price) : fmt(at.mcap)) + '</td><td class="row-dots-col"><span class="token-dots" onclick="event.stopPropagation();showRowMenu(this, ' + aIdx + ')"><svg class="dots-outline" width="20" height="20" viewBox="0 -960 960 960" fill="currentColor"><path d="M322.5-437.5Q340-455 340-480t-17.5-42.5Q305-540 280-540t-42.5 17.5Q220-505 220-480t17.5 42.5Q255-420 280-420t42.5-17.5Zm200 0Q540-455 540-480t-17.5-42.5Q505-540 480-540t-42.5 17.5Q420-505 420-480t17.5 42.5Q455-420 480-420t42.5-17.5Zm200 0Q740-455 740-480t-17.5-42.5Q705-540 680-540t-42.5 17.5Q620-505 620-480t17.5 42.5Q655-420 680-420t42.5-17.5ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"/></svg><svg class="dots-filled" width="20" height="20" viewBox="0 -960 960 960" fill="currentColor"><path d="M322.5-437.5Q340-455 340-480t-17.5-42.5Q305-540 280-540t-42.5 17.5Q220-505 220-480t17.5 42.5Q255-420 280-420t42.5-17.5Zm200 0Q540-455 540-480t-17.5-42.5Q505-540 480-540t-42.5 17.5Q420-505 420-480t17.5 42.5Q455-420 480-420t42.5-17.5Zm200 0Q740-455 740-480t-17.5-42.5Q705-540 680-540t-42.5 17.5Q620-505 620-480t17.5 42.5Q655-420 680-420t42.5-17.5ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Z"/></svg></span></td></tr>';
+      var aRow = '<tr' + (at.boosted ? ' class="boosted-row"' : '') + ' style="cursor:pointer" onclick="openTokenModal(\'' + aCa + '\')"><td' + (at.boosted ? ' class="boosted-cell"' : '') + '><div class="token-cell"><span class="row-num">' + aRowNum + '</span><div class="token-badges"><img class="token-badge-icon" src="' + aChainImg + '"></div><div class="token-avatar-wrap' + (at.boosted ? ' boosted-avatar' : '') + '"><img class="token-avatar-img" style="outline:1px solid ' + aChainColor + '" loading="lazy" decoding="async" src="' + imgProxy(at.img, 56, 56) + '" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'"><div class="token-avatar" style="display:' + (at.img ? 'none' : 'flex') + ';background:linear-gradient(135deg,' + aGrad + ')">' + aLetter + '</div></div><div class="token-info"><div class="token-top-row"><span class="token-symbol">' + at.sym + '</span><span class="token-pair" style="color:rgba(255,255,255,0.3);font-size:14px;font-weight:400">/' + (at.pair||at.quoteSymbol||({solana:'SOL',eth:'WETH',base:'WETH',bsc:'BNB',sui:'SUI',tron:'TRX',arbitrum:'WETH',avalanche:'WAVAX',polygon:'WMATIC',optimism:'WETH',blast:'WETH',ton:'TON',sonic:'S',hyperliquid:'WHYPE',berachain:'WBERA',monad:'MON',cronos:'WCRO',aptos:'APT',linea:'WETH',zksync:'WETH',fantom:'WFTM',mantle:'WMNT',scroll:'WETH',manta:'WETH',starknet:'ETH'}[at.net])||'SOL') + '</span>' + (at.boosted ? '<span class="boost-badge"><svg class="boost-badge-icon" viewBox="0 0 500 500" fill="none" stroke-linecap="round" stroke-linejoin="round"><g class="boost-bob"><g transform="translate(312.32 204.14) rotate(45) translate(-116.42 -151.35)"><g transform="translate(116.78 283.83) translate(-54.13 -30)"><g class="boost-fire"><g transform="translate(54.13 64.96)"><path d="M24.13-10.83C24.13 2.5 0 34.96 0 34.96S-24.13 2.5-24.13-10.83C-24.13-24.15-13.33-34.96 0-34.96 13.33-34.96 24.13-24.15 24.13-10.83Z" stroke="#ffb627" stroke-width="12"/></g></g></g><g transform="translate(47.31 232.35)"><path d="M14.22-40.34L-17.31-18.18-14.58 40.34 17.31 18.66Z" stroke="#ffb627" stroke-width="12"/></g><g transform="translate(185.53 232.35)"><path d="M-14.22-40.34L17.31-18.18 14.58 40.34-17.31 18.66Z" stroke="#ffb627" stroke-width="12"/></g><g transform="translate(116.56 146.22)"><path d="M0-116.22C3.97-116.22 7.83-114.81 10.84-112.22 23.12-101.62 53.64-69.63 55.4-12.18 57.09 43.31 51.08 116.22 51.08 116.22H-51.08S-57.09 43.31-55.4-12.18C-53.64-69.63-23.12-101.62-10.84-112.22-7.83-114.81-3.97-116.22 0-116.22Z" stroke="#ffd539" stroke-width="12"/><path class="boost-shine" d="M0-116.22C3.97-116.22 7.83-114.81 10.84-112.22 23.12-101.62 53.64-69.63 55.4-12.18 57.09 43.31 51.08 116.22 51.08 116.22H-51.08S-57.09 43.31-55.4-12.18C-53.64-69.63-23.12-101.62-10.84-112.22-7.83-114.81-3.97-116.22 0-116.22Z"/><g transform="translate(0 -116.22)"><g class="boost-sparkle"><path d="M0,-22 L4,-4 L22,0 L4,4 L0,22 L-4,4 L-22,0 L-4,-4 Z" fill="#fff8d1"/><path d="M0,-12 L2,-2 L12,0 L2,2 L0,12 L-2,2 L-12,0 L-2,-2 Z" fill="#fff"/></g></g></g><g transform="translate(116.56 273.13)"><path d="M32.09 10.7H-32.09V-10.7H32.09Z" stroke="#ffd539" stroke-width="12"/></g><circle cx="116.56" cy="105.92" r="23.48" stroke="#ffb627" stroke-width="12"/></g></g></svg>' + (at.boostCount || '') + '</span>' : '') + '</div></div></div></div></div></td><td class="price-col">' + (window._priceColMode === 'mcap' ? fmt(at.mcap) : fmtPrice(at.price)) + '</td><td class="age-col">' + fmtAge(at.age) + '</td><td class="vol-col">' + fmt(at.vol) + '</td>' + pctTd(at.p5m) + pctTd(at.p15m) + pctTd(at.p1h) + pctTd(at.p6h) + pctTd(at.p24h) + '<td class="mcap-col">' + (window._priceColMode === 'mcap' ? fmtPrice(at.price) : fmt(at.mcap)) + '</td><td class="row-dots-col"><span class="token-dots" onclick="event.stopPropagation();showRowMenu(this, ' + aIdx + ')"><svg class="dots-outline" width="20" height="20" viewBox="0 -960 960 960" fill="currentColor"><path d="M322.5-437.5Q340-455 340-480t-17.5-42.5Q305-540 280-540t-42.5 17.5Q220-505 220-480t17.5 42.5Q255-420 280-420t42.5-17.5Zm200 0Q540-455 540-480t-17.5-42.5Q505-540 480-540t-42.5 17.5Q420-505 420-480t17.5 42.5Q455-420 480-420t42.5-17.5Zm200 0Q740-455 740-480t-17.5-42.5Q705-540 680-540t-42.5 17.5Q620-505 620-480t17.5 42.5Q655-420 680-420t42.5-17.5ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"/></svg><svg class="dots-filled" width="20" height="20" viewBox="0 -960 960 960" fill="currentColor"><path d="M322.5-437.5Q340-455 340-480t-17.5-42.5Q305-540 280-540t-42.5 17.5Q220-505 220-480t17.5 42.5Q255-420 280-420t42.5-17.5Zm200 0Q540-455 540-480t-17.5-42.5Q505-540 480-540t-42.5 17.5Q420-505 420-480t17.5 42.5Q455-420 480-420t42.5-17.5Zm200 0Q740-455 740-480t-17.5-42.5Q705-540 680-540t-42.5 17.5Q620-505 620-480t17.5 42.5Q655-420 680-420t42.5-17.5ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Z"/></svg></span></td></tr>';
       tbody.insertAdjacentHTML('beforeend', aRow);
     }
   } else {
@@ -1587,7 +1594,7 @@ function loadData() {
         <td${t.boosted ? ' class="boosted-cell"' : ''}><div class="token-cell">
           <span class="row-num">${rowNum}</span>
           <div class="token-badges"><img class="token-badge-icon" src="${chainImg}"></div>
-          <div class="token-avatar-wrap${t.boosted ? ' boosted-avatar' : ''}"><img class="token-avatar-img" style="outline:1px solid ${chainColor}" loading="lazy" src="${t.img || ''}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="token-avatar" style="display:${t.img ? 'none' : 'flex'};background:linear-gradient(135deg,${grad})">${letter}</div></div>
+          <div class="token-avatar-wrap${t.boosted ? ' boosted-avatar' : ''}"><img class="token-avatar-img" style="outline:1px solid ${chainColor}" loading="lazy" decoding="async" src="${imgProxy(t.img, 56, 56)}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="token-avatar" style="display:${t.img ? 'none' : 'flex'};background:linear-gradient(135deg,${grad})">${letter}</div></div>
           <div class="token-info"><div class="token-top-row"><span class="token-symbol">${t.sym}</span><span class="token-pair" style="color:rgba(255,255,255,0.3);font-size:14px;font-weight:400">/${t.pair||t.quoteSymbol||({solana:'SOL',eth:'WETH',base:'WETH',bsc:'BNB',sui:'SUI',tron:'TRX',arbitrum:'WETH',avalanche:'WAVAX',polygon:'WMATIC',optimism:'WETH',blast:'WETH',ton:'TON',sonic:'S',hyperliquid:'WHYPE',berachain:'WBERA',monad:'MON',cronos:'WCRO',aptos:'APT',linea:'WETH',zksync:'WETH',fantom:'WFTM',mantle:'WMNT',scroll:'WETH',manta:'WETH',starknet:'ETH'}[t.net])||'SOL'}</span>${t.boosted ? '<span class="boost-badge"><svg class="boost-badge-icon" viewBox="0 0 500 500" fill="none" stroke-linecap="round" stroke-linejoin="round"><g class="boost-bob"><g transform="translate(312.32 204.14) rotate(45) translate(-116.42 -151.35)"><g transform="translate(116.78 283.83) translate(-54.13 -30)"><g class="boost-fire"><g transform="translate(54.13 64.96)"><path d="M24.13-10.83C24.13 2.5 0 34.96 0 34.96S-24.13 2.5-24.13-10.83C-24.13-24.15-13.33-34.96 0-34.96 13.33-34.96 24.13-24.15 24.13-10.83Z" stroke="#ffb627" stroke-width="12"/></g></g></g><g transform="translate(47.31 232.35)"><path d="M14.22-40.34L-17.31-18.18-14.58 40.34 17.31 18.66Z" stroke="#ffb627" stroke-width="12"/></g><g transform="translate(185.53 232.35)"><path d="M-14.22-40.34L17.31-18.18 14.58 40.34-17.31 18.66Z" stroke="#ffb627" stroke-width="12"/></g><g transform="translate(116.56 146.22)"><path d="M0-116.22C3.97-116.22 7.83-114.81 10.84-112.22 23.12-101.62 53.64-69.63 55.4-12.18 57.09 43.31 51.08 116.22 51.08 116.22H-51.08S-57.09 43.31-55.4-12.18C-53.64-69.63-23.12-101.62-10.84-112.22-7.83-114.81-3.97-116.22 0-116.22Z" stroke="#ffd539" stroke-width="12"/><path class="boost-shine" d="M0-116.22C3.97-116.22 7.83-114.81 10.84-112.22 23.12-101.62 53.64-69.63 55.4-12.18 57.09 43.31 51.08 116.22 51.08 116.22H-51.08S-57.09 43.31-55.4-12.18C-53.64-69.63-23.12-101.62-10.84-112.22-7.83-114.81-3.97-116.22 0-116.22Z"/><g transform="translate(0 -116.22)"><g class="boost-sparkle"><path d="M0,-22 L4,-4 L22,0 L4,4 L0,22 L-4,4 L-22,0 L-4,-4 Z" fill="#fff8d1"/><path d="M0,-12 L2,-2 L12,0 L2,2 L0,12 L-2,2 L-12,0 L-2,-2 Z" fill="#fff"/></g></g></g><g transform="translate(116.56 273.13)"><path d="M32.09 10.7H-32.09V-10.7H32.09Z" stroke="#ffd539" stroke-width="12"/></g><circle cx="116.56" cy="105.92" r="23.48" stroke="#ffb627" stroke-width="12"/></g></g></svg>' + (t.boostCount || '') + '</span>' : ''}</div></div>
           </div></div>
         </td>
@@ -2061,7 +2068,7 @@ function renderWatchlist() {
     var imgSrc = token ? (token.img || '') : '';
     var letter = sym.charAt(0).toUpperCase();
     var avatarHtml = imgSrc
-      ? '<img class="wl-modal-token-img" src="' + imgSrc + '" onerror="this.style.display=\'none\'">'
+      ? '<img class="wl-modal-token-img" decoding="async" src="' + imgProxy(imgSrc, 64, 64) + '" onerror="this.style.display=\'none\'">'
       : '<div class="wl-modal-token-img" style="background:#333;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff">' + letter + '</div>';
 
     var clickAction = token
@@ -3156,8 +3163,8 @@ function renderRecentSearches() {
       var gradIdx = Math.abs(t.sym.charCodeAt(0) * 7 + (t.sym.charCodeAt(1)||0) * 13) % GRADIENTS.length;
       var grad = GRADIENTS[gradIdx] || '#666,#999';
       var letter = t.sym ? t.sym.charAt(0) : '?';
-      var imgHtml = t.img 
-        ? '<img src="' + t.img + '" style="width:20px;height:20px;border-radius:50%;object-fit:cover" onerror="this.style.display=\'none\'">'
+      var imgHtml = t.img
+        ? '<img decoding="async" src="' + imgProxy(t.img, 40, 40) + '" style="width:20px;height:20px;border-radius:50%;object-fit:cover" onerror="this.style.display=\'none\'">'
         : '<div style="width:20px;height:20px;border-radius:50%;background:linear-gradient(135deg,' + grad + ');display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff">' + letter + '</div>';
       return '<div class="recent-chip" onclick="selectSearchResult(\'' + (t.ca || '').replace(/'/g,'') + '\',\'' + t.sym + '\')">' + imgHtml + '<span>' + t.sym + '</span></div>';
     }).join('') + '</div>';
@@ -3180,7 +3187,7 @@ function showSearchDefault() {
   if (boosted.length > 0) {
     boostedList.innerHTML = boosted.map(function(t) {
       var imgHtml = t.img
-        ? '<img class="boosted-chip-img" src="' + t.img + '" onerror="this.style.display=\'none\'">'
+        ? '<img class="boosted-chip-img" decoding="async" src="' + imgProxy(t.img, 40, 40) + '" onerror="this.style.display=\'none\'">'
         : '';
       return '<div class="boosted-chip" onclick="selectSearchResult(\'' + (t.ca || '').replace(/'/g,'') + '\',\'' + t.sym + '\')">' +
         imgHtml +
@@ -3348,8 +3355,8 @@ function buildSearchItem(t) {
   var caShort = t.ca ? (t.ca.slice(0,6) + '...' + t.ca.slice(-4)) : '';
   var pairCa = t.pairAddress ? (t.pairAddress.slice(0,6) + '...' + t.pairAddress.slice(-4)) : '';
   
-  var avatarHtml = t.img 
-    ? '<img class="search-modal-item-avatar" src="' + t.img + '" style="object-fit:cover" onerror="this.style.display=\'none\'">'
+  var avatarHtml = t.img
+    ? '<img class="search-modal-item-avatar" decoding="async" src="' + imgProxy(t.img, 64, 64) + '" style="object-fit:cover" onerror="this.style.display=\'none\'">'
     : '<div class="search-modal-item-avatar" style="background:linear-gradient(135deg,' + grad + ')">' + letter + '</div>';
   
   var addrHtml = '';
@@ -3768,7 +3775,7 @@ var bubs = [];
         (showScopeRing ? '<div class="hm-scope-ring"></div>' : '') +
         (showTicks ? '<div class="hm-ticks"></div>' : '') +
         '<div class="hm-content">' +
-          (showLogo ? (t.img ? '<img src="' + t.img + '" style="width:' + (emojiSize + 4) + 'px;height:' + (emojiSize + 4) + 'px;border-radius:50%;object-fit:cover;margin-bottom:-1px;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5))" onerror="this.style.display=\'none\'">' : '<div style="font-size:' + emojiSize + 'px;line-height:1;margin-bottom:0;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5))">' + emoji + '</div>') : '') +
+          (showLogo ? (t.img ? '<img decoding="async" src="' + imgProxy(t.img, 80, 80) + '" style="width:' + (emojiSize + 4) + 'px;height:' + (emojiSize + 4) + 'px;border-radius:50%;object-fit:cover;margin-bottom:-1px;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5))" onerror="this.style.display=\'none\'">' : '<div style="font-size:' + emojiSize + 'px;line-height:1;margin-bottom:0;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5))">' + emoji + '</div>') : '') +
           '<div class="hm-ticker" style="font-size:' + fsTicker + 'px">' + t.sym + '</div>' +
           (showPct ? '<div class="hm-pct" style="font-size:' + fsPct + 'px;color:' + styles.pctColor + '">' + (styles.isUp && !styles.isNeutral ? "+" : "") + tfVal.toFixed(1) + '%</div>' : '') +
           (t.boosted && r > 25 ? '<div class="hm-boosted-badge">⚡' + (t.boostCount || '') + '</div>' : '') +
@@ -4334,7 +4341,7 @@ function openBubbleModal(t) {
   var bmChainColor = CHAIN_COLORS[t.net] || CHAIN_COLORS['solana'];
   av.style.outline = '1px solid ' + bmChainColor;
   if (t.img) {
-    av.innerHTML = '<img src="' + t.img + '" style="width:100%;height:100%;border-radius:6px;object-fit:cover" onerror="this.parentElement.textContent=\'' + t.sym.charAt(0) + '\'">';
+    av.innerHTML = '<img decoding="async" src="' + imgProxy(t.img, 128, 128) + '" style="width:100%;height:100%;border-radius:6px;object-fit:cover" onerror="this.parentElement.textContent=\'' + t.sym.charAt(0) + '\'">';
   } else {
     var hue = t.p24h >= 0 ? 152 : 0;
     var lum = Math.min(45, 25 + Math.abs(t.p24h || 0) * 0.3);
@@ -5493,7 +5500,7 @@ function openTokenPage(t) {
   var av = document.getElementById('tpRAvatar');
   var modalChainColor = CHAIN_COLORS[t.net] || CHAIN_COLORS['solana'];
   av.style.outline = '1px solid ' + modalChainColor;
-  if (t.img) av.innerHTML = '<img src="' + t.img + '" onerror="this.parentElement.textContent=\'' + (t.sym||'?').charAt(0) + '\'">';
+  if (t.img) av.innerHTML = '<img decoding="async" src="' + imgProxy(t.img, 128, 128) + '" onerror="this.parentElement.textContent=\'' + (t.sym||'?').charAt(0) + '\'">';
   else av.textContent = (t.sym||'?').charAt(0);
   if (t.boosted) { av.classList.add('boosted-avatar'); av.style.outline = 'none'; }
   else av.classList.remove('boosted-avatar');
@@ -6142,7 +6149,7 @@ window.addEventListener('popstate', function() {
 var LIVE_MODE = true;
 var liveDataLoaded = false;
 // Cloudflare Worker API (reads from Supabase, populated by scraper cron)
-var MEMESCOPE_API = 'https://memescope-scraper.memescope-io.workers.dev/tokens';
+var MEMESCOPE_API = '/api/tokens';
 
 function updateBubbleData(newTokens) {}
 

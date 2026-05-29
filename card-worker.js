@@ -727,6 +727,121 @@ export default {
       }
     }
 
+    // ─── Image Proxy with Cloudflare Image Resizing + Edge Cache ────
+    // Usage: /api/img?url=https://dd.dexscreener.com/...&w=64&h=64
+    if (pathname === '/api/img') {
+      const imageUrl = url.searchParams.get('url');
+      if (!imageUrl) {
+        return new Response('Missing url param', { status: 400 });
+      }
+
+      // Only allow known image origins
+      try {
+        const imgHost = new URL(imageUrl).hostname;
+        const allowed = ['dexscreener.com', 'raw.githubusercontent.com', 'arweave.net',
+          'ipfs.io', 'cf-ipfs.com', 'pump.fun', 'nftstorage.link', 'imgur.com'];
+        if (!allowed.some(d => imgHost === d || imgHost.endsWith('.' + d))) {
+          return new Response('Origin not allowed', { status: 403 });
+        }
+      } catch {
+        return new Response('Invalid URL', { status: 400 });
+      }
+
+      // Edge cache — keyed on full URL including size params
+      const cache = caches.default;
+      const cacheKey = new Request(url.toString(), request);
+      let cached = await cache.match(cacheKey);
+      if (cached) return cached;
+
+      const w = Math.min(parseInt(url.searchParams.get('w')) || 64, 256);
+      const h = Math.min(parseInt(url.searchParams.get('h')) || 64, 256);
+
+      try {
+        // Try Cloudflare Image Resizing (requires Images & Stream on zone)
+        const imgResp = await fetch(imageUrl, {
+          cf: {
+            image: {
+              width: w,
+              height: h,
+              fit: 'cover',
+              format: 'webp',
+              quality: 80,
+            }
+          }
+        });
+
+        if (!imgResp.ok) {
+          // Cache 404s briefly to avoid hammering upstream
+          const notFound = new Response('', { status: 404, headers: { 'Cache-Control': 'public, max-age=300' } });
+          ctx.waitUntil(cache.put(cacheKey, notFound.clone()));
+          return notFound;
+        }
+
+        const body = await imgResp.arrayBuffer();
+        const resp = new Response(body, {
+          headers: {
+            'Content-Type': imgResp.headers.get('content-type') || 'image/webp',
+            'Cache-Control': 'public, max-age=86400',         // 1 day browser
+            'CDN-Cache-Control': 'public, max-age=604800',    // 7 days edge
+            'Access-Control-Allow-Origin': '*',
+          }
+        });
+        ctx.waitUntil(cache.put(cacheKey, resp.clone()));
+        return resp;
+      } catch {
+        // Fallback: proxy without resize (Image Resizing might not be enabled)
+        try {
+          const fallback = await fetch(imageUrl);
+          if (!fallback.ok) {
+            return new Response('', { status: 404, headers: { 'Cache-Control': 'public, max-age=300' } });
+          }
+          const body = await fallback.arrayBuffer();
+          const resp = new Response(body, {
+            headers: {
+              'Content-Type': fallback.headers.get('content-type') || 'image/png',
+              'Cache-Control': 'public, max-age=86400',
+              'CDN-Cache-Control': 'public, max-age=604800',
+              'Access-Control-Allow-Origin': '*',
+            }
+          });
+          ctx.waitUntil(cache.put(cacheKey, resp.clone()));
+          return resp;
+        } catch {
+          return new Response('', { status: 502 });
+        }
+      }
+    }
+
+    // ─── Token API Proxy (same-origin + edge cache) ─────────────────
+    // Avoids extra DNS+TLS handshake to scraper subdomain
+    if (pathname === '/api/tokens') {
+      const cache = caches.default;
+      const cacheKey = new Request(url.toString(), request);
+      let cached = await cache.match(cacheKey);
+      if (cached) return cached;
+
+      try {
+        const apiResp = await fetch(SCRAPER_API);
+        if (!apiResp.ok) throw new Error('Upstream ' + apiResp.status);
+        const body = await apiResp.arrayBuffer();
+        const resp = new Response(body, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Cache-Control': 'public, max-age=5, s-maxage=5',
+            'CDN-Cache-Control': 'max-age=5',
+            'Access-Control-Allow-Origin': '*',
+          }
+        });
+        ctx.waitUntil(cache.put(cacheKey, resp.clone()));
+        return resp;
+      } catch {
+        return new Response('{"error":"upstream"}', {
+          status: 502,
+          headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+        });
+      }
+    }
+
     // ─── Everything Else: Static Assets / SPA ───────────────────────
     const assetResp = await env.ASSETS.fetch(request);
     const ct = assetResp.headers.get('content-type') || '';

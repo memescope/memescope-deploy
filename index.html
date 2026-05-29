@@ -14,7 +14,7 @@
 <link rel="dns-prefetch" href="https://dd.dexscreener.com">
 <script>
 // Early fetch — start API call while HTML is still parsing
-window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/tokens').then(function(r){return r.json()}).catch(function(){return null});
+window._earlyTokens = fetch('/api/tokens').then(function(r){return r.json()}).catch(function(){return null});
 </script>
 <meta charset="UTF-8">
 <meta name="version" content="2.5.12">
@@ -53,7 +53,8 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
 </script>
 <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Saira+Stencil+One&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Saira+Stencil+One&display=swap" rel="stylesheet"></noscript>
-<link rel="stylesheet" href="/styles.css">
+<link rel="stylesheet" href="/styles.css" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="/styles.css"></noscript>
 </head>
 <body>
 
@@ -79,6 +80,8 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
     .ms-load-spinner i:nth-child(11){transform:rotate(300deg) translateY(-5.5px);animation-delay:-.167s}
     .ms-load-spinner i:nth-child(12){transform:rotate(330deg) translateY(-5.5px);animation-delay:-.083s}
     @media(prefers-reduced-motion:reduce){.ms-load-spinner i{animation-duration:3s}}
+    .app{visibility:hidden}.app.ready{visibility:visible}
+    body{background:#1c1b1d;margin:0}
   </style>
   <div class="ms-load-chip">
     <div class="ms-load-spinner" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
@@ -493,7 +496,6 @@ window._earlyTokens = fetch('https://memescope-scraper.memescope-io.workers.dev/
 </div>
 
 <!-- LOADING SCREEN (old one removed — new iOS-style loader at top of body uses same ID) -->
-<style>.app{visibility:hidden}.app.ready{visibility:visible}</style>
 
 <div class="app">
 
