@@ -478,6 +478,32 @@ function isBot(userAgent) {
 
 // ── Worker Entry Point ──────────────────────────────────────────────────────
 
+// ── Security + Performance Headers ─────────────────────────────────
+const SECURITY_HEADERS = {
+  'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload',
+  'X-Content-Type-Options': 'nosniff',
+  'X-Frame-Options': 'SAMEORIGIN',
+  'Referrer-Policy': 'strict-origin-when-cross-origin',
+  'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
+  'X-XSS-Protection': '1; mode=block',
+};
+
+// Early Hints — resources the browser should start fetching immediately
+const EARLY_HINT_LINKS = [
+  '</styles.css>; rel=preload; as=style',
+  '</app.js>; rel=preload; as=script',
+  '<https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Saira+Stencil+One&display=swap>; rel=preload; as=style',
+  '</api/tokens>; rel=preload; as=fetch; crossorigin',
+];
+
+function addSecurityHeaders(headers) {
+  for (const [k, v] of Object.entries(SECURITY_HEADERS)) {
+    headers.set(k, v);
+  }
+  headers.set('Vary', 'Accept-Encoding');
+  return headers;
+}
+
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
@@ -812,29 +838,41 @@ export default {
       }
     }
 
-    // ─── Token API Proxy (same-origin + edge cache) ─────────────────
+    // ─── Token API Proxy (same-origin + edge cache + KV fallback) ───
     // Avoids extra DNS+TLS handshake to scraper subdomain
     if (pathname === '/api/tokens') {
+      const corsJson = {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'public, max-age=5, s-maxage=5',
+        'CDN-Cache-Control': 'max-age=5',
+        'Access-Control-Allow-Origin': '*',
+        'Vary': 'Accept-Encoding',
+      };
+
+      // 1. Edge cache (per-POP, fastest)
       const cache = caches.default;
       const cacheKey = new Request(url.toString(), request);
       let cached = await cache.match(cacheKey);
       if (cached) return cached;
 
+      // 2. Try upstream
       try {
         const apiResp = await fetch(SCRAPER_API);
         if (!apiResp.ok) throw new Error('Upstream ' + apiResp.status);
-        const body = await apiResp.arrayBuffer();
-        const resp = new Response(body, {
-          headers: {
-            'Content-Type': 'application/json',
-            'Cache-Control': 'public, max-age=5, s-maxage=5',
-            'CDN-Cache-Control': 'max-age=5',
-            'Access-Control-Allow-Origin': '*',
-          }
-        });
+        const body = await apiResp.text();
+        const resp = new Response(body, { headers: corsJson });
         ctx.waitUntil(cache.put(cacheKey, resp.clone()));
+        // 3. Save to KV as global fallback (non-blocking)
+        ctx.waitUntil(env.BOOSTS.put('_token_cache', body));
         return resp;
       } catch {
+        // 4. KV fallback — globally replicated, survives upstream outages
+        try {
+          const kvData = await env.BOOSTS.get('_token_cache');
+          if (kvData) {
+            return new Response(kvData, { headers: { ...corsJson, 'X-Source': 'kv-fallback' } });
+          }
+        } catch {}
         return new Response('{"error":"upstream"}', {
           status: 502,
           headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
@@ -846,19 +884,25 @@ export default {
     const assetResp = await env.ASSETS.fetch(request);
     const ct = assetResp.headers.get('content-type') || '';
     const headers = new Headers(assetResp.headers);
+
+    // Security headers on all responses
+    addSecurityHeaders(headers);
+
     if (ct.includes('text/html')) {
       // HTML: always revalidate so deploys are instant
       headers.set('Cache-Control', 'no-cache, must-revalidate');
       headers.set('Pragma', 'no-cache');
+      // Preload critical resources via Link header
+      headers.set('Link', EARLY_HINT_LINKS.join(', '));
     } else if (ct.includes('font')) {
       // Fonts: cache 1 year (they never change)
       headers.set('Cache-Control', 'public, max-age=31536000, immutable');
     } else if (ct.includes('javascript') || ct.includes('css')) {
-      // JS, CSS: short cache, revalidate on every visit so deploys take effect
-      headers.set('Cache-Control', 'public, max-age=60, must-revalidate');
+      // JS, CSS: cache 1 day — SW version-busts on deploy
+      headers.set('Cache-Control', 'public, max-age=86400, stale-while-revalidate=60');
     } else if (ct.includes('image/')) {
-      // Images: cache 1 day
-      headers.set('Cache-Control', 'public, max-age=86400');
+      // Images: cache 1 week
+      headers.set('Cache-Control', 'public, max-age=604800');
     }
     return new Response(assetResp.body, { status: assetResp.status, headers });
   },
