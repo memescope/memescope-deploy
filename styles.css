@@ -3064,7 +3064,7 @@
     display: none;
     position: fixed;
     inset: 0;
-    background: rgba(10,9,12,0.72);
+    background: radial-gradient(ellipse at center, rgba(20,19,20,0.78) 0%, rgba(8,8,9,0.9) 100%);
     z-index: 3000;
   }
   .wc-overlay.open { display: flex; align-items: center; justify-content: center; animation: m3OverlayIn var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard); }
@@ -3252,7 +3252,7 @@
   .bubble-modal-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(10,9,12,0.72);
+    background: radial-gradient(ellipse at center, rgba(20,19,20,0.78) 0%, rgba(8,8,9,0.9) 100%);
     z-index: 2000;
     visibility: hidden;
     pointer-events: none;
@@ -4448,7 +4448,7 @@
     display: none;
     position: fixed;
     inset: 0;
-    background: rgba(10,9,12,0.72);
+    background: radial-gradient(ellipse at center, rgba(20,19,20,0.78) 0%, rgba(8,8,9,0.9) 100%);
     z-index: 3000;
   }
   .boost-modal-overlay.open { display: flex; align-items: center; justify-content: center; animation: m3OverlayIn var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard); }
@@ -4736,7 +4736,7 @@
     display: none;
     position: fixed;
     inset: 0;
-    background: rgba(10,9,12,0.72);
+    background: radial-gradient(ellipse at center, rgba(20,19,20,0.78) 0%, rgba(8,8,9,0.9) 100%);
     z-index: 3000;
   }
   .bugreport-overlay.open { display: flex; align-items: center; justify-content: center; animation: m3OverlayIn var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard); }
@@ -5553,7 +5553,7 @@
 
     /* === TOKEN MODAL — full screen === */
     .bubble-modal-overlay {
-      background: rgba(10,9,12,0.72) !important;
+      background: radial-gradient(ellipse at center, rgba(20,19,20,0.78) 0%, rgba(8,8,9,0.9) 100%) !important;
     }
     .bubble-modal {
       width: 100vw !important;
@@ -6237,7 +6237,7 @@
     display: none;
     position: fixed;
     inset: 0;
-    background: rgba(10,9,12,0.72);
+    background: radial-gradient(ellipse at center, rgba(20,19,20,0.78) 0%, rgba(8,8,9,0.9) 100%);
     z-index: 3000;
   }
   .wl-modal-overlay.open { display: block; animation: m3OverlayIn var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard); }
@@ -7019,7 +7019,7 @@
     display: none;
     position: fixed;
     inset: 0;
-    background: rgba(10,9,12,0.72);
+    background: radial-gradient(ellipse at center, rgba(20,19,20,0.78) 0%, rgba(8,8,9,0.9) 100%);
     z-index: 3000;
     overflow: hidden;
   }
@@ -8058,7 +8058,7 @@
     display: none;
     position: fixed;
     inset: 0;
-    background: rgba(10,9,12,0.72);
+    background: radial-gradient(ellipse at center, rgba(20,19,20,0.78) 0%, rgba(8,8,9,0.9) 100%);
     z-index: 3000;
   }
   .mc-overlay.open { display: block; overflow-y: auto; animation: m3OverlayIn var(--md-sys-motion-duration-medium4) var(--md-sys-motion-easing-emphasized-decelerate); }
