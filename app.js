@@ -1,10 +1,26 @@
 
-var APP_VERSION = '2.5.85';
+var APP_VERSION = '2.5.86';
 
-// Image proxy — routes token images through our Cloudflare edge for caching + resize
+// Image proxy — shrinks token images so they load fast even on bad wifi.
+// DexScreener's CDN (98%+ of token images) natively resizes via query params,
+// allowed buckets are 64/128/256. We rewrite the URL so the browser pulls a tiny
+// webp straight from their fast CDN — no proxy hop, far fewer bytes.
 function imgProxy(url, w, h) {
   if (!url) return '';
-  return '/api/img?url=' + encodeURIComponent(url) + '&w=' + (w || 64) + '&h=' + (h || 64) + '&v=2';
+  var reqW = w || 64;
+  if (url.indexOf('cdn.dexscreener.com') !== -1 || url.indexOf('dd.dexscreener.com') !== -1) {
+    var bucket = reqW <= 48 ? 64 : (reqW <= 96 ? 128 : 256);
+    try {
+      var u = new URL(url);
+      u.searchParams.set('width', bucket);
+      u.searchParams.set('height', bucket);
+      u.searchParams.set('quality', '70');
+      u.searchParams.set('format', 'webp');
+      return u.toString();
+    } catch (e) { /* fall through to edge proxy */ }
+  }
+  // Other origins (coingecko, etc.) — route through our edge proxy for caching.
+  return '/api/img?url=' + encodeURIComponent(url) + '&w=' + reqW + '&h=' + (h || reqW) + '&v=2';
 }
 
 var _scrollLockY = 0;
