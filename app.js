@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.84';
+var APP_VERSION = '2.5.85';
 
 // Image proxy — routes token images through our Cloudflare edge for caching + resize
 function imgProxy(url, w, h) {
