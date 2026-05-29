@@ -8,9 +8,11 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://memescope-scraper.memescope-io.workers.dev">
 <link rel="preconnect" href="https://api.dexscreener.com">
+<link rel="preconnect" href="https://cdn.dexscreener.com" crossorigin>
 <link rel="preconnect" href="https://dd.dexscreener.com" crossorigin>
 <link rel="dns-prefetch" href="https://memescope-scraper.memescope-io.workers.dev">
 <link rel="dns-prefetch" href="https://api.dexscreener.com">
+<link rel="dns-prefetch" href="https://cdn.dexscreener.com">
 <link rel="dns-prefetch" href="https://dd.dexscreener.com">
 <script>
 // Early fetch — start API call while HTML is still parsing
@@ -51,8 +53,9 @@ window._earlyTokens = fetch('/api/tokens').then(function(r){return r.json()}).ca
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"WebApplication","name":"MemeScope","url":"https://memescope.io","description":"Scope trending meme coins across Solana, Ethereum, Base, BSC & more. Live bubble maps, real-time prices, charts, and on-chain analytics — all in one place.","applicationCategory":"FinanceApplication","operatingSystem":"All","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Organization","name":"MemeScope","url":"https://memescope.io","sameAs":["https://x.com/memescope_io"]}}
 </script>
-<link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Saira+Stencil+One&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
-<noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Saira+Stencil+One&display=swap" rel="stylesheet"></noscript>
+<link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
+<link rel="preload" href="/saira-stencil.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
@@ -648,7 +651,7 @@ window._earlyTokens = fetch('/api/tokens').then(function(r){return r.json()}).ca
     </div>
 
   <div style="text-align:center;padding:24px 16px 32px;border-top:1px solid rgba(255,255,255,0.04);margin-top:20px">
-    <div style="font-size:11px;color:rgba(255,255,255,0.25);font-family:'Inter',sans-serif;margin-bottom:6px">memescope.eth &middot; <span data-version>v2.5.86</span></div>
+    <div style="font-size:11px;color:rgba(255,255,255,0.25);font-family:'Inter',sans-serif;margin-bottom:6px">memescope.eth &middot; <span data-version>v2.5.87</span></div>
     <div style="font-size:11px;color:rgba(255,255,255,0.2);font-family:'Inter',sans-serif">&copy; 2026 Memescope.io. All rights reserved.</div>
   </div>
 

@@ -33,6 +33,10 @@ async function ensureWasm() {
 const SCRAPER_API = 'https://memescope-scraper.memescope-io.workers.dev/tokens';
 const DEXSCREENER_API = 'https://api.dexscreener.com/latest/dex/tokens/';
 
+// Bumped on every deploy (with package.json/app.js/sw.js). Edge-cache keys for HTML
+// include this, so a new deploy = new key = old cached HTML is ignored instantly.
+const CACHE_VERSION = '2.5.87';
+
 const VALID_CHAINS = new Set([
   'solana', 'eth', 'ethereum', 'base', 'bsc', 'sui', 'tron',
   'arbitrum', 'avalanche', 'avax', 'polygon', 'optimism', 'blast', 'ton',
@@ -492,7 +496,7 @@ const SECURITY_HEADERS = {
 const EARLY_HINT_LINKS = [
   '</styles.css>; rel=preload; as=style',
   '</app.js>; rel=preload; as=script',
-  '<https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Saira+Stencil+One&display=swap>; rel=preload; as=style',
+  '<https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap>; rel=preload; as=style',
   '</api/tokens>; rel=preload; as=fetch; crossorigin',
 ];
 
@@ -873,7 +877,36 @@ export default {
     }
 
     // ─── Everything Else: Static Assets / SPA ───────────────────────
-    const assetResp = await env.ASSETS.fetch(request);
+    // HTML edge-cache: serve the page from the nearest Cloudflare POP instead of
+    // fetching from origin on every visit. Keyed by CACHE_VERSION so deploys are
+    // still instant (new version = new key = old copy ignored). GET only.
+    if (request.method === 'GET') {
+      const htmlCache = caches.default;
+      const htmlKey = new Request(url.origin + url.pathname + '|html|' + CACHE_VERSION, request);
+      const cachedHtml = await htmlCache.match(htmlKey);
+      if (cachedHtml && (cachedHtml.headers.get('content-type') || '').includes('text/html')) {
+        return cachedHtml;
+      }
+
+      const probe = await env.ASSETS.fetch(request);
+      const probeCt = probe.headers.get('content-type') || '';
+      if (probeCt.includes('text/html')) {
+        const h = new Headers(probe.headers);
+        addSecurityHeaders(h);
+        // Browser always revalidates (instant deploys); edge holds the copy.
+        h.set('Cache-Control', 'no-cache, must-revalidate');
+        h.set('Pragma', 'no-cache');
+        h.set('Link', EARLY_HINT_LINKS.join(', '));
+        const body = await probe.arrayBuffer();
+        const htmlResp = new Response(body, { status: probe.status, headers: h });
+        if (probe.status === 200) ctx.waitUntil(htmlCache.put(htmlKey, htmlResp.clone()));
+        return htmlResp;
+      }
+      // Not HTML — fall through to the generic handler below, reusing this response.
+      var prefetched = probe;
+    }
+
+    const assetResp = prefetched || await env.ASSETS.fetch(request);
     const ct = assetResp.headers.get('content-type') || '';
     const headers = new Headers(assetResp.headers);
 
