@@ -4,7 +4,7 @@ var APP_VERSION = '2.5.85';
 // Image proxy — routes token images through our Cloudflare edge for caching + resize
 function imgProxy(url, w, h) {
   if (!url) return '';
-  return '/api/img?url=' + encodeURIComponent(url) + '&w=' + (w || 64) + '&h=' + (h || 64);
+  return '/api/img?url=' + encodeURIComponent(url) + '&w=' + (w || 64) + '&h=' + (h || 64) + '&v=2';
 }
 
 var _scrollLockY = 0;
