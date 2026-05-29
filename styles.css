@@ -6413,9 +6413,18 @@
     padding: 56px 24px;
     color: var(--text-secondary);
     font-size: 13px;
-    gap: 12px;
+    gap: 6px;
   }
-  .wl-modal-empty svg { opacity: 0.2; }
+  .wl-modal-empty svg { opacity: 0.32; margin-bottom: 8px; }
+  .wl-modal-empty .wl-empty-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.82);
+  }
+  .wl-modal-empty .wl-empty-sub {
+    font-size: 12.5px;
+    color: rgba(255,255,255,0.45);
+  }
 
   .ms-utility {
     border-top: 1px solid rgba(220,220,220,0.08);
