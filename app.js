@@ -6265,6 +6265,16 @@ async function verifyTopTokens() {
 
 async function fetchLiveTokens() {
   try {
+    // Show app shell immediately with skeleton rows — don't wait for data
+    if (!window._firstLoadDone) {
+      var app = document.querySelector('.app');
+      if (app && !app.classList.contains('ready')) {
+        loadData(); // renders skeleton rows
+        app.classList.add('ready');
+        var ls = document.getElementById('loadingScreen');
+        if (ls) { ls.style.opacity = '0'; setTimeout(function() { ls.remove(); }, 400); }
+      }
+    }
     console.log('MemeScope: Fetching...');
     showFetchingProgress();
     
