@@ -6894,8 +6894,10 @@
   .mob-menu-chains-section {
     background: #141314;
     border-radius: 28px;
-    margin: 4px 2px;
+    margin: 10px 2px 4px;
     padding: 16px 4px 12px;
+    border: 1px solid rgba(255,255,255,0.06);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.05);
   }
   .mob-menu-section-title {
     display: block;
@@ -8554,14 +8556,29 @@
       display: flex;
     }
     .mob-nav-menu-header {
+      position: relative;
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: center;
       padding: 16px 20px 12px;
       flex-shrink: 0;
       border-bottom: 1px solid rgba(255,255,255,0.06);
     }
+    .mob-menu-header-actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .mob-menu-header-actions .mob-menu-circle { flex-direction: row; gap: 0; }
+    .mob-menu-header-actions .mob-menu-circle-icon { width: 40px; height: 40px; }
+    .mob-menu-header-actions .mob-menu-circle-icon img,
+    .mob-menu-header-actions .mob-menu-circle-icon svg { width: 21px !important; height: 21px !important; }
+    .mob-menu-header-actions .mob-menu-circle-label { display: none; }
     .mob-nav-menu-close {
+      position: absolute;
+      right: 20px;
+      top: 50%;
+      transform: translateY(-50%);
       width: 32px;
       height: 32px;
       background: #2b2930;
