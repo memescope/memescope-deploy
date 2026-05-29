@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.90';
+var APP_VERSION = '2.5.93';
 
 // Image proxy — shrinks token images so they load fast even on bad wifi.
 // DexScreener's CDN (98%+ of token images) natively resizes via query params,
@@ -2007,6 +2007,8 @@ document.addEventListener('click', function(e) {
 
 function openWatchlistModal() {
   renderWatchlist();
+  var navWl = document.getElementById('navWatchlistLink');
+  if (navWl) navWl.classList.add('active');
   document.getElementById('wlOverlay').classList.add('open');
   lockScroll();
 }

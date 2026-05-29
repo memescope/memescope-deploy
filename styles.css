@@ -6068,6 +6068,7 @@
     grid-column: 1;
     justify-self: center;
     position: relative;
+    z-index: 1;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -6079,6 +6080,8 @@
   .ms-nav-icon-wrap > .nav-wl-filled { display: none !important; }
   .has-items .ms-nav-icon-wrap > .nav-wl-filled { display: block !important; }
   .has-items .ms-nav-icon-wrap > .nav-wl-outline { display: none !important; }
+  .ms-watchlist-nav.active .ms-nav-icon-wrap > .nav-wl-filled { display: block !important; }
+  .ms-watchlist-nav.active .ms-nav-icon-wrap > .nav-wl-outline { display: none !important; }
   .watchlist-badge {
     display: none;
     position: absolute;
