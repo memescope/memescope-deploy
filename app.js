@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.102';
+var APP_VERSION = '2.5.103';
 
 // Image proxy — shrinks token images so they load fast even on bad wifi.
 // DexScreener's CDN (98%+ of token images) natively resizes via query params,
@@ -493,16 +493,24 @@ function updateTfSlider() {
   slider.style.width = aRect.width + 'px';
   slider.style.opacity = '1';
 }
-requestAnimationFrame(function() {
-  setTimeout(function() {
-    var slider = document.getElementById('tfSlider');
-    if (slider) {
-      slider.style.transition = 'none';
-      updateTfSlider();
-      requestAnimationFrame(function() { slider.style.transition = ''; });
-    }
-  }, 100);
+// Position the slider at the preset timeframe immediately (transitions are
+// off until #tfGroup gets .tf-anim), so on refresh it appears directly under
+// the active pill instead of sliding in from the first one. We reposition on
+// load to stay aligned once web fonts settle, then enable click animations.
+function _enableTfAnim() {
+  var group = document.getElementById('tfGroup');
+  if (group) requestAnimationFrame(function() { group.classList.add('tf-anim'); });
+}
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', updateTfSlider);
+} else {
+  updateTfSlider();
+}
+window.addEventListener('load', function() {
+  updateTfSlider();          // re-align after fonts/layout settle (still instant)
+  _enableTfAnim();           // enable click animations only after settling
 });
+window.addEventListener('resize', updateTfSlider);
 
 // Mobile: tap active timeframe to expand/collapse options
 document.addEventListener('click', function(e) {

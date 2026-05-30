@@ -537,8 +537,13 @@
     height: 100%;
     background: #4a4fd8;
     border-radius: var(--md-sys-shape-corner-full);
-    transition: left var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-emphasized), width var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-emphasized);
     z-index: 0;
+  }
+  /* Transition is enabled only after the initial position is set (via the
+     .tf-anim class), so the slider paints directly at the preset timeframe
+     on refresh instead of sliding in from the first pill. */
+  .filter-group.tf-anim .filter-slider {
+    transition: left var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-emphasized), width var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-emphasized);
   }
   .filter-btn.active {
     background: transparent;
