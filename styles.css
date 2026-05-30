@@ -2402,7 +2402,10 @@
     letter-spacing: 0.06em;
     text-transform: uppercase;
     color: var(--text-secondary);
+    text-align: center;
     padding: 2px 4px 10px;
+    margin-bottom: 8px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
   }
   .search-chain-grid {
     display: grid;
