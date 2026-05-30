@@ -5285,6 +5285,12 @@
       display: none !important;
     }
 
+    /* Multichart on mobile: Clear All + X go on the top bar, logo hidden,
+       and the controls inside .mc-filterbar are hidden (bar kept as anchor). */
+    body.mc-open .mc-topbar-actions { display: inline-flex !important; }
+    body.mc-open .memescope-logo { display: none !important; }
+    body.mc-open .mc-filterbar .mc-combo-pill,
+    body.mc-open .mc-filterbar .mc-combo-close { display: none !important; }
 
     .dexhub-btn { display: none !important; }
     .top-header-right { gap: 0 !important; }
@@ -8068,87 +8074,114 @@
   .mc-overlay {
     display: none;
     position: fixed;
-    inset: 0;
-    background: radial-gradient(ellipse at center, rgba(20,19,20,0.78) 0%, rgba(8,8,9,0.9) 100%);
-    z-index: 3000;
+    top: 76px;
+    right: 0;
+    bottom: 0;
+    left: 64px;
+    background: var(--md-sys-color-surface);
+    z-index: 955;
   }
-  .mc-overlay.open { display: block; overflow-y: auto; animation: m3OverlayIn var(--md-sys-motion-duration-medium4) var(--md-sys-motion-easing-emphasized-decelerate); }
-  .mc-overlay.closing { display: block; overflow-y: auto; animation: m3OverlayOut var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-emphasized-accelerate) forwards; pointer-events: none; }
+  .mc-overlay.open { display: flex; flex-direction: column; overflow: hidden; animation: m3OverlayIn var(--md-sys-motion-duration-medium4) var(--md-sys-motion-easing-emphasized-decelerate); }
+  .mc-overlay.closing { display: flex; flex-direction: column; overflow: hidden; animation: m3OverlayOut var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-emphasized-accelerate) forwards; pointer-events: none; }
 
   /* Top-right actions (clear pill + exit button) */
-  .mc-top-actions {
-    position: fixed;
-    top: 16px;
-    right: 16px;
-    z-index: 3050;
+  .mc-filterbar {
     display: flex;
     align-items: center;
+    justify-content: flex-end;
     gap: 8px;
+    height: 58px;
+    box-sizing: border-box;
+    padding: 10px 24px 10px 24px;
+    background: #2b2930;
+    margin: 0 8px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    border-radius: 0;
+    flex-shrink: 0;
+  }
+  .mc-panel-title {
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: 0.01em;
+  }
+  .mc-panel {
+    background: #1c1b1d;
+    border-radius: 0 0 var(--md-sys-shape-corner-extra-large) var(--md-sys-shape-corner-extra-large);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-top: none;
+    margin: 0 8px 8px;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
   }
   .mc-combo-pill {
     display: inline-flex;
     align-items: stretch;
-    height: 40px;
-    background: rgba(255,255,255,0.08);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 20px;
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+    height: 36px;
+    background: transparent;
+    border: none;
+    border-radius: var(--md-sys-shape-corner-full);
   }
+  /* Multichart nav icon: outline by default, filled when active (multichart open) */
+  #navMultichart .mc-nav-icon-filled { display: none; }
+  body.mc-open #navMultichart .mc-nav-icon-outline { display: none; }
+  body.mc-open #navMultichart .mc-nav-icon-filled { display: inline-block; }
+
+  /* Top-bar Clear All + X are MOBILE ONLY (see mobile media query below).
+     On desktop the controls live in the .mc-filterbar bar. */
+  .mc-topbar-actions { display: none; align-items: center; gap: 8px; }
+  .mc-topbar-actions .mc-combo-clear { height: 40px; font-size: 14px; }
+  .mc-topbar-actions .mc-combo-close { width: 40px; height: 40px; }
   .mc-combo-clear {
     display: flex;
     align-items: center;
-    gap: 7px;
-    padding: 0 16px 0 18px;
-    background: none;
+    gap: 6px;
+    padding: 0 16px;
+    background: #e53935;
     border: none;
-    color: rgba(255,255,255,0.7);
+    color: #fff;
     font-family: 'Inter', sans-serif;
     font-size: 13px;
-    font-weight: 500;
-    letter-spacing: 0.01em;
+    font-weight: 600;
     cursor: pointer;
     transition: color 150ms ease, background 150ms ease;
-    border-radius: 20px 0 0 20px;
+    border-radius: var(--md-sys-shape-corner-full);
   }
-  .mc-combo-clear:hover { color: #fff; background: rgba(255,255,255,0.06); }
-  .mc-combo-clear svg { opacity: 0.5; }
-  .mc-combo-clear:hover svg { opacity: 0.8; }
-  .mc-combo-divider {
-    width: 1px;
-    align-self: center;
-    height: 18px;
-    background: rgba(255,255,255,0.1);
-    flex-shrink: 0;
-  }
+  .mc-combo-clear:hover { color: #fff; background: #c62828; }
+  .mc-combo-clear svg { opacity: 1; }
   .mc-combo-close {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 40px;
-    background: none;
+    width: 36px;
+    height: 36px;
+    background: var(--md-sys-color-surface-container-highest);
     border: none;
-    color: rgba(255,255,255,0.5);
+    color: var(--md-sys-color-on-surface-variant);
     cursor: pointer;
-    transition: color 150ms ease, background 150ms ease;
-    border-radius: 0 20px 20px 0;
+    border-radius: var(--md-sys-shape-corner-full);
+    transition: background 160ms ease, color 160ms ease, transform 160ms ease;
   }
-  .mc-combo-close:hover { color: #fff; background: rgba(255,255,255,0.06);
-    transition: background 150ms ease, color 150ms ease;
+  .mc-combo-close svg { transition: transform 200ms cubic-bezier(0.2,0,0,1); }
+  .mc-combo-close:hover {
+    background: #37353e;
+    color: var(--md-sys-color-on-surface);
   }
+  .mc-combo-close:hover svg { transform: rotate(90deg); }
+  .mc-combo-close:active { transform: scale(0.92); }
   .mc-exit:hover { background: #55515e; color: var(--text-primary); }
 
   /* ---- Card grid — cards float directly on overlay ---- */
   .mc-grid {
-    padding: 24px;
-    padding-top: 64px;
+    padding: 20px 24px 32px;
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
     gap: 14px;
     align-content: start;
-    min-height: 100vh;
-    min-height: 100dvh;
   }
 
   /* ---- Add-slot card (dashed placeholder) ---- */
@@ -8171,6 +8204,20 @@
     background: #211f21;
   }
   .mc-add-slot svg { opacity: 0.3; }
+  .mc-add-btn {
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+    color: #fff;
+    background: var(--md-sys-color-surface-container-highest);
+    border: none;
+    border-radius: var(--md-sys-shape-corner-full);
+    padding: 9px 20px;
+    cursor: pointer;
+    transition: background 150ms ease;
+  }
+  .mc-add-btn:hover { background: #37353e; }
   .mc-add-slot span {
     font-size: 14px;
     font-weight: 600;
@@ -8332,6 +8379,30 @@
     padding: 10px 20px 8px;
     flex-shrink: 0;
   }
+
+  /* ---- Add mode: search surface mirrors the top bar and lights up ---- */
+  body.mc-add-mode .mc-search-float {
+    border-radius: 24px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+  }
+  body.mc-add-mode .mc-search-wrap {
+    height: 42px;
+    padding: 0 18px;
+    gap: 8px;
+    box-sizing: border-box;
+    border-radius: 9999px;
+    outline: 1px solid #4a4fd8;
+    outline-offset: -1px;
+  }
+  /* Once results drop down, the outline goes away — bar reads as part of the open modal */
+  body.mc-add-mode .mc-search-float.has-results .mc-search-wrap {
+    outline: none;
+  }
+  body.mc-add-mode .mc-search-icon { opacity: 1; width: 22px; height: 22px; }
+  body.mc-add-mode .mc-search { font-size: 15px; font-weight: 400; letter-spacing: normal; }
+  body.mc-add-mode .mc-search-close { width: 28px; height: 28px; }
+  body.mc-add-mode .mc-search-results { padding: 4px 12px 12px; }
+
   .mc-search-icon {
     flex-shrink: 0;
     opacity: 0.7;
@@ -8407,10 +8478,12 @@
 
   /* ---- Mobile ---- */
   @media (max-width: 768px) {
+    .mc-overlay { left: 0; top: 60px; bottom: 54px; }
+    .mc-filterbar { padding: 10px 14px; margin: 0 8px; }
+    .mc-panel { margin: 0 8px 8px; }
     .mc-grid {
       grid-template-columns: 1fr;
-      padding: 16px;
-      padding-top: 60px;
+      padding: 12px 14px 20px;
       gap: 12px;
     }
     .mc-card, .mc-add-slot { min-height: 300px; border-radius: 28px; }

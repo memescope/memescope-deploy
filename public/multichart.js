@@ -44,10 +44,10 @@
     if (_mcTokens.length < MAX_CHARTS) {
       var slot = document.createElement('div');
       slot.className = 'mc-add-slot';
-      slot.onclick = function() { mcOpenSearch(); };
+      slot.onclick = function() { mcEnterAddMode(); };
       slot.innerHTML =
         '<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>' +
-        '<span>Add Chart</span>' +
+        '<button class="mc-add-btn" type="button">Add Chart</button>' +
         '<span class="mc-slot-count">' + _mcTokens.length + ' / ' + MAX_CHARTS + '</span>';
       grid.appendChild(slot);
     }
@@ -66,6 +66,15 @@
     var overlay = document.getElementById('mcOverlay');
     if (!overlay) return;
     overlay.classList.add('open');
+    document.body.classList.add('mc-open');
+    // Jump to top BEFORE locking scroll. lockScroll() sets
+    // body{position:fixed; top:-scrollY}; that negative offset breaks the
+    // position:sticky header (it reverts to its in-flow spot, now scrolled off
+    // the top), exposing the bubble-hero through the strip the overlay leaves
+    // uncovered for the global header/sidebar. Going to top first keeps the
+    // sticky header pinned at 0. We restore the user's scroll on close.
+    window._mcPrevScroll = window.scrollY || window.pageYOffset || 0;
+    window.scrollTo(0, 0);
     if (typeof lockScroll === 'function') lockScroll();
     // Load saved charts on first open
     var saved = _load();
@@ -102,6 +111,8 @@
     if (typeof m3CloseOverlay === 'function') {
       m3CloseOverlay(overlay, function() {
         if (typeof unlockScroll === 'function') unlockScroll();
+        window.scrollTo(0, window._mcPrevScroll || 0);
+        document.body.classList.remove('mc-open');
         mcCloseSearch();
         var mcNav = document.getElementById('navMultichart');
         if(mcNav) { mcNav.classList.remove('pill-animate'); mcNav.classList.remove('active'); }
@@ -109,6 +120,8 @@
     } else {
       if (overlay) overlay.classList.remove('open');
       if (typeof unlockScroll === 'function') unlockScroll();
+      window.scrollTo(0, window._mcPrevScroll || 0);
+      document.body.classList.remove('mc-open');
       mcCloseSearch();
       var mcNav = document.getElementById('navMultichart');
       if(mcNav) { mcNav.classList.remove('pill-animate'); mcNav.classList.remove('active'); }
@@ -127,12 +140,78 @@
     }, 200);
   };
   window.mcCloseSearch = function() {
+    if (window._mcAddMode) { mcExitAddMode(); return; }
     var float = document.getElementById('mcSearchFloat');
     if (float) { float.classList.remove('open'); float.classList.remove('has-results'); }
     var backdrop = document.getElementById('mcSearchBackdrop');
     if (backdrop) backdrop.classList.remove('open');
     var results = document.getElementById('mcResults');
     if (results) results.style.display = 'none';
+    var inp = document.getElementById('mcSearch');
+    if (inp) inp.value = '';
+  };
+
+  // ---- Add mode: search surface sits exactly over the top search bar ----
+  function _positionFloat() {
+    var bar = document.getElementById('headerSearchBar');
+    var float = document.getElementById('mcSearchFloat');
+    if (!float) return;
+    var r = bar ? bar.getBoundingClientRect() : null;
+    // When the header search is hidden (multichart open) it has zero size —
+    // anchor the search to the empty bar strip under the Clear All row instead.
+    if (!r || r.width === 0) {
+      var fb = document.querySelector('.mc-filterbar');
+      var fr = fb ? fb.getBoundingClientRect() : null;
+      if (fr && fr.width > 0) {
+        var fw = Math.min(560, fr.width);
+        var ftop = fr.top + 6;
+        var fleft = fr.left + (fr.width - fw) / 2;
+        float.style.top = ftop + 'px';
+        float.style.left = fleft + 'px';
+        float.style.width = fw + 'px';
+        float.style.transform = 'none';
+        float.style.maxHeight = (window.innerHeight - ftop - 24) + 'px';
+        return;
+      }
+      var w = Math.min(560, window.innerWidth - 32);
+      var top = 80;
+      var left = (window.innerWidth - w) / 2;
+      float.style.top = top + 'px';
+      float.style.left = left + 'px';
+      float.style.width = w + 'px';
+      float.style.transform = 'none';
+      float.style.maxHeight = (window.innerHeight - top - 24) + 'px';
+      return;
+    }
+    // Mirror the top search bar position so it reads as the same bar lighting up
+    float.style.top = r.top + 'px';
+    float.style.left = r.left + 'px';
+    float.style.width = r.width + 'px';
+    float.style.transform = 'none';
+    float.style.maxHeight = (window.innerHeight - r.top - 24) + 'px';
+  }
+
+  window.mcEnterAddMode = function() {
+    window._mcAddMode = true;
+    document.body.classList.add('mc-add-mode');
+    var backdrop = document.getElementById('mcSearchBackdrop');
+    if (backdrop) backdrop.classList.add('open');
+    var float = document.getElementById('mcSearchFloat');
+    _positionFloat();
+    if (float) float.classList.add('open');
+    var inp = document.getElementById('mcSearch');
+    if (inp) { inp.value = ''; setTimeout(function() { inp.focus(); }, 60); }
+  };
+
+  window.mcExitAddMode = function() {
+    window._mcAddMode = false;
+    document.body.classList.remove('mc-add-mode');
+    var float = document.getElementById('mcSearchFloat');
+    if (float) { float.classList.remove('open'); float.classList.remove('has-results'); float.style.cssText = ''; }
+    var backdrop = document.getElementById('mcSearchBackdrop');
+    if (backdrop) backdrop.classList.remove('open');
+    var results = document.getElementById('mcResults');
+    if (results) { results.style.display = 'none'; results.innerHTML = ''; }
     var inp = document.getElementById('mcSearch');
     if (inp) inp.value = '';
   };
@@ -594,6 +673,7 @@
         mcCloseSearch();
       }
     });
+    window.addEventListener('resize', function() { if (window._mcAddMode) _positionFloat(); });
   }
 
   function _doSearch(query) {
@@ -759,6 +839,21 @@
   // ---- Init ----
   document.addEventListener('DOMContentLoaded', function() {
     _setupSearch();
+
+    // When multichart is open, clicking any sidebar / mobile-menu action
+    // (a chain, watchlist, contact, etc.) should close the multichart and let
+    // that action run behind it — so the user "goes back" and sees the result.
+    document.addEventListener('click', function(e) {
+      if (!document.body.classList.contains('mc-open')) return;
+      var t = e.target;
+      var link = t && t.closest ? t.closest('.ms-nav-link, .ms-mobile-item, .mob-menu-circle') : null;
+      if (!link) return;
+      // Don't auto-close on the link that (re)opens the multichart itself.
+      if (link.id === 'navMultichart') return;
+      var oc = (link.getAttribute && link.getAttribute('onclick')) || '';
+      if (oc.indexOf('openMultichart') !== -1) return;
+      closeMultichart();
+    }, true);
   });
 
 })();

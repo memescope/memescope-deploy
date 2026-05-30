@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.99';
+var APP_VERSION = '2.5.100';
 
 // Image proxy — shrinks token images so they load fast even on bad wifi.
 // DexScreener's CDN (98%+ of token images) natively resizes via query params,
@@ -2991,6 +2991,7 @@ function toggleNewPairSound(on) { newPairSoundEnabled = on; }
 var searchHighlightIdx = -1;
 
 function openSearchModal() {
+  if (window._mcAddMode) return;
   var overlay = document.getElementById('search-overlay');
   var bar = document.getElementById('headerSearchBar');
   var modal = document.getElementById('search-modal');
