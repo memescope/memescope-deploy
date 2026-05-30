@@ -666,7 +666,7 @@ window._earlyTokens = fetch('/api/tokens').then(function(r){return r.json()}).ca
     </div>
 
   <div style="text-align:center;padding:24px 16px 32px;border-top:1px solid rgba(255,255,255,0.04);margin-top:20px">
-    <div style="font-size:11px;color:rgba(255,255,255,0.25);font-family:'Inter',sans-serif;margin-bottom:6px">memescope.eth &middot; <span data-version>v2.5.104</span></div>
+    <div style="font-size:11px;color:rgba(255,255,255,0.25);font-family:'Inter',sans-serif;margin-bottom:6px">memescope.eth &middot; <span data-version>v2.5.105</span></div>
     <div style="font-size:11px;color:rgba(255,255,255,0.2);font-family:'Inter',sans-serif">&copy; 2026 Memescope.io. All rights reserved.</div>
   </div>
 
@@ -913,8 +913,12 @@ window._earlyTokens = fetch('/api/tokens').then(function(r){return r.json()}).ca
   <div class="search-overlay" id="search-overlay" onclick="if(event.target===this)closeSearchModal()">
     <div class="search-modal" id="search-modal">
       <div class="search-modal-input-wrap">
-        <svg width="18" height="18" viewBox="0 0 32 32" fill="currentColor"><path d="M16.906 20.188l5.5 5.5-2.25 2.281-5.75-5.781c-1.406 0.781-3.031 1.219-4.719 1.219-5.344 0-9.688-4.344-9.688-9.688s4.344-9.688 9.688-9.688 9.719 4.344 9.719 9.688c0 2.5-0.969 4.781-2.5 6.469zM3.219 13.719c0 3.594 2.875 6.469 6.469 6.469s6.469-2.875 6.469-6.469-2.875-6.469-6.469-6.469-6.469 2.875-6.469 6.469z"/></svg>
+        <svg width="22" height="22" viewBox="0 0 32 32" fill="currentColor" class="search-modal-mag-icon"><path d="M16.906 20.188l5.5 5.5-2.25 2.281-5.75-5.781c-1.406 0.781-3.031 1.219-4.719 1.219-5.344 0-9.688-4.344-9.688-9.688s4.344-9.688 9.688-9.688 9.719 4.344 9.719 9.688c0 2.5-0.969 4.781-2.5 6.469zM3.219 13.719c0 3.594 2.875 6.469 6.469 6.469s6.469-2.875 6.469-6.469-2.875-6.469-6.469-6.469-6.469 2.875-6.469 6.469z"/></svg>
         <input type="text" class="search-modal-input" id="search-modal-input" placeholder="Search by CA, token name, pairs..." oninput="handleSearchInput(this.value)" autocomplete="off" spellcheck="false">
+        <div class="search-chain-wrap">
+          <button class="search-chain-btn" id="searchChainBtn" onclick="event.stopPropagation(); toggleSearchChainMenu()" title="Filter by chain"><img id="searchChainCurrent" src="/img/globe-chains.svg" alt="All chains"></button>
+          <div class="search-chain-menu" id="searchChainMenu"></div>
+        </div>
         <button class="search-modal-esc" onclick="closeSearchModal()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
       </div>
       

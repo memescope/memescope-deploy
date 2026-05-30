@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.104';
+var APP_VERSION = '2.5.105';
 
 // Image proxy — shrinks token images so they load fast even on bad wifi.
 // DexScreener's CDN (98%+ of token images) natively resizes via query params,
@@ -3035,6 +3035,14 @@ function openSearchModal() {
   if (!isMobile) input.focus();
   else setTimeout(function() { input.focus(); }, 300);
   searchHighlightIdx = -1;
+  // Reset chain filter to All on each open
+  _searchChain = 'all';
+  var chainCur = document.getElementById('searchChainCurrent');
+  if (chainCur) chainCur.src = '/img/globe-chains.svg';
+  var chainBtn = document.getElementById('searchChainBtn');
+  if (chainBtn) chainBtn.classList.remove('filtered');
+  var chainMenu = document.getElementById('searchChainMenu');
+  if (chainMenu) chainMenu.classList.remove('open');
   showSearchDefault();
 }
 
@@ -3233,6 +3241,81 @@ function showSearchDefault() {
   document.getElementById('search-results').style.display = 'none';
 }
 
+// ── Search chain filter (desktop) ───────────────────────────────────────────
+var _searchChain = 'all';
+var SEARCH_CHAINS = [
+  { id: 'all', label: 'All Chains', icon: '/img/globe-chains.svg' },
+  { id: 'solana', label: 'Solana' },
+  { id: 'eth', label: 'Ethereum' },
+  { id: 'base', label: 'Base' },
+  { id: 'sui', label: 'Sui' },
+  { id: 'bsc', label: 'BSC' },
+  { id: 'tron', label: 'Tron' },
+  { id: 'arbitrum', label: 'Arbitrum' },
+  { id: 'avalanche', label: 'Avalanche' },
+  { id: 'polygon', label: 'Polygon' },
+  { id: 'optimism', label: 'Optimism' },
+  { id: 'blast', label: 'Blast' },
+  { id: 'ton', label: 'TON' },
+  { id: 'pulsechain', label: 'Pulsechain' },
+  { id: 'seiv2', label: 'Sei' },
+  { id: 'sonic', label: 'Sonic' },
+  { id: 'hyperliquid', label: 'Hyperliquid' },
+  { id: 'berachain', label: 'Berachain' },
+  { id: 'monad', label: 'Monad' },
+  { id: 'cronos', label: 'Cronos' },
+  { id: 'aptos', label: 'Aptos' },
+  { id: 'linea', label: 'Linea' },
+  { id: 'zksync', label: 'zkSync' },
+  { id: 'fantom', label: 'Fantom' },
+  { id: 'mantle', label: 'Mantle' },
+  { id: 'scroll', label: 'Scroll' },
+  { id: 'manta', label: 'Manta' },
+  { id: 'starknet', label: 'Starknet' }
+];
+
+function _buildSearchChainMenu() {
+  var menu = document.getElementById('searchChainMenu');
+  if (!menu) return;
+  menu.innerHTML = '<div class="search-chain-title">Filter by chain</div>' +
+    '<div class="search-chain-grid">' +
+    SEARCH_CHAINS.map(function(c) {
+      var icon = c.icon || CHAIN_ICONS[c.id] || '';
+      var active = (_searchChain === c.id) ? ' active' : '';
+      return '<button class="search-chain-opt' + active + '" onclick="event.stopPropagation(); setSearchChain(\'' + c.id + '\')" title="' + c.label + '">' +
+        '<span class="search-chain-ic"><img src="' + icon + '" alt="' + c.label + '"></span>' +
+        '<span class="search-chain-lbl">' + c.label + '</span></button>';
+    }).join('') + '</div>';
+}
+
+function toggleSearchChainMenu() {
+  var menu = document.getElementById('searchChainMenu');
+  if (!menu) return;
+  if (menu.classList.contains('open')) { menu.classList.remove('open'); return; }
+  _buildSearchChainMenu();
+  menu.classList.add('open');
+}
+
+function setSearchChain(chain) {
+  _searchChain = chain || 'all';
+  var cur = document.getElementById('searchChainCurrent');
+  if (cur) cur.src = (_searchChain === 'all') ? '/img/globe-chains.svg' : (CHAIN_ICONS[_searchChain] || '/img/globe-chains.svg');
+  var btn = document.getElementById('searchChainBtn');
+  if (btn) btn.classList.toggle('filtered', _searchChain !== 'all');
+  var menu = document.getElementById('searchChainMenu');
+  if (menu) menu.classList.remove('open');
+  var input = document.getElementById('search-modal-input');
+  if (input) handleSearchInput(input.value);
+}
+
+// Close the chain menu when clicking anywhere else
+document.addEventListener('click', function(e) {
+  var menu = document.getElementById('searchChainMenu');
+  if (!menu || !menu.classList.contains('open')) return;
+  if (e.target.closest && e.target.closest('.search-chain-wrap')) return;
+  menu.classList.remove('open');
+});
+
 function handleSearchInput(query) {
   var q = query.trim().toLowerCase();
   if (!q) {
@@ -3240,12 +3323,15 @@ function handleSearchInput(query) {
     searchHighlightIdx = -1;
     return;
   }
-  
+
   // Filter loaded tokens first
   var localResults = LIVE_TOKENS.filter(function(t) {
-    return t.sym.toLowerCase().indexOf(q) !== -1 ||
+    var match = t.sym.toLowerCase().indexOf(q) !== -1 ||
            t.name.toLowerCase().indexOf(q) !== -1 ||
            (t.ca && t.ca.toLowerCase().indexOf(q) !== -1);
+    if (!match) return false;
+    if (_searchChain !== 'all' && t.net !== _searchChain) return false;
+    return true;
   }).sort(function(a,b) { return (b.mcap||0) - (a.mcap||0); }).slice(0, 8);
 
   var resultsList = document.getElementById('search-results-list');
@@ -3330,6 +3416,10 @@ async function liveSearchDexScreener(query, resultsList, localResults) {
       }
       if(key) seenCA[key] = deduped.length;
       deduped.push(pairs[j]);
+    }
+
+    if (_searchChain !== 'all') {
+      deduped = deduped.filter(function(t) { return t.net === _searchChain; });
     }
 
     var displayResults = deduped.slice(0, 8);
