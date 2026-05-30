@@ -56,9 +56,25 @@
   // ---- Update count on the add-slot card ----
   function _updateCount() {
     var grid = document.getElementById('mcGrid');
-    if (!grid) return;
-    var countEl = grid.querySelector('.mc-slot-count');
-    if (countEl) countEl.textContent = _mcTokens.length + ' / ' + MAX_CHARTS;
+    if (grid) {
+      var countEl = grid.querySelector('.mc-slot-count');
+      if (countEl) countEl.textContent = _mcTokens.length + ' / ' + MAX_CHARTS;
+    }
+    _updateBadges();
+  }
+
+  function _updateBadges() {
+    var n = _mcTokens.length;
+    ['multichartBadge', 'multichartBadgeMob'].forEach(function(id) {
+      var badge = document.getElementById(id);
+      if (!badge) return;
+      if (n > 0) {
+        badge.textContent = n;
+        badge.classList.add('visible');
+      } else {
+        badge.classList.remove('visible');
+      }
+    });
   }
 
   // ---- Open / Close ----
@@ -839,6 +855,20 @@
   // ---- Init ----
   document.addEventListener('DOMContentLoaded', function() {
     _setupSearch();
+
+    // Reflect saved-chart count in the nav badge before the panel is opened.
+    // Don't populate _mcTokens here — openMultichart() restores them on first
+    // open and relies on _mcTokens being empty to know it hasn't restored yet.
+    try {
+      var savedInit = _load();
+      var n = (savedInit && savedInit.length) || 0;
+      ['multichartBadge', 'multichartBadgeMob'].forEach(function(id) {
+        var badge = document.getElementById(id);
+        if (!badge) return;
+        if (n > 0) { badge.textContent = n; badge.classList.add('visible'); }
+        else { badge.classList.remove('visible'); }
+      });
+    } catch (e) {}
 
     // When multichart is open, clicking any sidebar / mobile-menu action
     // (a chain, watchlist, contact, etc.) should close the multichart and let

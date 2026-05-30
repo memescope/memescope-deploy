@@ -6887,7 +6887,9 @@
     background: rgba(255,255,255,0.08);
     color: #e6e1e3;
     transition: background 0.2s ease;
+    position: relative;
   }
+  .mob-menu-circle-icon > .watchlist-badge { top: 2px; right: 2px; }
   .mob-menu-circle:active .mob-menu-circle-icon {
     background: rgba(255,255,255,0.16);
   }
@@ -8129,6 +8131,10 @@
   #navMultichart .mc-nav-icon-filled { display: none; }
   body.mc-open #navMultichart .mc-nav-icon-outline { display: none; }
   body.mc-open #navMultichart .mc-nav-icon-filled { display: inline-block; }
+  /* Keep mc icons at 24px now that they live inside .ms-nav-icon-wrap */
+  .mc-nav-icon-wrap > .mc-nav-icon { width: 24px !important; height: 24px !important; }
+  /* Match the watchlist wrap box (28px) so the badge anchors identically. */
+  .mc-nav-icon-wrap { width: 28px; height: 28px; }
 
   /* Top-bar Clear All + X are MOBILE ONLY (see mobile media query below).
      On desktop the controls live in the .mc-filterbar bar. */
