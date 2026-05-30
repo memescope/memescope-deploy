@@ -8109,8 +8109,7 @@
   .mc-panel {
     background: #1c1b1d;
     border-radius: 0 0 var(--md-sys-shape-corner-extra-large) var(--md-sys-shape-corner-extra-large);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-top: none;
+    border: none;
     margin: 0 8px 8px;
     flex: 1;
     min-height: 0;
@@ -8189,7 +8188,7 @@
     background: #211f21;
     border: none;
     border-radius: 28px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    box-shadow: none;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -8236,7 +8235,7 @@
     background: #211f21;
     border-radius: 28px;
     border: none;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+    box-shadow: none;
     display: flex;
     flex-direction: column;
     overflow: hidden;
