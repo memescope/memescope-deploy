@@ -580,7 +580,6 @@ window._earlyTokens = fetch('/api/tokens').then(function(r){return r.json()}).ca
       <div class="filter-group" id="tfGroup">
         <span class="filter-slider" id="tfSlider"></span>
         <button class="filter-btn" onclick="setTimeframe('5m')">5M</button>
-        <button class="filter-btn" onclick="setTimeframe('15m')">15M</button>
         <button class="filter-btn active" onclick="setTimeframe('1h')">1H</button>
         <button class="filter-btn" onclick="setTimeframe('4h')">4H</button>
         <button class="filter-btn" onclick="setTimeframe('24h')">24H</button>
@@ -670,7 +669,6 @@ window._earlyTokens = fetch('/api/tokens').then(function(r){return r.json()}).ca
 
             <th data-col="vol" class="sortable" onclick="sortByColumn('vol')"> Volume <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" class="sort-icon"><path d="M7 10l5-5 5 5z"/><path d="M7 14l5 5 5-5z"/></svg></th>
             <th data-col="p5m" class="sortable" onclick="sortByColumn('p5m')"> 5M <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" class="sort-icon"><path d="M7 10l5-5 5 5z"/><path d="M7 14l5 5 5-5z"/></svg></th>
-            <th data-col="p15m" class="sortable" onclick="sortByColumn('p15m')"> 15M <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" class="sort-icon"><path d="M7 10l5-5 5 5z"/><path d="M7 14l5 5 5-5z"/></svg></th>
             <th data-col="p1h" class="sortable" onclick="sortByColumn('p1h')"> 1H <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" class="sort-icon"><path d="M7 10l5-5 5 5z"/><path d="M7 14l5 5 5-5z"/></svg></th>
         <th data-col="p6h" class="sortable" onclick="sortByColumn('p6h')"> 6H <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" class="sort-icon"><path d="M7 10l5-5 5 5z"/><path d="M7 14l5 5 5-5z"/></svg></th>
             <th data-col="p24h" class="sortable" onclick="sortByColumn('p24h')"> 24H <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" class="sort-icon"><path d="M7 10l5-5 5 5z"/><path d="M7 14l5 5 5-5z"/></svg></th>
@@ -691,7 +689,7 @@ window._earlyTokens = fetch('/api/tokens').then(function(r){return r.json()}).ca
     </div>
 
   <div style="text-align:center;padding:24px 16px 32px;border-top:1px solid rgba(255,255,255,0.04);margin-top:20px">
-    <div style="font-size:11px;color:rgba(255,255,255,0.25);font-family:'Inter',sans-serif;margin-bottom:6px">memescope.eth &middot; <span data-version>v2.5.120</span></div>
+    <div style="font-size:11px;color:rgba(255,255,255,0.25);font-family:'Inter',sans-serif;margin-bottom:6px">memescope.eth &middot; <span data-version>v2.5.121</span></div>
     <div style="font-size:11px;color:rgba(255,255,255,0.2);font-family:'Inter',sans-serif">&copy; 2026 Memescope.io. All rights reserved.</div>
   </div>
 
