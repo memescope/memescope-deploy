@@ -308,6 +308,20 @@ window._earlyTokens = fetch('/api/tokens').then(function(r){return r.json()}).ca
 <div class="mc-overlay" id="mcOverlay">
   <div class="mc-filterbar">
     <div class="mc-controls">
+      <div class="mc-ctrl mc-interval">
+        <button class="mc-interval-toggle" type="button" onclick="event.stopPropagation(); mcToggleIntervalMenu()">
+          <span class="mc-ctrl-label">Interval: <b id="mcIntervalVal">15m</b></span>
+          <svg class="mc-interval-caret" width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg>
+        </button>
+        <div class="mc-interval-menu" id="mcIntervalMenu">
+          <button type="button" onclick="event.stopPropagation(); setMcInterval('1')">1m</button>
+          <button type="button" onclick="event.stopPropagation(); setMcInterval('5')">5m</button>
+          <button type="button" onclick="event.stopPropagation(); setMcInterval('15')">15m</button>
+          <button type="button" onclick="event.stopPropagation(); setMcInterval('60')">1h</button>
+          <button type="button" onclick="event.stopPropagation(); setMcInterval('240')">4h</button>
+          <button type="button" onclick="event.stopPropagation(); setMcInterval('1D')">1D</button>
+        </div>
+      </div>
       <div class="mc-ctrl"><button class="mc-ctrl-btn" type="button" onclick="mcAdjust('cols',-1)">&#8722;</button><span class="mc-ctrl-label">Columns: <b id="mcColsVal">3</b></span><button class="mc-ctrl-btn" type="button" onclick="mcAdjust('cols',1)">+</button></div>
       <div class="mc-ctrl"><button class="mc-ctrl-btn" type="button" onclick="mcAdjust('height',-1)">&#8722;</button><span class="mc-ctrl-label">Height: <b id="mcHeightVal">100%</b></span><button class="mc-ctrl-btn" type="button" onclick="mcAdjust('height',1)">+</button></div>
       <div class="mc-ctrl"><button class="mc-ctrl-btn" type="button" onclick="mcAdjust('spacing',-1)">&#8722;</button><span class="mc-ctrl-label">Spacing: <b id="mcSpacingVal">2</b></span><button class="mc-ctrl-btn" type="button" onclick="mcAdjust('spacing',1)">+</button></div>
@@ -676,7 +690,7 @@ window._earlyTokens = fetch('/api/tokens').then(function(r){return r.json()}).ca
     </div>
 
   <div style="text-align:center;padding:24px 16px 32px;border-top:1px solid rgba(255,255,255,0.04);margin-top:20px">
-    <div style="font-size:11px;color:rgba(255,255,255,0.25);font-family:'Inter',sans-serif;margin-bottom:6px">memescope.eth &middot; <span data-version>v2.5.114</span></div>
+    <div style="font-size:11px;color:rgba(255,255,255,0.25);font-family:'Inter',sans-serif;margin-bottom:6px">memescope.eth &middot; <span data-version>v2.5.115</span></div>
     <div style="font-size:11px;color:rgba(255,255,255,0.2);font-family:'Inter',sans-serif">&copy; 2026 Memescope.io. All rights reserved.</div>
   </div>
 

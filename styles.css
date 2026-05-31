@@ -8394,6 +8394,52 @@
     transition: background 150ms ease;
   }
   .mc-ctrl-btn:hover { background: rgba(255,255,255,0.16); }
+  /* Chart interval dropdown pill */
+  .mc-interval { position: relative; padding: 0; }
+  .mc-interval-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    height: 100%;
+    padding: 0 10px;
+    background: transparent;
+    border: none;
+    border-radius: var(--md-sys-shape-corner-full);
+    cursor: pointer;
+    color: var(--text-secondary);
+    font-family: 'Inter', sans-serif;
+  }
+  .mc-interval-caret { opacity: 0.6; flex-shrink: 0; }
+  .mc-interval-menu {
+    display: none;
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    min-width: 110px;
+    background: var(--md-sys-color-surface-container-highest);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    padding: 6px;
+    z-index: 100;
+    box-shadow: 0 12px 36px rgba(0,0,0,0.55);
+    transform-origin: top left;
+  }
+  .mc-interval-menu.open { display: block; animation: m3PanelIn var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-emphasized-decelerate); }
+  .mc-interval-menu button {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 8px 12px;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    color: var(--text-primary);
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .mc-interval-menu button:hover { background: rgba(255,255,255,0.08); }
   .mc-panel-title {
     font-family: 'Inter', sans-serif;
     font-size: 15px;

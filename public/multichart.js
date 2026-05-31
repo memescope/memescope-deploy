@@ -37,7 +37,8 @@
   // Columns are remembered per device — default 1 on mobile, 4 on desktop.
   var _MC_LAYOUT_KEY = 'ms_multichart_layout';
   var _MC_LIMITS = { cols: [1, 6], height: [100, 200], spacing: [0, 6] };
-  var _mcLayout = { colsMobile: 1, colsDesktop: 4, height: 100, spacing: 2 };
+  var _mcLayout = { colsMobile: 1, colsDesktop: 4, height: 100, spacing: 2, interval: '15' };
+  var _MC_INTERVAL_LABELS = { '1': '1m', '5': '5m', '15': '15m', '60': '1h', '240': '4h', '1D': '1D' };
   (function() {
     try {
       var s = JSON.parse(localStorage.getItem(_MC_LAYOUT_KEY));
@@ -46,6 +47,7 @@
         if (s.colsDesktop) _mcLayout.colsDesktop = s.colsDesktop;
         if (s.height) _mcLayout.height = s.height;
         if (s.spacing != null) _mcLayout.spacing = s.spacing;
+        if (s.interval && _MC_INTERVAL_LABELS[s.interval]) _mcLayout.interval = s.interval;
       }
     } catch(e) {}
   })();
@@ -66,7 +68,35 @@
     var c = document.getElementById('mcColsVal'); if (c) c.textContent = cols;
     var h = document.getElementById('mcHeightVal'); if (h) h.textContent = _mcLayout.height + '%';
     var sp = document.getElementById('mcSpacingVal'); if (sp) sp.textContent = _mcLayout.spacing;
+    var iv = document.getElementById('mcIntervalVal'); if (iv) iv.textContent = _MC_INTERVAL_LABELS[_mcLayout.interval] || _mcLayout.interval;
   }
+  // Chart interval — sets the candle timeframe for ALL charts at once.
+  window.mcToggleIntervalMenu = function() {
+    var menu = document.getElementById('mcIntervalMenu');
+    if (menu) menu.classList.toggle('open');
+  };
+  window.setMcInterval = function(res) {
+    _mcLayout.interval = res;
+    _mcSaveLayout();
+    var iv = document.getElementById('mcIntervalVal'); if (iv) iv.textContent = _MC_INTERVAL_LABELS[res] || res;
+    var menu = document.getElementById('mcIntervalMenu'); if (menu) menu.classList.remove('open');
+    // Apply to every existing chart widget
+    Object.keys(_mcWidgets).forEach(function(id) {
+      var w = _mcWidgets[id];
+      if (!w) return;
+      try {
+        if (typeof w.onChartReady === 'function') {
+          w.onChartReady(function() { try { w.activeChart().setResolution(res); } catch(e) {} });
+        }
+      } catch(e) {}
+    });
+  };
+  document.addEventListener('click', function(e) {
+    var menu = document.getElementById('mcIntervalMenu');
+    if (!menu || !menu.classList.contains('open')) return;
+    if (e.target.closest && e.target.closest('.mc-interval')) return;
+    menu.classList.remove('open');
+  });
   window.mcAdjust = function(type, delta) {
     var lim = _MC_LIMITS[type];
     if (!lim) return;
@@ -596,7 +626,7 @@
           library_path: '/charting_library/',
           datafeed: _buildDatafeed(t),
           symbol: t.sym + '/' + (pairTokenMap[chain] || 'SOL'),
-          interval: '15',
+          interval: _mcLayout.interval || '15',
           fullscreen: false,
           autosize: true,
           theme: 'dark',
