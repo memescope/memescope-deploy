@@ -8410,36 +8410,55 @@
     font-family: 'Inter', sans-serif;
   }
   .mc-interval-caret { opacity: 0.6; flex-shrink: 0; }
+  .mc-clock { flex-shrink: 0; }
+  .mc-interval .mc-clock-filled { display: none; }
+  .mc-interval.open .mc-clock-outline { display: none; }
+  .mc-interval.open .mc-clock-filled { display: inline-block; }
   .mc-interval-menu {
     display: none;
-    position: absolute;
-    top: calc(100% + 8px);
-    left: 0;
-    min-width: 110px;
+    position: fixed;
+    min-width: 190px;
     background: var(--md-sys-color-surface-container-highest);
     border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 12px;
+    border-radius: 16px;
     padding: 6px;
-    z-index: 100;
-    box-shadow: 0 12px 36px rgba(0,0,0,0.55);
+    z-index: 9999;
+    box-shadow: 0 16px 44px rgba(0,0,0,0.6);
     transform-origin: top left;
   }
-  .mc-interval-menu.open { display: block; animation: m3PanelIn var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-emphasized-decelerate); }
+  .mc-interval.open .mc-interval-menu { display: block; animation: m3PanelIn var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-emphasized-decelerate); }
+  .mc-interval-menu-title {
+    font-family: 'Inter', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    opacity: 0.7;
+    padding: 8px 12px 6px;
+  }
   .mc-interval-menu button {
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
     width: 100%;
     text-align: left;
-    padding: 8px 12px;
+    padding: 9px 12px;
     background: transparent;
     border: none;
-    border-radius: 8px;
+    border-radius: 10px;
     cursor: pointer;
-    color: var(--text-primary);
+    color: var(--text-secondary);
     font-family: 'Inter', sans-serif;
     font-size: 13px;
-    font-weight: 600;
+    font-weight: 500;
+    transition: background 120ms ease, color 120ms ease;
   }
-  .mc-interval-menu button:hover { background: rgba(255,255,255,0.08); }
+  .mc-interval-menu button:hover { background: rgba(255,255,255,0.06); color: var(--text-primary); }
+  .mc-interval-menu button.active { background: rgba(255,255,255,0.09); color: #fff; font-weight: 600; }
+  .mc-iv-check { flex-shrink: 0; opacity: 0; transition: opacity 120ms ease; }
+  .mc-interval-menu button.active .mc-iv-check { opacity: 1; }
   .mc-panel-title {
     font-family: 'Inter', sans-serif;
     font-size: 15px;

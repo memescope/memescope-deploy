@@ -38,7 +38,7 @@
   var _MC_LAYOUT_KEY = 'ms_multichart_layout';
   var _MC_LIMITS = { cols: [1, 6], height: [100, 200], spacing: [0, 6] };
   var _mcLayout = { colsMobile: 1, colsDesktop: 4, height: 100, spacing: 2, interval: '15' };
-  var _MC_INTERVAL_LABELS = { '1': '1m', '5': '5m', '15': '15m', '60': '1h', '240': '4h', '1D': '1D' };
+  var _MC_INTERVAL_LABELS = { '1': '1 minute', '5': '5 minutes', '15': '15 minutes', '60': '1 hour', '240': '4 hours', '1D': '1 day' };
   (function() {
     try {
       var s = JSON.parse(localStorage.getItem(_MC_LAYOUT_KEY));
@@ -71,15 +71,37 @@
     var iv = document.getElementById('mcIntervalVal'); if (iv) iv.textContent = _MC_INTERVAL_LABELS[_mcLayout.interval] || _mcLayout.interval;
   }
   // Chart interval — sets the candle timeframe for ALL charts at once.
-  window.mcToggleIntervalMenu = function() {
+  function _mcMarkActiveInterval() {
     var menu = document.getElementById('mcIntervalMenu');
-    if (menu) menu.classList.toggle('open');
+    if (!menu) return;
+    menu.querySelectorAll('button[data-res]').forEach(function(b) {
+      b.classList.toggle('active', b.getAttribute('data-res') === _mcLayout.interval);
+    });
+  }
+  window.mcToggleIntervalMenu = function() {
+    var wrap = document.querySelector('.mc-interval');
+    if (!wrap) return;
+    var willOpen = !wrap.classList.contains('open');
+    wrap.classList.toggle('open');
+    if (willOpen) {
+      _mcMarkActiveInterval();
+      // Position the fixed menu under the toggle (escapes the filterbar's
+      // overflow clip on mobile so it renders above the charts).
+      var toggle = wrap.querySelector('.mc-interval-toggle');
+      var menu = document.getElementById('mcIntervalMenu');
+      if (toggle && menu) {
+        var r = toggle.getBoundingClientRect();
+        menu.style.top = (r.bottom + 6) + 'px';
+        menu.style.left = r.left + 'px';
+      }
+    }
   };
   window.setMcInterval = function(res) {
     _mcLayout.interval = res;
     _mcSaveLayout();
     var iv = document.getElementById('mcIntervalVal'); if (iv) iv.textContent = _MC_INTERVAL_LABELS[res] || res;
-    var menu = document.getElementById('mcIntervalMenu'); if (menu) menu.classList.remove('open');
+    _mcMarkActiveInterval();
+    var wrap = document.querySelector('.mc-interval'); if (wrap) wrap.classList.remove('open');
     // Apply to every existing chart widget
     Object.keys(_mcWidgets).forEach(function(id) {
       var w = _mcWidgets[id];
@@ -92,10 +114,10 @@
     });
   };
   document.addEventListener('click', function(e) {
-    var menu = document.getElementById('mcIntervalMenu');
-    if (!menu || !menu.classList.contains('open')) return;
+    var wrap = document.querySelector('.mc-interval.open');
+    if (!wrap) return;
     if (e.target.closest && e.target.closest('.mc-interval')) return;
-    menu.classList.remove('open');
+    wrap.classList.remove('open');
   });
   window.mcAdjust = function(type, delta) {
     var lim = _MC_LIMITS[type];
