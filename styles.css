@@ -2248,7 +2248,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(12,11,14,0.45);
+    background: radial-gradient(ellipse at center, rgba(16,15,16,0.85) 0%, rgba(6,6,7,0.93) 100%);
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
     z-index: 1000;
@@ -3192,7 +3192,7 @@
     display: none;
     position: fixed;
     inset: 0;
-    background: radial-gradient(ellipse at center, rgba(20,19,20,0.78) 0%, rgba(8,8,9,0.9) 100%);
+    background: radial-gradient(ellipse at center, rgba(16,15,16,0.85) 0%, rgba(6,6,7,0.93) 100%);
     z-index: 3000;
   }
   .wc-overlay.open { display: flex; align-items: center; justify-content: center; animation: m3OverlayIn var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard); }
@@ -3380,7 +3380,7 @@
   .bubble-modal-overlay {
     position: fixed;
     inset: 0;
-    background: radial-gradient(ellipse at center, rgba(20,19,20,0.78) 0%, rgba(8,8,9,0.9) 100%);
+    background: radial-gradient(ellipse at center, rgba(16,15,16,0.85) 0%, rgba(6,6,7,0.93) 100%);
     z-index: 2000;
     visibility: hidden;
     pointer-events: none;
@@ -4581,7 +4581,7 @@
     display: none;
     position: fixed;
     inset: 0;
-    background: radial-gradient(ellipse at center, rgba(20,19,20,0.78) 0%, rgba(8,8,9,0.9) 100%);
+    background: radial-gradient(ellipse at center, rgba(16,15,16,0.85) 0%, rgba(6,6,7,0.93) 100%);
     z-index: 3000;
   }
   .boost-modal-overlay.open { display: flex; align-items: center; justify-content: center; animation: m3OverlayIn var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard); }
@@ -4869,7 +4869,7 @@
     display: none;
     position: fixed;
     inset: 0;
-    background: radial-gradient(ellipse at center, rgba(20,19,20,0.78) 0%, rgba(8,8,9,0.9) 100%);
+    background: radial-gradient(ellipse at center, rgba(16,15,16,0.85) 0%, rgba(6,6,7,0.93) 100%);
     z-index: 3000;
   }
   .bugreport-overlay.open { display: flex; align-items: center; justify-content: center; animation: m3OverlayIn var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard); }
@@ -5715,7 +5715,7 @@
 
     /* === TOKEN MODAL — full screen === */
     .bubble-modal-overlay {
-      background: radial-gradient(ellipse at center, rgba(20,19,20,0.78) 0%, rgba(8,8,9,0.9) 100%) !important;
+      background: radial-gradient(ellipse at center, rgba(16,15,16,0.85) 0%, rgba(6,6,7,0.93) 100%) !important;
     }
     .bubble-modal {
       width: 100vw !important;
@@ -6399,7 +6399,7 @@
     display: none;
     position: fixed;
     inset: 0;
-    background: radial-gradient(ellipse at center, rgba(20,19,20,0.78) 0%, rgba(8,8,9,0.9) 100%);
+    background: radial-gradient(ellipse at center, rgba(16,15,16,0.85) 0%, rgba(6,6,7,0.93) 100%);
     z-index: 3000;
   }
   .wl-modal-overlay.open { display: block; animation: m3OverlayIn var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard); }
@@ -6979,9 +6979,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0,0,0,0.5);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    background: radial-gradient(ellipse at center, rgba(16,15,16,0.85) 0%, rgba(6,6,7,0.93) 100%);
     z-index: 1999;
     opacity: 0;
     visibility: hidden;
@@ -7214,7 +7212,7 @@
     display: none;
     position: fixed;
     inset: 0;
-    background: radial-gradient(ellipse at center, rgba(20,19,20,0.78) 0%, rgba(8,8,9,0.9) 100%);
+    background: radial-gradient(ellipse at center, rgba(16,15,16,0.85) 0%, rgba(6,6,7,0.93) 100%);
     z-index: 3000;
     overflow: hidden;
   }
@@ -7796,9 +7794,7 @@
   .bf-overlay {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.55);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    background: radial-gradient(ellipse at center, rgba(16,15,16,0.85) 0%, rgba(6,6,7,0.93) 100%);
     z-index: 1000;
     visibility: hidden;
     pointer-events: none;
@@ -8882,6 +8878,22 @@
       overflow: hidden;
       will-change: height;
       transition: height 350ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    /* Scrim behind the bottom-nav Watchlist/Menu panels (dims the page above) */
+    .mob-nav-scrim {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(ellipse at center, rgba(16,15,16,0.85) 0%, rgba(6,6,7,0.93) 100%);
+      opacity: 0;
+      pointer-events: none;
+      z-index: 8999;
+      transition: opacity var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard);
+    }
+    .mobile-bottom-nav.menu-open ~ .mob-nav-scrim,
+    .mobile-bottom-nav.watchlist-open ~ .mob-nav-scrim,
+    .mobile-bottom-nav.search-open ~ .mob-nav-scrim {
+      opacity: 1;
+      pointer-events: auto;
     }
     .mobile-bottom-nav.menu-open {
       height: calc(100% - 28px);
