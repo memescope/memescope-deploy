@@ -973,7 +973,8 @@
       var c24h = Math.max(-9999, Math.min(9999, t.p24h || 0));
       var c24hCls = c24h >= 0 ? 'up' : 'down';
       var c24hStr = (c24h >= 0 ? '+' : '') + c24h.toFixed(2) + '%';
-      var chainIcon = chainIcons[t.net] || chainIcons.solana;
+      var _ci = (typeof CHAIN_ICONS !== 'undefined') ? CHAIN_ICONS : chainIcons;
+      var chainIcon = _ci[t.net] || chainIcons[t.net] || _ci.solana;
       var alreadyAdded = _mcTokens.some(function(mt) { return mt.ca.toLowerCase() === t.ca.toLowerCase(); });
       var gradIdx = Math.abs((t.sym.charCodeAt(0) || 0) * 7 + (t.sym.charCodeAt(1) || 0) * 13) % GRADIENTS.length;
       var grad = GRADIENTS[gradIdx];

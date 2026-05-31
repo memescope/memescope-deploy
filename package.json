@@ -1,6 +1,6 @@
 {
   "name": "memescope-deploy",
-  "version": "2.5.119",
+  "version": "2.5.120",
   "private": true,
   "description": "MemeScope — The Meme Coin Scope & Scanner",
   "scripts": {
