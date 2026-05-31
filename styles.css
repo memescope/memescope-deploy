@@ -6802,19 +6802,19 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 38px;
-    height: 38px;
-    background: none;
+    width: 40px;
+    height: 40px;
+    background: var(--md-sys-color-surface-container-highest);
     border: none;
     border-radius: 50%;
     cursor: pointer;
     flex-shrink: 0;
-    transition: background var(--md-sys-motion-duration-short2) linear, opacity 0.25s ease;
+    transition: background var(--md-sys-motion-duration-short2) linear;
     -webkit-tap-highlight-color: transparent;
   }
-  .ms-header-ens-btn img { height: 32px; width: 32px; }
-  .ms-header-ens-btn:hover { background: rgba(255,255,255,0.08); }
-  .ms-header-ens-btn:active { background: rgba(255,255,255,0.12); background-image: none; }
+  .ms-header-ens-btn img { height: 24px; width: 24px; }
+  .ms-header-ens-btn:hover { background: #37353e; }
+  .ms-header-ens-btn:active { background-image: linear-gradient(rgba(255,255,255,0.12), rgba(255,255,255,0.12)); }
 
   .ms-header-connect-wrap {
     position: relative;
