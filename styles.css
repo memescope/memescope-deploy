@@ -1901,7 +1901,7 @@
     transition: background var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
   }
   .top-header-search:hover {
-    background: var(--md-sys-color-surface-container-highest);
+    background: #494550;
     outline: 1px solid #4a4fd8;
     outline-offset: -1px;
   }
