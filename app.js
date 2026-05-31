@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.117';
+var APP_VERSION = '2.5.118';
 
 // Image proxy — shrinks token images so they load fast even on bad wifi.
 // DexScreener's CDN (98%+ of token images) natively resizes via query params,
@@ -31,6 +31,10 @@ function lockScroll() {
 }
 function unlockScroll() {
   if (!document.body.classList.contains('modal-open')) return;
+  // Keep the page locked while the multichart is still open — otherwise
+  // closing a modal opened on top of it (wallet/ENS) releases the lock and
+  // a scrollbar appears behind the overlay.
+  if (document.body.classList.contains('mc-open')) return;
   document.body.classList.remove('modal-open');
   document.body.style.top = '';
   window.scrollTo(0, _scrollLockY);

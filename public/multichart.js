@@ -288,18 +288,18 @@
     var overlay = document.getElementById('mcOverlay');
     if (typeof m3CloseOverlay === 'function') {
       m3CloseOverlay(overlay, function() {
+        document.body.classList.remove('mc-open');
         if (typeof unlockScroll === 'function') unlockScroll();
         window.scrollTo(0, window._mcPrevScroll || 0);
-        document.body.classList.remove('mc-open');
         mcCloseSearch();
         var mcNav = document.getElementById('navMultichart');
         if(mcNav) { mcNav.classList.remove('pill-animate'); mcNav.classList.remove('active'); }
       });
     } else {
       if (overlay) overlay.classList.remove('open');
+      document.body.classList.remove('mc-open');
       if (typeof unlockScroll === 'function') unlockScroll();
       window.scrollTo(0, window._mcPrevScroll || 0);
-      document.body.classList.remove('mc-open');
       mcCloseSearch();
       var mcNav = document.getElementById('navMultichart');
       if(mcNav) { mcNav.classList.remove('pill-animate'); mcNav.classList.remove('active'); }
