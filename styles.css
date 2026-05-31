@@ -783,6 +783,22 @@
     min-width: 1100px;
   }
 
+  /* Balanced column widths. Value columns (vol / mcap / % changes) share one
+     width so they line up; price is a touch wider for its swap-icon header;
+     age and dots are narrow; token flexes to fill the rest. */
+  thead th[data-col="vol"], thead th[data-col="mcap"],
+  thead th[data-col="p5m"], thead th[data-col="p1h"],
+  thead th[data-col="p6h"], thead th[data-col="p24h"],
+  tbody td[data-col="vol"], tbody td[data-col="mcap"],
+  tbody td[data-col="p5m"], tbody td[data-col="p1h"],
+  tbody td[data-col="p6h"], tbody td[data-col="p24h"] {
+    width: 112px;
+    min-width: 112px;
+  }
+  thead th[data-col="price"], tbody td[data-col="price"] { width: 128px; min-width: 128px; }
+  thead th[data-col="age"], tbody td[data-col="age"] { width: 76px; min-width: 76px; }
+  thead th[data-col="dots"], tbody td[data-col="dots"] { width: 40px; min-width: 40px; padding-left: 8px; padding-right: 8px; text-align: center; }
+  thead th[data-col="token"], tbody td[data-col="token"] { width: 340px; min-width: 240px; }
   thead th {
     position: sticky;
     top: 52px;
@@ -1217,15 +1233,16 @@
     border-right: none !important;
   }
   .row-dots-col {
-    width: 36px;
+    width: 40px;
+    min-width: 40px;
     text-align: center;
-    padding: 0 4px !important;
+    padding: 0 !important;
   }
   .token-dots {
     flex-shrink: 0;
     width: 28px;
     height: 28px;
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
     color: var(--text-secondary);
