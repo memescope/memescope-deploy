@@ -1,4 +1,4 @@
-var CACHE_NAME = 'memescope-v2.5.123';
+var CACHE_NAME = 'memescope-v2.5.124';
 var STATIC_ASSETS = [
   '/',
   '/styles.css',
@@ -14,11 +14,15 @@ var STATIC_ASSETS = [
   '/icon-192.png',
   '/img/globe-chains.svg',
   '/img/leaf.svg',
+  '/img/worldwide.svg',
   '/img/phantom_logo.png',
   '/img/metamask_logo.svg',
   '/img/coinbase_logo.webp',
   '/img/trust_logo.png',
-  '/img/okx_logo.png'
+  '/img/okx_logo.png',
+  '/img/chain_solana.png',
+  '/img/chain_eth.png',
+  '/img/chain_bsc.png'
 ];
 
 // Install — cache static assets
