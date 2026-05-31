@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.109';
+var APP_VERSION = '2.5.110';
 
 // Image proxy — shrinks token images so they load fast even on bad wifi.
 // DexScreener's CDN (98%+ of token images) natively resizes via query params,
@@ -85,6 +85,81 @@ function m3CloseOverlay(el, cb) {
   });
 })();
 
+// Mechanical lock/unlock latch sound (synthesized — no audio assets).
+// A short filtered-noise "click" (the latch) plus a low "thunk" (the bolt).
+// Locking = firmer ka-chunk; unlocking = a single crisp click.
+var _lockAudioCtx = null;
+var _lockSoundEnabled = (function(){ try { return localStorage.getItem('lockSoundEnabled') !== '0'; } catch(e){ return true; } })();
+function toggleLockSound(){
+  _lockSoundEnabled = !_lockSoundEnabled;
+  try { localStorage.setItem('lockSoundEnabled', _lockSoundEnabled ? '1' : '0'); } catch(e){}
+  var btn = document.getElementById('msSoundToggle');
+  if(btn){
+    btn.classList.toggle('muted', !_lockSoundEnabled);
+    btn.title = _lockSoundEnabled ? 'Sound effects on' : 'Sound effects off';
+  }
+  if(_lockSoundEnabled) _playLockSound(false); // preview when turning on
+}
+document.addEventListener('DOMContentLoaded', function(){
+  var btn = document.getElementById('msSoundToggle');
+  if(btn){
+    btn.classList.toggle('muted', !_lockSoundEnabled);
+    btn.title = _lockSoundEnabled ? 'Sound effects on' : 'Sound effects off';
+  }
+});
+function _playLockSound(locked){
+  try {
+    if(!_lockSoundEnabled) return;
+    var AC = window.AudioContext || window.webkitAudioContext;
+    if(!AC) return;
+    if(!_lockAudioCtx) _lockAudioCtx = new AC();
+    var ctx = _lockAudioCtx;
+    if(ctx.state === 'suspended') ctx.resume();
+    var now = ctx.currentTime;
+
+    // A clean iPhone-style "tick": a very short noise impulse, lowpassed (not
+    // ringy) with a high-pass to cut rumble, plus an optional short damped
+    // "tock" tone that gives the click its body. Kept tiny and smooth.
+    function tick(t, vol, cutoff, bodyFreq, bodyVol){
+      var dur = 0.035;
+      var len = Math.max(1, Math.floor(ctx.sampleRate * dur));
+      var buf = ctx.createBuffer(1, len, ctx.sampleRate);
+      var data = buf.getChannelData(0);
+      for(var i=0;i<len;i++){ data[i] = (Math.random()*2-1) * Math.pow(1 - i/len, 2); }
+      var src = ctx.createBufferSource(); src.buffer = buf;
+      var hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 350;
+      var lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = cutoff; lp.Q.value = 0.7;
+      var g = ctx.createGain();
+      g.gain.setValueAtTime(vol, t);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      src.connect(hp); hp.connect(lp); lp.connect(g); g.connect(ctx.destination);
+      src.start(t); src.stop(t + dur);
+      // Short damped tone for the "tock" body.
+      if(bodyFreq){
+        var osc = ctx.createOscillator();
+        var og = ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(bodyFreq, t);
+        osc.frequency.exponentialRampToValueAtTime(bodyFreq * 0.7, t + 0.03);
+        og.gain.setValueAtTime(0.0001, t);
+        og.gain.exponentialRampToValueAtTime(bodyVol, t + 0.003);
+        og.gain.exponentialRampToValueAtTime(0.0001, t + 0.045);
+        osc.connect(og); og.connect(ctx.destination);
+        osc.start(t); osc.stop(t + 0.05);
+      }
+    }
+
+    if(locked){
+      // Lock — the iPhone "tk-tunk": a light bright click, then a fuller one.
+      tick(now,         0.035, 6500, 0,    0);     // crisp first tap
+      tick(now + 0.055, 0.045, 4200, 720, 0.016);  // fuller second tap (with tock)
+    } else {
+      // Unlock — a single, slightly brighter clean click (matched level/tock).
+      tick(now, 0.045, 7000, 900, 0.016);
+    }
+  } catch(e){}
+}
+
 // Sidebar lock toggle
 (function(){
   document.addEventListener('DOMContentLoaded', function(){
@@ -102,6 +177,7 @@ function m3CloseOverlay(el, cb) {
       var locked = sidebar.classList.contains('sidebar-locked');
       btn.title = locked ? 'Unlock sidebar' : 'Lock sidebar';
       localStorage.setItem('sidebarLocked', locked ? '1' : '0');
+      _playLockSound(locked);
       setTimeout(function(){ btn.classList.remove('lock-animate'); }, 600);
     });
   });
