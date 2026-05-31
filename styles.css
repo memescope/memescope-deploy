@@ -2352,8 +2352,8 @@
   }
   .search-modal-esc { display: none; }
   .search-chain-btn {
-    width: 32px;
-    height: 32px;
+    width: 28px;
+    height: 28px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2366,8 +2366,8 @@
   }
   .search-chain-btn:hover { background: rgba(255,255,255,0.18); }
   .search-chain-btn img {
-    width: 20px;
-    height: 20px;
+    width: 17px;
+    height: 17px;
     border-radius: 50%;
     object-fit: cover;
     display: block;
