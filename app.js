@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.112';
+var APP_VERSION = '2.5.113';
 
 // Image proxy — shrinks token images so they load fast even on bad wifi.
 // DexScreener's CDN (98%+ of token images) natively resizes via query params,
@@ -151,11 +151,11 @@ function _playLockSound(locked){
 
     if(locked){
       // Lock — the iPhone "tk-tunk": a light bright click, then a fuller one.
-      tick(now,         0.035, 6500, 0,    0);     // crisp first tap
-      tick(now + 0.055, 0.045, 4200, 720, 0.016);  // fuller second tap (with tock)
+      tick(now,         0.095, 6500, 0,    0);     // crisp first tap
+      tick(now + 0.055, 0.120, 4200, 720, 0.045);  // fuller second tap (with tock)
     } else {
       // Unlock — a single, slightly brighter clean click (matched level/tock).
-      tick(now, 0.045, 7000, 900, 0.016);
+      tick(now, 0.120, 7000, 900, 0.045);
     }
   } catch(e){}
 }
