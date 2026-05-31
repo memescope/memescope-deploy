@@ -104,6 +104,10 @@
   };
 
   window.clearMultichart = function() {
+    if (!_mcTokens.length) return;
+    _mcConfirm('Are you sure you want to clear all charts?', _doClearMultichart);
+  };
+  function _doClearMultichart() {
     var grid = document.getElementById('mcGrid');
     if (!grid) return;
     // Remove all chart widgets
@@ -120,7 +124,45 @@
     _save();
     _ensureAddSlot();
     _updateCount();
-  };
+  }
+
+  // Reusable confirmation dialog (matches the site's M3 modal styling).
+  function _mcConfirm(message, onConfirm) {
+    var existing = document.getElementById('mcConfirmOverlay');
+    if (existing) existing.remove();
+    var ov = document.createElement('div');
+    ov.id = 'mcConfirmOverlay';
+    ov.className = 'mc-confirm-overlay';
+    ov.innerHTML =
+      '<div class="mc-confirm" role="dialog" aria-modal="true">' +
+        '<button class="mc-confirm-close" type="button" aria-label="Close">' +
+          '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' +
+        '</button>' +
+        '<div class="mc-confirm-msg"></div>' +
+        '<div class="mc-confirm-actions">' +
+          '<button class="mc-confirm-yes" type="button">Confirm</button>' +
+          '<button class="mc-confirm-no" type="button">Cancel</button>' +
+        '</div>' +
+      '</div>';
+    ov.querySelector('.mc-confirm-msg').textContent = message;
+    document.body.appendChild(ov);
+    function close() {
+      ov.classList.remove('open');
+      ov.classList.add('closing');
+      setTimeout(function() { if (ov.parentNode) ov.remove(); }, 200);
+      document.removeEventListener('keydown', onKey, true);
+    }
+    function onKey(e) {
+      if (e.key === 'Escape') { e.stopPropagation(); close(); }
+      else if (e.key === 'Enter') { e.stopPropagation(); close(); if (onConfirm) onConfirm(); }
+    }
+    ov.querySelector('.mc-confirm-close').onclick = close;
+    ov.querySelector('.mc-confirm-no').onclick = close;
+    ov.querySelector('.mc-confirm-yes').onclick = function() { close(); if (onConfirm) onConfirm(); };
+    ov.addEventListener('click', function(e) { if (e.target === ov) close(); });
+    document.addEventListener('keydown', onKey, true);
+    requestAnimationFrame(function() { ov.classList.add('open'); });
+  }
 
   window.closeMultichart = function() {
     var overlay = document.getElementById('mcOverlay');
@@ -646,6 +688,9 @@
 
   // ---- Remove chart ----
   window.removeMultichartCard = function(ca) {
+    _mcConfirm('Are you sure you want to delete this chart?', function() { _doRemoveCard(ca); });
+  };
+  function _doRemoveCard(ca) {
     ca = ca.toLowerCase();
     _mcTokens = _mcTokens.filter(function(t) { return t.ca.toLowerCase() !== ca; });
     _save();

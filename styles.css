@@ -8226,6 +8226,81 @@
   /* ============================================================
      MULTICHART — individual cards on blurred overlay (no wrapper)
      ============================================================ */
+  /* Multichart confirmation dialog (delete chart / clear all) */
+  .mc-confirm-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,0.5);
+    opacity: 0;
+    transition: opacity 200ms var(--md-sys-motion-easing-standard);
+  }
+  .mc-confirm-overlay.open { opacity: 1; }
+  .mc-confirm-overlay.closing { opacity: 0; }
+  .mc-confirm {
+    position: relative;
+    width: 460px;
+    max-width: calc(100vw - 32px);
+    box-sizing: border-box;
+    background: #2b2930;
+    border-radius: 20px;
+    padding: 60px 32px 28px;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.5);
+    text-align: center;
+    transform: scale(0.85);
+    opacity: 0;
+    transition: transform var(--md-sys-motion-duration-medium4) var(--md-sys-motion-easing-emphasized-decelerate), opacity var(--md-sys-motion-duration-medium4) var(--md-sys-motion-easing-emphasized-decelerate);
+  }
+  .mc-confirm-overlay.open .mc-confirm { transform: scale(1); opacity: 1; }
+  .mc-confirm-overlay.closing .mc-confirm { transition-duration: var(--md-sys-motion-duration-short4); transition-timing-function: var(--md-sys-motion-easing-emphasized-accelerate); }
+  .mc-confirm-close {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    background: rgba(255,255,255,0.06);
+    color: var(--text-secondary);
+    transition: background 150ms ease, color 150ms ease;
+  }
+  .mc-confirm-close:hover { background: rgba(255,255,255,0.12); color: var(--text-primary); }
+  .mc-confirm-msg {
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1.4;
+    margin-bottom: 26px;
+  }
+  .mc-confirm-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+  }
+  .mc-confirm-yes, .mc-confirm-no {
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 10px 26px;
+    border: none;
+    border-radius: var(--md-sys-shape-corner-full);
+    cursor: pointer;
+    transition: background 150ms ease, color 150ms ease;
+  }
+  .mc-confirm-yes { background: #e53935; color: #fff; }
+  .mc-confirm-yes:hover { background: #c62828; }
+  .mc-confirm-no { background: var(--md-sys-color-surface-container-highest); color: var(--text-primary); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.12); }
+  .mc-confirm-no:hover { background: rgba(255,255,255,0.08); }
+
   .mc-overlay {
     display: none;
     position: fixed;
