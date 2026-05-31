@@ -5418,12 +5418,35 @@
       display: none !important;
     }
 
-    /* Multichart on mobile: Clear All + X go on the top bar, logo hidden,
-       and the controls inside .mc-filterbar are hidden (bar kept as anchor). */
+    /* Multichart on mobile: Clear All + X on the top header bar; the
+       Columns/Height/Spacing controls in the bar below (scrolls horizontally).
+       The overlay's top is aligned to the header bottom in JS so the two bars
+       are flush (no see-through gap). The main page filter pills are hidden so
+       they can't peek above the overlay. */
     body.mc-open .mc-topbar-actions { display: inline-flex !important; }
     body.mc-open .memescope-logo { display: none !important; }
+    body.mc-open .filter-bar { display: none !important; }
     body.mc-open .mc-filterbar .mc-combo-pill,
     body.mc-open .mc-filterbar .mc-combo-close { display: none !important; }
+    /* Match the main page's two top bars: header 54px, controls bar ~44px */
+    body.mc-open .top-header-bar { min-height: 54px; }
+    body.mc-open .mc-filterbar {
+      justify-content: flex-start;
+      gap: 6px;
+      height: 44px;
+      padding: 6px 12px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      border-top: none;
+    }
+    body.mc-open .mc-filterbar::-webkit-scrollbar { display: none; width: 0; height: 0; }
+    body.mc-open .mc-filterbar .mc-controls { flex-shrink: 0; margin-right: 0; overflow: visible; }
+    body.mc-open .mc-filterbar .mc-ctrl { height: 32px; padding: 0 4px; gap: 3px; flex-shrink: 0; }
+    body.mc-open .mc-filterbar .mc-ctrl-btn { width: 22px; height: 22px; font-size: 14px; }
+    body.mc-open .mc-filterbar .mc-ctrl-label { font-size: 13px; }
+    body.mc-open .mc-topbar-actions .mc-combo-clear { height: 32px; }
+    body.mc-open .mc-topbar-actions .mc-combo-close { width: 32px; height: 32px; }
 
     .dexhub-btn { display: none !important; }
     .top-header-right { gap: 0 !important; }
@@ -8329,6 +8352,48 @@
     border-radius: 0;
     flex-shrink: 0;
   }
+  /* Layout controls (columns / card height / spacing) — right side of bar */
+  .mc-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-right: auto;
+  }
+  .mc-ctrl {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    height: 36px;
+    padding: 0 6px;
+    background: var(--md-sys-color-surface-container-highest);
+    border-radius: var(--md-sys-shape-corner-full);
+  }
+  .mc-ctrl-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    padding: 0 2px;
+  }
+  .mc-ctrl-label b { color: var(--text-primary); font-weight: 700; }
+  .mc-ctrl-btn {
+    width: 26px;
+    height: 26px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.06);
+    color: var(--text-primary);
+    font-size: 16px;
+    line-height: 1;
+    cursor: pointer;
+    transition: background 150ms ease;
+  }
+  .mc-ctrl-btn:hover { background: rgba(255,255,255,0.16); }
   .mc-panel-title {
     font-family: 'Inter', sans-serif;
     font-size: 15px;
@@ -8367,8 +8432,8 @@
   /* Top-bar Clear All + X are MOBILE ONLY (see mobile media query below).
      On desktop the controls live in the .mc-filterbar bar. */
   .mc-topbar-actions { display: none; align-items: center; gap: 8px; }
-  .mc-topbar-actions .mc-combo-clear { height: 40px; font-size: 14px; }
-  .mc-topbar-actions .mc-combo-close { width: 40px; height: 40px; }
+  .mc-topbar-actions .mc-combo-clear { height: 32px; font-size: 13px; padding: 0 12px; }
+  .mc-topbar-actions .mc-combo-close { width: 32px; height: 32px; }
   .mc-combo-clear {
     display: flex;
     align-items: center;
@@ -8428,7 +8493,7 @@
     align-items: center;
     justify-content: center;
     gap: 10px;
-    min-height: 320px;
+    min-height: calc(320px * var(--mc-card-h, 1));
     cursor: pointer;
     transition: background 150ms ease;
     color: var(--text-secondary);
@@ -8473,7 +8538,7 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    min-height: 320px;
+    min-height: calc(320px * var(--mc-card-h, 1));
     animation: mcCardIn 200ms ease-out;
   }
   @keyframes mcCardIn {

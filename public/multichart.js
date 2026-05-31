@@ -33,6 +33,72 @@
     return [];
   }
 
+  // ---- Layout controls (columns / card height / spacing) ----
+  // Columns are remembered per device — default 1 on mobile, 4 on desktop.
+  var _MC_LAYOUT_KEY = 'ms_multichart_layout';
+  var _MC_LIMITS = { cols: [1, 6], height: [100, 200], spacing: [0, 6] };
+  var _mcLayout = { colsMobile: 1, colsDesktop: 4, height: 100, spacing: 2 };
+  (function() {
+    try {
+      var s = JSON.parse(localStorage.getItem(_MC_LAYOUT_KEY));
+      if (s) {
+        if (s.colsMobile) _mcLayout.colsMobile = s.colsMobile;
+        if (s.colsDesktop) _mcLayout.colsDesktop = s.colsDesktop;
+        if (s.height) _mcLayout.height = s.height;
+        if (s.spacing != null) _mcLayout.spacing = s.spacing;
+      }
+    } catch(e) {}
+  })();
+  function _mcIsMobile() { return window.innerWidth <= 768; }
+  function _mcGetCols() { return _mcIsMobile() ? _mcLayout.colsMobile : _mcLayout.colsDesktop; }
+  function _mcSetCols(v) { if (_mcIsMobile()) _mcLayout.colsMobile = v; else _mcLayout.colsDesktop = v; }
+  function _mcSaveLayout() {
+    try { localStorage.setItem(_MC_LAYOUT_KEY, JSON.stringify(_mcLayout)); } catch(e) {}
+  }
+  function _mcApplyLayout() {
+    var cols = _mcGetCols();
+    var grid = document.getElementById('mcGrid');
+    if (grid) {
+      grid.style.gridTemplateColumns = 'repeat(' + cols + ', minmax(0, 1fr))';
+      grid.style.gap = (_mcLayout.spacing * 7) + 'px';
+      grid.style.setProperty('--mc-card-h', (_mcLayout.height / 100));
+    }
+    var c = document.getElementById('mcColsVal'); if (c) c.textContent = cols;
+    var h = document.getElementById('mcHeightVal'); if (h) h.textContent = _mcLayout.height + '%';
+    var sp = document.getElementById('mcSpacingVal'); if (sp) sp.textContent = _mcLayout.spacing;
+  }
+  window.mcAdjust = function(type, delta) {
+    var lim = _MC_LIMITS[type];
+    if (!lim) return;
+    if (type === 'cols') {
+      var nc = Math.max(lim[0], Math.min(lim[1], _mcGetCols() + delta));
+      if (nc === _mcGetCols()) return;
+      _mcSetCols(nc);
+    } else {
+      var step = (type === 'height') ? 10 : 1;
+      var next = Math.max(lim[0], Math.min(lim[1], _mcLayout[type] + delta * step));
+      if (next === _mcLayout[type]) return;
+      _mcLayout[type] = next;
+    }
+    _mcSaveLayout();
+    _mcApplyLayout();
+  };
+  // On mobile the overlay must start exactly at the header's bottom so the
+  // controls bar sits flush under the Clear All bar (no see-through gap).
+  function _mcPositionOverlay() {
+    var overlay = document.getElementById('mcOverlay');
+    if (!overlay) return;
+    if (window.innerWidth <= 768) {
+      var hdr = document.querySelector('.top-header-bar');
+      overlay.style.top = hdr ? (hdr.getBoundingClientRect().bottom + 'px') : '';
+    } else {
+      overlay.style.top = '';
+    }
+  }
+  window.addEventListener('resize', function() {
+    if (document.body.classList.contains('mc-open')) { _mcApplyLayout(); _mcPositionOverlay(); }
+  });
+
   // ---- Render the add-slot placeholder ----
   function _ensureAddSlot() {
     var grid = document.getElementById('mcGrid');
@@ -101,6 +167,8 @@
     }
     _ensureAddSlot();
     _updateCount();
+    _mcApplyLayout();
+    requestAnimationFrame(_mcPositionOverlay);
   };
 
   window.clearMultichart = function() {
