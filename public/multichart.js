@@ -451,9 +451,6 @@
           '<div class="mc-card-expand" onclick="event.stopPropagation();expandMultichartCard(\'' + escapedCa + '\')" title="Open coin modal">' +
             '<svg width="16" height="16" viewBox="0 -960 960 960" fill="currentColor"><path d="M800-600v-120H680v-80h120q33 0 56.5 23.5T880-720v120h-80Zm-720 0v-120q0-33 23.5-56.5T160-800h120v80H160v120H80Zm600 440v-80h120v-120h80v120q0 33-23.5 56.5T800-160H680Zm-520 0q-33 0-56.5-23.5T80-240v-120h80v120h120v80H160Zm80-160v-320h480v320H240Zm80-80h320v-160H320v160Zm0 0v-160 160Z"/></svg>' +
           '</div>' +
-          '<div class="mc-card-fullscreen" onclick="event.stopPropagation();toggleMcFullscreen(this, \'' + escapedCa + '\')" title="Fullscreen chart">' +
-            '<svg width="16" height="16" viewBox="0 -960 960 960" fill="currentColor"><path d="M120-120v-80l80-80v160h-80Zm160 0v-240l80-80v320h-80Zm160 0v-320l80 81v239h-80Zm160 0v-239l80-80v319h-80Zm160 0v-400l80-80v480h-80ZM120-327v-113l280-280 160 160 280-280v113L560-447 400-607 120-327Z"/></svg>' +
-          '</div>' +
           '<div class="mc-card-trash" onclick="removeMultichartCard(\'' + escapedCa + '\')">' +
             '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 1.5V2.5H3C2.44772 2.5 2 2.94772 2 3.5V4.5C2 5.05228 2.44772 5.5 3 5.5H21C21.5523 5.5 22 5.05228 22 4.5V3.5C22 2.94772 21.5523 2.5 21 2.5H16V1.5C16 0.947715 15.5523 0.5 15 0.5H9C8.44772 0.5 8 0.947715 8 1.5Z"/><path d="M3.9231 7.5H20.0767L19.1344 20.2216C19.0183 21.7882 17.7135 23 16.1426 23H7.85724C6.28636 23 4.98148 21.7882 4.86544 20.2216L3.9231 7.5Z"/></svg>' +
           '</div>' +

@@ -3618,6 +3618,10 @@
   .bm-dots .dots-filled { display: none !important; }
   .bm-dots.active .dots-filled { display: block !important; }
   .bm-dots.active .dots-outline { display: none !important; }
+  /* Visually match the bookmark and dots: the dots glyph is a filled circle
+     (reads large, shrink it); the bookmark is a tall narrow shape (grow it). */
+  .bm-star svg { width: 21px; height: 21px; }
+  .bm-dots svg { width: 18px; height: 18px; }
   .bm-dropdown {
     position: absolute;
     background: #211f21;
@@ -8424,7 +8428,7 @@
   .mc-card-mcap { font-size: 13px; font-weight: 600; color: var(--text-secondary); font-family: 'Inter', sans-serif; }
   .mc-card-footer-right { display: flex; align-items: center; position: relative; }
   .mc-card-dots {
-    width: 28px; height: 28px;
+    width: 32px; height: 32px;
     display: flex; align-items: center; justify-content: center;
     cursor: pointer; border-radius: 50%;
     color: rgba(255,255,255,0.4);
@@ -8432,7 +8436,7 @@
   }
   .mc-card-dots:hover { background: rgba(255,255,255,0.1); color: #fff; }
   .mc-card-expand {
-    width: 28px; height: 28px;
+    width: 32px; height: 32px;
     display: flex; align-items: center; justify-content: center;
     cursor: pointer; border-radius: 50%;
     color: rgba(255,255,255,0.4);
@@ -8440,7 +8444,7 @@
   }
   .mc-card-expand:hover { background: rgba(255,255,255,0.1); color: #fff; }
   .mc-card-fullscreen {
-    width: 28px; height: 28px;
+    width: 32px; height: 32px;
     display: flex; align-items: center; justify-content: center;
     cursor: pointer; border-radius: 50%;
     color: rgba(255,255,255,0.4);
@@ -8463,13 +8467,20 @@
     margin: 0;
   }
   .mc-card-trash {
-    width: 28px; height: 28px;
+    width: 32px; height: 32px;
     display: flex; align-items: center; justify-content: center;
     cursor: pointer; border-radius: 50%;
     color: rgba(255,255,255,0.4);
     transition: background 150ms ease, color 150ms ease;
   }
   .mc-card-trash:hover { background: rgba(239,68,68,0.15); color: #EF4444; }
+  /* Visually match the footer control icons. Same box size looks uneven
+     because each glyph fills its viewBox differently, so tune per-icon:
+     the trash fills its box (shrink it), the open-modal arrows have padding
+     (grow them), dots are the reference. */
+  .mc-card-dots svg { width: 18px; height: 18px; }
+  .mc-card-expand svg { width: 21px; height: 21px; }
+  .mc-card-trash svg { width: 15px; height: 15px; }
 
   /* ---- Search panel (matches main page search modal) ---- */
   .mc-search-backdrop {
