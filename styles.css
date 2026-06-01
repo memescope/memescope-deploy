@@ -8361,7 +8361,7 @@
     padding: 10px 24px 10px 24px;
     background: #2b2930;
     margin: 0 8px;
-    border-top: 1px solid rgba(255,255,255,0.08);
+    border-top: none;
     border-radius: 0;
     flex-shrink: 0;
   }
