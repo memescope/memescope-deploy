@@ -1,4 +1,7 @@
-var CACHE_NAME = 'memescope-v2.5.126';
+var CACHE_NAME = 'memescope-v2.5.127';
+// On localhost the service worker is disabled entirely so development always
+// sees fresh files (no stale-cache confusion). Production keeps full caching.
+var IS_DEV = (self.location.hostname === 'localhost' || self.location.hostname === '127.0.0.1');
 var STATIC_ASSETS = [
   '/',
   '/styles.css',
@@ -25,18 +28,29 @@ var STATIC_ASSETS = [
   '/img/chain_bsc.png'
 ];
 
-// Install — cache static assets
+// Install — cache static assets (skipped in dev)
 self.addEventListener('install', function(e) {
+  self.skipWaiting();
+  if (IS_DEV) return;
   e.waitUntil(
     caches.open(CACHE_NAME).then(function(cache) {
       return cache.addAll(STATIC_ASSETS);
     })
   );
-  self.skipWaiting();
 });
 
-// Activate — clean old caches
+// Activate — clean old caches; in dev, wipe everything and remove the SW itself
 self.addEventListener('activate', function(e) {
+  if (IS_DEV) {
+    e.waitUntil(
+      caches.keys().then(function(names) {
+        return Promise.all(names.map(function(n) { return caches.delete(n); }));
+      }).then(function() { return self.registration.unregister(); })
+        .then(function() { return self.clients.matchAll(); })
+        .then(function(clients) { clients.forEach(function(c) { try { c.navigate(c.url); } catch(err) {} }); })
+    );
+    return;
+  }
   e.waitUntil(
     caches.keys().then(function(names) {
       return Promise.all(
@@ -50,6 +64,7 @@ self.addEventListener('activate', function(e) {
 
 // Fetch — stale-while-revalidate for static assets, network-first for API
 self.addEventListener('fetch', function(e) {
+  if (IS_DEV) return;  // dev: always go to network, never serve from cache
   var url = new URL(e.request.url);
 
   // API calls — always network, no cache

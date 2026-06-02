@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.126';
+var APP_VERSION = '2.5.127';
 
 // Image proxy — shrinks token images so they load fast even on bad wifi.
 // DexScreener's CDN (98%+ of token images) natively resizes via query params,
@@ -1244,6 +1244,10 @@ var SCANNER_URLS = {
 
 function updateBubblesSmooth() {
   var tfField = getTimeframeField();
+  // During the brief window right after first load, refresh data but DON'T resize
+  // or shove bubbles — otherwise the first background verify causes a 2nd settle
+  // right after the entrance. Sizes catch up on the next normal refresh.
+  var _suppress = Date.now() < (window._suppressResettleUntil || 0);
   var tokens = (typeof getFilteredTokens === 'function') ? getFilteredTokens() : LIVE_TOKENS;
 
   // Filter out truly dead tokens and show empty state if nothing matches
@@ -1262,7 +1266,6 @@ function updateBubblesSmooth() {
   // Remove bubbles for tokens no longer in filtered list
   for(var i = bubs.length - 1; i >= 0; i--) {
     if(!currentSyms[bubs[i].token.sym]) {
-      if(bubs[i].el && bubs[i].el.parentNode) bubs[i].el.parentNode.removeChild(bubs[i].el);
       bubs.splice(i, 1);
     }
   }
@@ -1279,34 +1282,7 @@ function updateBubblesSmooth() {
       }
     }
     if(newToken) {
-      // Update token data
-      b.token = newToken;
-
-      // Update percentage text and all visual colors
-      var tfVal = getTfVal(newToken, tfField);
-      var styles = computeBubbleStyles(tfVal);
-
-      var pctEl = b.el.querySelector('.hm-pct');
-      if(pctEl) {
-        pctEl.textContent = (styles.isUp ? '+' : '') + tfVal.toFixed(1) + '%';
-        pctEl.style.color = styles.pctColor;
-      }
-
-      var glowEl = b.el.querySelector('.hm-glow');
-      if(glowEl) {
-        glowEl.style.background = styles.glowBg;
-        if(styles.isHot) { glowEl.classList.add('hot'); } else { glowEl.classList.remove('hot'); }
-      }
-
-      var innerEl = b.el.querySelector('.hm-inner');
-      if(innerEl) {
-        innerEl.style.background = styles.innerBg;
-      }
-
-      var ringEl = b.el.querySelector('.hm-ring');
-      if(ringEl) {
-        ringEl.style.border = styles.ringBorder;
-      }
+      b.token = newToken; // BubbleCanvas redraws from the token every frame
     }
   }
 
@@ -1350,42 +1326,21 @@ function updateBubblesSmooth() {
         }
         if (!placed) continue;
 
-        var fsTicker2 = Math.max(7, newR * 0.30);
-        var fsPct2 = Math.max(5, newR * 0.18);
-        var showCrosshair2 = newR > 22;
-        var showScopeRing2 = newR > 20;
-        var showTicks2 = newR > 35;
-        var emojiSize2 = Math.max(10, newR * 0.28);
-        var el2 = document.createElement('div');
-        el2.className = 'hm-bubble' + (nt.boosted ? ' boosted' : '');
-        el2.style.width = (newR * 2) + 'px';
-        el2.style.height = (newR * 2) + 'px';
-        el2.innerHTML =
-          '<div class="hm-glow' + (styles2.isHot ? ' hot' : '') + '" style="background:' + styles2.glowBg + '"></div>' +
-          '<div class="hm-inner" style="background:' + styles2.innerBg + '"></div>' +
-          '<div class="hm-ring" style="border:' + styles2.ringBorder + '"></div>' +
-          (showCrosshair2 ? '<div class="hm-crosshair"></div>' : '') +
-          (showScopeRing2 ? '<div class="hm-scope-ring"></div>' : '') +
-          (showTicks2 ? '<div class="hm-ticks"></div>' : '') +
-          '<div class="hm-content">' +
-            (nt.img ? '<img decoding="async" src="' + imgProxy(nt.img, 80, 80) + '" style="width:' + (emojiSize2 + 4) + 'px;height:' + (emojiSize2 + 4) + 'px;border-radius:50%;object-fit:cover;margin-bottom:-1px;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5))" onerror="this.style.display=\'none\'">' : '') +
-            '<div class="hm-ticker" style="font-size:' + fsTicker2 + 'px">' + nt.sym + '</div>' +
-            '<div class="hm-pct" style="font-size:' + fsPct2 + 'px;color:' + styles2.pctColor + '">' + (styles2.isUp ? '+' : '') + tfVal2.toFixed(1) + '%</div>' +
-            (nt.boosted && newR > 25 ? '<div class="hm-boosted-badge">⚡' + (nt.boostCount || '') + '</div>' : '') +
-          '</div>';
-        el2.onclick = (function(t) { return function(e) { e.stopPropagation(); openBubbleModal(t); }; })(nt);
-        bubbleWorld.appendChild(el2);
+        if(nt.img) BubbleCanvas.img(imgProxy(nt.img, 80, 80)); // preload logo for canvas
 
-        // Push existing bubbles away from the new one's spawn point
-        for (var pi = 0; pi < bubs.length; pi++) {
-          var pb = bubs[pi];
-          var pdx = pb.x - px, pdy = pb.y - py;
-          var pDist = Math.sqrt(pdx * pdx + pdy * pdy);
-          var pushZone = pb.r + newR + 20;
-          if (pDist < pushZone && pDist > 0.1) {
-            var pushForce = (pushZone - pDist) * 0.05;
-            pb.vx += (pdx / pDist) * pushForce;
-            pb.vy += (pdy / pDist) * pushForce;
+        // Push existing bubbles away from the new one's spawn point (skipped during
+        // the post-load settle window so the field stays put).
+        if (!_suppress) {
+          for (var pi = 0; pi < bubs.length; pi++) {
+            var pb = bubs[pi];
+            var pdx = pb.x - px, pdy = pb.y - py;
+            var pDist = Math.sqrt(pdx * pdx + pdy * pdy);
+            var pushZone = pb.r + newR + 20;
+            if (pDist < pushZone && pDist > 0.1) {
+              var pushForce = (pushZone - pDist) * 0.05;
+              pb.vx += (pdx / pDist) * pushForce;
+              pb.vy += (pdy / pDist) * pushForce;
+            }
           }
         }
 
@@ -1394,14 +1349,16 @@ function updateBubblesSmooth() {
         bubs.push({
           x: px, y: py, r: newR, targetR: newR,
           vx: Math.cos(ang2) * spd2, vy: Math.sin(ang2) * spd2,
-          el: el2, token: nt
+          token: nt,
+          entStart: performance.now(), entScale: 0
         });
       }
     }
   }
 
-  // Recalculate sizes based on new data
-  resizeBubbles();
+  // Recalculate sizes based on new data — skipped during the post-load settle
+  // window so the first verify refreshes colors/text without a second settle.
+  if(!_suppress) resizeBubbles();
   if(typeof wakeBubbles === 'function') wakeBubbles();
 }
 
@@ -1431,80 +1388,9 @@ function resizeBubbles() {
         }
       }
     }
-    if(bubs[i].el) {
-      var t = bubs[i].token;
-      var tfVal = getTfVal(t, tfField);
-      var styles = computeBubbleStyles(tfVal);
-      
-      // Update percentage text and color
-      var pctEl = bubs[i].el.querySelector('.hm-pct');
-      if(pctEl) {
-        pctEl.textContent = (styles.isUp ? '+' : '') + tfVal.toFixed(1) + '%';
-        pctEl.style.color = styles.pctColor;
-      }
-      
-      // Update glow background color
-      var glowEl = bubs[i].el.querySelector('.hm-glow');
-      if(glowEl) {
-        glowEl.style.background = styles.glowBg;
-        if(styles.isHot) { glowEl.classList.add('hot'); } else { glowEl.classList.remove('hot'); }
-      }
-      
-      // Update inner background color
-      var innerEl = bubs[i].el.querySelector('.hm-inner');
-      if(innerEl) {
-        innerEl.style.background = styles.innerBg;
-      }
-      
-      // Update ring border color
-      var ringEl = bubs[i].el.querySelector('.hm-ring');
-      if(ringEl) {
-        ringEl.style.border = styles.ringBorder;
-      }
-      
-      // Update font sizes and logo size based on new radius
-      var tickerEl = bubs[i].el.querySelector('.hm-ticker');
-      if(tickerEl) {
-        tickerEl.style.fontSize = Math.max(7, newR * 0.30) + 'px';
-      }
-      if(pctEl) {
-        pctEl.style.fontSize = Math.max(5, newR * 0.18) + 'px';
-        pctEl.style.display = newR > 16 ? '' : 'none';
-      }
-      var logoEl = bubs[i].el.querySelector('.hm-content > img, .hm-content > div:first-child');
-      if(logoEl && logoEl.classList && !logoEl.classList.contains('hm-ticker') && !logoEl.classList.contains('hm-pct')) {
-        var logoSize = Math.max(13, newR * 0.38) + 4;
-        logoEl.style.width = logoSize + 'px';
-        logoEl.style.height = logoSize + 'px';
-        logoEl.style.display = newR > 18 ? '' : 'none';
-      } else if(logoEl && logoEl.tagName !== 'DIV') {
-        var logoSize2 = Math.max(13, newR * 0.38) + 4;
-        logoEl.style.width = logoSize2 + 'px';
-        logoEl.style.height = logoSize2 + 'px';
-        logoEl.style.display = newR > 18 ? '' : 'none';
-      }
-
-      // Add scope visual elements if bubble grew past threshold
-      var ringRef = bubs[i].el.querySelector('.hm-ring');
-      if(newR > 20 && !bubs[i].el.querySelector('.hm-scope-ring') && ringRef) {
-        var sr = document.createElement('div');
-        sr.className = 'hm-scope-ring';
-        ringRef.parentNode.insertBefore(sr, ringRef.nextSibling);
-      }
-      if(newR > 22 && !bubs[i].el.querySelector('.hm-crosshair') && ringRef) {
-        var ch = document.createElement('div');
-        ch.className = 'hm-crosshair';
-        ringRef.parentNode.insertBefore(ch, ringRef.nextSibling);
-      }
-      if(newR > 35 && !bubs[i].el.querySelector('.hm-ticks')) {
-        var tk = document.createElement('div');
-        tk.className = 'hm-ticks';
-        var scopeRing = bubs[i].el.querySelector('.hm-scope-ring');
-        if(scopeRing) scopeRing.parentNode.insertBefore(tk, scopeRing.nextSibling);
-        else if(ringRef) ringRef.parentNode.insertBefore(tk, ringRef.nextSibling);
-      }
-    }
+    // Visuals are drawn from token + radius by BubbleCanvas every frame — no DOM work here.
   }
+  BubbleCanvas.resize(W, H);
 }
 
 var _lastRowOrder = null; // preserve row order between refreshes
@@ -3813,6 +3699,234 @@ function computeBubbleStyles(tfVal) {
   return { glowBg: glowBg, innerBg: innerBg, ringBorder: ringBorder, pctColor: pctColor, isUp: isUp, isNeutral: isNeutral, isHot: isHot };
 }
 
+// ============================================================================
+// Canvas bubble renderer — draws all bubbles onto ONE <canvas> instead of 50
+// DOM elements. This is what keeps it smooth in Safari (one composited layer,
+// no per-element paint/clip). Physics/data/interactions are unchanged.
+// ============================================================================
+var BubbleCanvas = (function(){
+  var cv = null, ctx = null, dpr = 1, cssW = 0, cssH = 0;
+  var imgCache = {};
+  var MEME_EMOJI = {
+    "PEPE":"🐸","DOGE":"🐕","SHIB":"🐕","BONK":"🐶","WIF":"🎩","FLOKI":"⚡",
+    "BRETT":"🧢","POPCAT":"🐱","MOG":"😎","TOSHI":"🤖","MEME":"🎭","TURBO":"🏎️",
+    "MYRO":"🐾","BOME":"📖","SLERF":"🦥","TRUMP":"🇺🇸","PONKE":"🐵","NEIRO":"🌸",
+    "MICHI":"🐱","GOAT":"🐐","PNUT":"🥜","ACT":"🎬","FWOG":"🐸","GIGA":"💪",
+    "SPX":"📈","HIGHER":"⬆️","TYBG":"🙏","DEGEN":"🎰","ANDY":"🧑","WOLF":"🐺",
+    "BOBO":"🐻","SMOG":"🌫️","SNEK":"🐍","RICK":"🧪","DUKO":"🐶","SILLY":"🤪",
+    "WEN":"⏰","CATMAN":"🦸","REKT":"💀","WAGMI":"🚀","CHAD":"💪","COPE":"😤",
+    "HOPPY":"🐸","PORK":"🐷","WOOF":"🐕","AURA":"✨","TOAD":"🐸","APU":"🐸",
+    "DINO":"🦕","RIZZ":"😏","SIGMA":"🧠","BASED":"🏗️"
+  };
+
+  function ensure(){
+    var world = document.getElementById('bubbleWorld');
+    if(!world) return null;
+    var es = world.querySelector('.bubble-empty-state');
+    if(es) es.remove();
+    cv = document.getElementById('bubbleCanvas');
+    if(!cv || !cv.isConnected){
+      cv = document.createElement('canvas');
+      cv.id = 'bubbleCanvas';
+      world.appendChild(cv);
+    }
+    ctx = cv.getContext('2d');
+    var w = world.offsetWidth, h = world.offsetHeight;
+    if(w > 0 && h > 0) resize(w, h);
+    return cv;
+  }
+
+  function resize(w, h){
+    if(!cv) return;
+    // Native resolution (up to 2x) for crisp logos/text/reticle. This is only
+    // affordable because bubbles are now cached sprites blitted each frame — the
+    // expensive per-frame gradient redraw that forced a 1x cap is gone.
+    var d = Math.min(window.devicePixelRatio || 1, 2);
+    if(w === cssW && h === cssH && d === dpr && cv.width) return;
+    dpr = d; cssW = w; cssH = h;
+    cv.width = Math.round(w * dpr);
+    cv.height = Math.round(h * dpr);
+    cv.style.width = w + 'px';
+    cv.style.height = h + 'px';
+  }
+
+  // Logo image cache. Returns a drawable Image once loaded, else null.
+  function img(url){
+    if(!url) return null;
+    var rec = imgCache[url];
+    if(rec) return rec.ok ? rec.img : null;
+    var im = new Image();
+    im.decoding = 'async';
+    rec = { img: im, ok: false };
+    imgCache[url] = rec;
+    im.onload = function(){ rec.ok = true; if(window.wakeBubbles) window.wakeBubbles(); };
+    im.onerror = function(){ rec.ok = false; };
+    im.src = url;
+    return null;
+  }
+
+  // Mirror of computeBubbleStyles(), but returns canvas-ready color stops.
+  function colors(tfVal){
+    var isUp = tfVal >= 0, absP = Math.abs(tfVal);
+    // Emerald #2ED57E (up) / coral #FF5765 (down) — tuned for the #1c1b1d background.
+    var hue = isUp ? 149 : 354;
+    var absNorm = Math.min(1, absP / 20);
+    var isNeutral = absP < 0.3;
+    if(isNeutral){
+      return { glow:'rgba(60,60,70,0.06)', bodyC:'#1a1a1f', bodyM:'#131316', bodyE:'#0e0e11', dim:'#0c0c0f',
+               ring:'rgba(255,255,255,0.05)', ringW:1, pct:'rgba(255,255,255,0.55)', sign:'' };
+    }
+    var curve = Math.pow(absNorm, 0.6);
+    var sat = (isUp ? 58 : 90) + curve * 30;
+    var glowLum = (isUp ? 30 : 42) + curve * 18;
+    var glowAlpha = 0.07 + curve * 0.34;
+    var centerLum = 14 + curve * 11, midLum = 11 + curve * 9, edgeLum = 9 + curve * 7;
+    var tintSat = Math.round(20 + curve * 32);
+    var ringAlpha = 0.10 + curve * 0.26;
+    return {
+      glow:'hsla('+hue+','+sat+'%,'+glowLum+'%,'+glowAlpha+')',
+      bodyC:'hsl('+hue+','+tintSat+'%,'+centerLum+'%)',
+      bodyM:'hsl('+hue+','+tintSat+'%,'+midLum+'%)',
+      bodyE:'hsl('+hue+','+Math.round(tintSat*0.7)+'%,'+edgeLum+'%)',
+      dim:'hsl('+hue+','+Math.round(tintSat*0.5)+'%,'+Math.max(5, edgeLum - 3)+'%)',
+      ring:'hsla('+hue+','+sat+'%,'+(glowLum+10)+'%,'+ringAlpha+')', ringW:1.5,
+      pct: isUp ? '#2ED57E' : '#FF5765', sign: isUp ? '+' : ''
+    };
+  }
+
+  // Render the full bubble ONCE into an offscreen canvas at a reference radius.
+  // Only re-run when color/size-target/logo/data change — never per frame.
+  function renderSprite(b, tfVal, ref){
+    var t = b.token;
+    var c = colors(tfVal);
+    var pad = Math.ceil(ref * 1.2) + 2;     // glow reaches 1.2*ref
+    var size = pad * 2;
+    var spr = b._spr || (b._spr = document.createElement('canvas'));
+    var ss = dpr * 2;  // supersample 2x past device res — keeps thin lines/text crisp
+    var px = Math.max(1, Math.round(size * ss));   // (3x wasn't worth the extra memory)
+    if(spr.width !== px){ spr.width = px; spr.height = px; }
+    var sx = spr.getContext('2d');
+    sx.setTransform(ss, 0, 0, ss, 0, 0);
+    sx.clearRect(0, 0, size, size);
+    var x = pad, y = pad, r = ref;
+
+    // Glow
+    var gR = r * 1.2;
+    var gg = sx.createRadialGradient(x, y, 0, x, y, gR);
+    gg.addColorStop(0, c.glow); gg.addColorStop(0.35, c.glow);
+    gg.addColorStop(0.70, 'rgba(0,0,0,0)'); gg.addColorStop(1, 'rgba(0,0,0,0)');
+    sx.globalAlpha = 0.7; sx.fillStyle = gg;
+    sx.beginPath(); sx.arc(x, y, gR, 0, 6.2832); sx.fill();
+    sx.globalAlpha = 1;
+
+    // Lens body
+    var cyc = y - r * 0.05;
+    var bg = sx.createRadialGradient(x, cyc, 0, x, cyc, r * 1.05);
+    bg.addColorStop(0, c.bodyC); bg.addColorStop(0.5, c.bodyM);
+    bg.addColorStop(0.88, c.bodyE); bg.addColorStop(1, c.dim);
+    sx.fillStyle = bg; sx.beginPath(); sx.arc(x, y, r, 0, 6.2832); sx.fill();
+
+    // Outer ring (colored; white hover ring is drawn live in drawOne)
+    sx.lineWidth = c.ringW; sx.strokeStyle = c.ring;
+    sx.beginPath(); sx.arc(x, y, r - c.ringW / 2, 0, 6.2832); sx.stroke();
+
+    // Scope reticle
+    if(r > 20){
+      sx.lineWidth = 1; sx.strokeStyle = 'rgba(220,220,220,0.12)';
+      sx.beginPath(); sx.arc(x, y, r * 0.56, 0, 6.2832); sx.stroke();
+    }
+    if(r > 22){
+      var e = r * 0.84, g = r * 0.20;
+      sx.strokeStyle = 'rgba(255,255,255,0.16)'; sx.lineWidth = 1;
+      sx.beginPath();
+      sx.moveTo(x - e, y); sx.lineTo(x - g, y);
+      sx.moveTo(x + g, y); sx.lineTo(x + e, y);
+      sx.moveTo(x, y - e); sx.lineTo(x, y - g);
+      sx.moveTo(x, y + g); sx.lineTo(x, y + e);
+      sx.stroke();
+    }
+    if(t.boosted){
+      sx.lineWidth = 2; sx.strokeStyle = 'rgba(255,184,39,0.85)';
+      sx.beginPath(); sx.arc(x, y, r - 1, 0, 6.2832); sx.stroke();
+    }
+
+    // Content
+    var showLogo = r > 18, showPct = r > 16;
+    var logoSize = Math.max(13, r * 0.38) + 4;
+    var fsTicker = Math.max(7, r * 0.30);
+    var fsPct = Math.max(5, r * 0.18);
+    var gapY = Math.max(1, r * 0.05);
+    var blockH = (showLogo ? logoSize + gapY : 0) + fsTicker + (showPct ? fsPct + gapY : 0);
+    var cyy = y - blockH / 2;
+    if(showLogo){
+      var im = t.img ? img(imgProxy(t.img, 80, 80)) : null;
+      if(im){
+        sx.save();
+        sx.beginPath(); sx.arc(x, cyy + logoSize / 2, logoSize / 2, 0, 6.2832); sx.closePath(); sx.clip();
+        try { sx.drawImage(im, x - logoSize / 2, cyy, logoSize, logoSize); } catch(e){}
+        sx.restore();
+      } else {
+        sx.textAlign = 'center'; sx.textBaseline = 'middle';
+        sx.font = Math.round(logoSize) + "px 'Inter', sans-serif";
+        sx.fillText(MEME_EMOJI[t.sym] || '🪙', x, cyy + logoSize / 2);
+      }
+      cyy += logoSize + gapY;
+    }
+    sx.textAlign = 'center'; sx.textBaseline = 'top';
+    sx.fillStyle = '#E6E1E5';
+    sx.font = "700 " + fsTicker + "px 'Inter', sans-serif";
+    sx.fillText(t.sym || '', x, cyy);
+    cyy += fsTicker + gapY;
+    if(showPct){
+      sx.fillStyle = c.pct;
+      sx.font = "600 " + fsPct + "px 'Inter', sans-serif";
+      sx.fillText(c.sign + tfVal.toFixed(1) + '%', x, cyy);
+    }
+
+    b._sprPad = pad; b._sprRef = ref; b._ringW = c.ringW;
+  }
+
+  function drawOne(b, tfField){
+    var t = b.token, r = b.r;
+    if(!t || r < 1) return;
+    var es = (b.entScale === undefined) ? 1 : b.entScale;  // M3 entrance scale
+    if(es <= 0.01) return;
+    var er = r * es;  // effective drawn radius (physics size × entrance)
+    var tfVal = (typeof getTfVal === 'function') ? getTfVal(t, tfField) : 0;
+    var ref = Math.max(1, Math.round(b.targetR || r));
+    var logoReady = !!(t.img && img(imgProxy(t.img, 80, 80)));
+    // Cache key on TARGET size (fixed) — so entrance/settle just scale the blit.
+    var sig = ref + '|' + tfVal.toFixed(1) + '|' + (logoReady ? 1 : 0) + '|' + (t.boosted ? 1 : 0) + '|' + (t.sym || '');
+    if(b._sig !== sig){ renderSprite(b, tfVal, ref); b._sig = sig; }
+
+    var s = er / b._sprRef;
+    var half = b._sprPad * s;
+    ctx.drawImage(b._spr, b.x - half, b.y - half, half * 2, half * 2);
+
+    // Hover ring — animated white crossfade, drawn live. Drawn a bit thinner than
+    // the sprite's ring: solid hard-edged white reads heavier than the soft,
+    // supersampled, translucent colored ring at the same nominal width.
+    var ht = b.hoverT || 0;
+    if(ht > 0.001){
+      var rw = Math.max(1, (b._ringW || 1.5) * 0.7);
+      ctx.globalAlpha = ht;
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = rw;
+      ctx.beginPath(); ctx.arc(b.x, b.y, er - rw / 2, 0, 6.2832); ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  function draw(bubs, tfField){
+    if(!ctx || !cv || !cv.isConnected){ if(!ensure()) return; }
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, cssW, cssH);
+    for(var i = 0; i < bubs.length; i++) drawOne(bubs[i], tfField);
+  }
+
+  return { ensure: ensure, resize: resize, draw: draw, img: img };
+})();
+
 var bubs = [];
 (function(){
   var world, W, H, rafId, mouseX = -1000, mouseY = -1000, mouseActive = false, mousePrevX = -1000, mousePrevY = -1000, mouseVX = 0, mouseVY = 0, mouseSpeed = 0;
@@ -3873,9 +3987,9 @@ var bubs = [];
       setTimeout(init, 100); return;
     }
 
-    // We have tokens — now safe to clear the world and render
+    // We have tokens — now safe to (re)create the canvas and render
     world.classList.remove('ready');
-    world.innerHTML = "";
+    BubbleCanvas.ensure();
     bubs = [];
     if(rafId) cancelAnimationFrame(rafId);
 
@@ -3926,84 +4040,24 @@ var bubs = [];
     }
     
     // Create DOM elements
+    var _entBase = performance.now();
     placed.forEach(function(p, idx){
       var t = p.it.t, r = p.r;
-      var tfField = (typeof getTimeframeField === 'function') ? getTimeframeField() : 'p24h';
-      var tfVal = getTfVal(t, tfField);
-      var styles = computeBubbleStyles(tfVal);
-      
-
-      
-      var el = document.createElement("div");
-      el.className = "hm-bubble" + (t.boosted ? " boosted" : "");
-      el.style.width = (r * 2) + "px";
-      el.style.height = (r * 2) + "px";
-      
-      var showCrosshair = r > 22;
-      var showScopeRing = r > 20;
-      var showTicks = r > 35;
-      
-      var memeImgs = {
-        "PEPE":"🐸","DOGE":"🐕","SHIB":"🐕","BONK":"🐶","WIF":"🎩","FLOKI":"⚡",
-        "BRETT":"🧢","POPCAT":"🐱","MOG":"😎","TOSHI":"🤖","MEME":"🎭","TURBO":"🏎️",
-        "MYRO":"🐾","BOME":"📖","SLERF":"🦥","TRUMP":"🇺🇸","PONKE":"🐵","NEIRO":"🌸",
-        "MICHI":"🐱","GOAT":"🐐","PNUT":"🥜","ACT":"🎬","FWOG":"🐸","GIGA":"💪",
-        "SPX":"📈","HIGHER":"⬆️","TYBG":"🙏","DEGEN":"🎰","ANDY":"🧑","WOLF":"🐺",
-        "BOBO":"🐻","SMOG":"🌫️","SNEK":"🐍","RICK":"🧪","DUKO":"🐶","SILLY":"🤪",
-        "WEN":"⏰","CATMAN":"🦸","REKT":"💀","WAGMI":"🚀","CHAD":"💪","COPE":"😤",
-        "HOPPY":"🐸","PORK":"🐷","WOOF":"🐕","AURA":"✨","TOAD":"🐸","APU":"🐸",
-        "DINO":"🦕","RIZZ":"😏","SIGMA":"🧠","BASED":"🏗️"
-      };
-      var emoji = memeImgs[t.sym] || "🪙";
-      var emojiSize = Math.max(13, r * 0.38);
-      var fsTicker = Math.max(7, r * 0.30);
-      var fsPct = Math.max(5, r * 0.18);
-      var showLogo = r > 18;
-      var showPct = r > 16;
-      
-      el.innerHTML = 
-        '<div class="hm-glow' + (styles.isHot ? ' hot' : '') + '" style="background:' + styles.glowBg + '"></div>' +
-        '<div class="hm-inner" style="background:' + styles.innerBg + '"></div>' +
-        '<div class="hm-ring" style="border:' + styles.ringBorder + '"></div>' +
-        (showCrosshair ? '<div class="hm-crosshair"></div>' : '') +
-        (showScopeRing ? '<div class="hm-scope-ring"></div>' : '') +
-        (showTicks ? '<div class="hm-ticks"></div>' : '') +
-        '<div class="hm-content">' +
-          (showLogo ? (t.img ? '<img decoding="async" src="' + imgProxy(t.img, 80, 80) + '" style="width:' + (emojiSize + 4) + 'px;height:' + (emojiSize + 4) + 'px;border-radius:50%;object-fit:cover;margin-bottom:-1px;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5))" onerror="this.style.display=\'none\'">' : '<div style="font-size:' + emojiSize + 'px;line-height:1;margin-bottom:0;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5))">' + emoji + '</div>') : '') +
-          '<div class="hm-ticker" style="font-size:' + fsTicker + 'px">' + t.sym + '</div>' +
-          (showPct ? '<div class="hm-pct" style="font-size:' + fsPct + 'px;color:' + styles.pctColor + '">' + (styles.isUp && !styles.isNeutral ? "+" : "") + tfVal.toFixed(1) + '%</div>' : '') +
-          (t.boosted && r > 25 ? '<div class="hm-boosted-badge">⚡' + (t.boostCount || '') + '</div>' : '') +
-        '</div>';
-      
-      el.onclick = function(e){ e.stopPropagation(); openBubbleModal(t); };
-
-      // Start hidden, stagger entrance
-      el.style.opacity = '0';
-      world.appendChild(el);
-
+      if(t.img) BubbleCanvas.img(imgProxy(t.img, 80, 80)); // preload logo for canvas
       var spd = 0.03 + Math.random() * 0.05;
       var ang = Math.random() * Math.PI * 2;
       bubs.push({
         x: p.x, y: p.y, r: r, targetR: r,
         vx: Math.cos(ang) * spd,
         vy: Math.sin(ang) * spd,
-        el: el, token: t
+        token: t,
+        entStart: _entBase + idx * 14,   // staggered M3 entrance (largest first)
+        entScale: 0
       });
-
-      // Initial position
-      el.style.transform = "translate(" + (p.x - r) + "px," + (p.y - r) + "px)";
-
-      // Staggered fade-in
-      (function(el, delay){
-        setTimeout(function(){
-          el.style.opacity = '';
-          el.classList.add('entering');
-          setTimeout(function(){ el.classList.remove('entering'); }, 500);
-        }, delay);
-      })(el, idx * 20);
     });
 
-    // Show bubble world now that all elements are positioned
+    // Size the canvas to the world and reveal it (one fade-in for the whole layer)
+    BubbleCanvas.resize(W, H);
     world.classList.add('ready');
 
     // Animation loop
@@ -4076,10 +4130,11 @@ var bubs = [];
         if(b.y - edgeR < padY){ b.y = edgeR + padY; b.vy = Math.abs(b.vy); }
         if(b.y + edgeR > H - padY){ b.y = H - edgeR - padY; b.vy = -Math.abs(b.vy); }
       }
-      // Multiple passes to fully resolve overlaps
+      // Overlap-resolution passes — 2 is enough since bubbles start packed and
+      // drift gently; this halves the heaviest per-frame O(n^2) work.
       var _isMob2 = window.innerWidth <= 768;
       var _padX2 = _isMob2 ? 4 : 10, _padY2 = _isMob2 ? 4 : 10;
-      for(var pass = 0; pass < 5; pass++){
+      for(var pass = 0; pass < 2; pass++){
         for(var i = 0; i < bubs.length; i++){
           for(var j = i+1; j < bubs.length; j++){
             var a = bubs[i], b = bubs[j];
@@ -4116,19 +4171,49 @@ var bubs = [];
         }
       }
 
+      // Hover hit-test (skip while dragging) for cursor + ring highlight
+      var hoverIdx = -1;
+      if(mouseActive && !dragBubble){
+        for(var hi = bubs.length - 1; hi >= 0; hi--){
+          if(Math.hypot(mouseX - bubs[hi].x, mouseY - bubs[hi].y) < bubs[hi].r){ hoverIdx = hi; break; }
+        }
+      }
+      if(world) world.style.cursor = (hoverIdx >= 0) ? 'pointer' : '';
+
+      var _now = performance.now();
       var _allIdle = true;
       for(var i = 0; i < bubs.length; i++){
         var b = bubs[i];
+        // M3 entrance: scale up with an eased decelerate over 420ms after the
+        // bubble's staggered start time. Keeps the loop awake until all are in.
+        if(b.entScale === undefined) b.entScale = 1;
+        if(b.entScale < 1){
+          var ep = (_now - (b.entStart || 0)) / 420;
+          if(ep <= 0){ b.entScale = 0; }
+          else if(ep >= 1){ b.entScale = 1; }
+          else { var inv = 1 - ep; b.entScale = 1 - inv * inv * inv; } // easeOutCubic
+          _allIdle = false;
+        }
         // Smoothly interpolate radius toward target
         if(b.targetR && Math.abs(b.r - b.targetR) > 0.5){
           b.r += (b.targetR - b.r) * 0.08;
-          b.el.style.width = (b.r * 2) + "px";
-          b.el.style.height = (b.r * 2) + "px";
           _allIdle = false;
         }
         if(b.vx !== 0 || b.vy !== 0) _allIdle = false;
-        b.el.style.transform = "translate(" + (b.x - b.r) + "px," + (b.y - b.r) + "px)";
+        // M3-style hover: ease the white-ring crossfade toward 0/1 (~65ms — fastest that still reads as a fade)
+        var ht = (i === hoverIdx) ? 1 : 0;
+        var cur = b.hoverT || 0;
+        if(cur !== ht){
+          cur += (ht - cur) * 0.65;
+          if(Math.abs(cur - ht) < 0.02) cur = ht;
+          b.hoverT = cur;
+          _allIdle = false;
+        }
       }
+
+      // Cheap per-frame paint now (pre-rendered sprite blits), so full 60fps.
+      BubbleCanvas.draw(bubs, getTimeframeField());
+
       if(_allIdle){ _idleFrames++; } else { _idleFrames = 0; }
       if(_idleFrames > 60){ _sleeping = true; rafId = null; return; }
       rafId = requestAnimationFrame(tick);
@@ -4160,7 +4245,7 @@ var bubs = [];
 
   var _waitAttempts = 0;
   function waitAndInit(){
-    if(_bubbleInitDone) return; // already initialized by fetchLiveTokens
+    if(_bubbleInitDone || window._bubbleBuildDeferred) return; // building after verify, or already built
     if(liveDataLoaded && typeof LIVE_TOKENS !== 'undefined' && LIVE_TOKENS.length > 0){
       init();
     } else if(_waitAttempts < 15) {
@@ -4193,7 +4278,7 @@ var bubs = [];
     mouseActive = (mouseX >= 0 && mouseX <= W && mouseY >= 0 && mouseY <= H);
     if(mouseActive) wakeBubbles();
   });
-  document.addEventListener("mouseleave", function(){ mouseActive = false; });
+  document.addEventListener("mouseleave", function(){ mouseActive = false; wakeBubbles(); });
 
   // Drag to throw bubbles
   var dragBubble = null, dragStartX, dragStartY, dragLastX, dragLastY;
@@ -6361,7 +6446,7 @@ function isRugged(ca) {
   return true;
 }
 
-async function verifyTopTokens() {
+async function verifyTopTokens(skipBubbleRender) {
   if (_verifyInProgress) return;
   _verifyInProgress = true;
   try {
@@ -6450,7 +6535,7 @@ async function verifyTopTokens() {
     console.log('MemeScope: Verified', Object.keys(pairByCa).length, 'tokens, removed', removed, 'rugged, blacklist size:', Object.keys(_ruggedCas).length);
     _applyAdminBoosts(LIVE_TOKENS);
     loadData();
-    if (typeof updateBubblesSmooth === 'function') updateBubblesSmooth();
+    if (!skipBubbleRender && typeof updateBubblesSmooth === 'function') updateBubblesSmooth();
   } catch (e) {
     console.log('MemeScope: Verify error', e);
   }
@@ -6591,15 +6676,23 @@ async function fetchLiveTokens() {
             }
 
             if(isFirstLoad) {
-              // First load: render immediately, then verify in background (smooth removal)
+              // First load: show the table instantly, but build the bubbles only AFTER
+              // verify cleans the token set — so they enter ONCE at their final size,
+              // instead of settling on raw data then re-settling/shrinking when verify
+              // lands. (Filter changes feel clean for exactly this reason: pre-verified.)
               loadData();
-              if(typeof init === 'function') init();
-              var bl = document.getElementById('bubbleLoading');
-              if(bl) bl.classList.add('hidden');
               if(!window._firstLoadDone) { window._firstLoadDone = true; window.scrollTo(0, 0); checkUrlForToken(); var ls=document.getElementById('loadingScreen'); if(ls) ls.remove(); var app=document.querySelector('.app'); if(app) app.classList.add('ready'); }
-              verifyTopTokens();
-              // Inject any boosted tokens not in the scraper results
-              _injectMissingBoostedTokens();
+              window._bubbleBuildDeferred = true;   // hold off waitAndInit until verified
+              var _builtOnce = false;
+              var _buildBubblesOnce = function(){
+                if(_builtOnce) return; _builtOnce = true;
+                window._bubbleBuildDeferred = false;
+                _injectMissingBoostedTokens();
+                if(typeof init === 'function') init();   // single clean entrance, final sizes
+                var bl = document.getElementById('bubbleLoading'); if(bl) bl.classList.add('hidden');
+              };
+              verifyTopTokens(true).then(_buildBubblesOnce, _buildBubblesOnce);
+              setTimeout(_buildBubblesOnce, 2200);   // fallback: never let the bubbles hang
             } else {
               // Subsequent refreshes: re-sort and render, verify in background
               _lastRowOrder = null;
