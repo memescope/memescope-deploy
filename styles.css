@@ -8372,6 +8372,15 @@
     border-radius: 0;
     flex-shrink: 0;
   }
+  /* Multichart divider — ONE line between the top bar and the filter bar (DESKTOP only).
+     Desktop Firefox only renders the filter bar's border here (not the header's), so put
+     the line on the filter bar and drop the header's so Chrome/Safari don't double it.
+     Mobile keeps its own divider (the header's border-bottom) — adding the filter bar's
+     border there doubled it on mobile Firefox, so this stays desktop-scoped. */
+  @media (min-width: 769px) {
+    body.mc-open .top-header-bar { border-bottom: none; }
+    body.mc-open .mc-filterbar { border-top: 1px solid rgba(255,255,255,0.08); }
+  }
   /* Layout controls (columns / card height / spacing) — right side of bar */
   .mc-controls {
     display: flex;
