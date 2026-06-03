@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.137';
+var APP_VERSION = '2.5.139';
 
 // Image proxy — shrinks token images so they load fast even on bad wifi.
 // DexScreener's CDN (98%+ of token images) natively resizes via query params,
@@ -3824,14 +3824,18 @@ var BubbleCanvas = (function(){
     var glowAlpha = 0.07 + curve * 0.34;
     var centerLum = 14 + curve * 11, midLum = 11 + curve * 9, edgeLum = 9 + curve * 7;
     var tintSat = Math.round(20 + curve * 32);
-    var ringAlpha = 0.10 + curve * 0.26;
+    // Bright, defined edge ring — this is what makes a bubble read "crisp" (like
+    // cryptobubbles) instead of a soft gradient blob fading into the background.
+    var ringAlpha = 0.55 + curve * 0.4;
+    var ringLum = (isUp ? 52 : 60) + curve * 15;
+    var ringSat = Math.min(100, sat + 14);
     return {
       glow:'hsla('+hue+','+sat+'%,'+glowLum+'%,'+glowAlpha+')',
       bodyC:'hsl('+hue+','+tintSat+'%,'+centerLum+'%)',
       bodyM:'hsl('+hue+','+tintSat+'%,'+midLum+'%)',
       bodyE:'hsl('+hue+','+Math.round(tintSat*0.7)+'%,'+edgeLum+'%)',
       dim:'hsl('+hue+','+Math.round(tintSat*0.5)+'%,'+Math.max(5, edgeLum - 3)+'%)',
-      ring:'hsla('+hue+','+sat+'%,'+(glowLum+10)+'%,'+ringAlpha+')', ringW:1.5,
+      ring:'hsla('+hue+','+ringSat+'%,'+ringLum+'%,'+ringAlpha+')', ringW:2,
       pct: isUp ? '#2ED57E' : '#FF5765', sign: isUp ? '+' : ''
     };
   }
@@ -3853,12 +3857,16 @@ var BubbleCanvas = (function(){
     sx.clearRect(0, 0, size, size);
     var x = pad, y = pad, r = ref;
 
-    // Glow
-    var gR = r * 1.2;
+    // Edge glow — a tight bloom concentrated at the rim (not a center-fill), so bubbles
+    // get a crisp neon outline and their halos don't bleed into neighbors (the "haze").
+    var gR = r * 1.16;
+    var edgeStop = r / gR;  // where the body edge sits within the glow gradient (~0.86)
     var gg = sx.createRadialGradient(x, y, 0, x, y, gR);
-    gg.addColorStop(0, c.glow); gg.addColorStop(0.35, c.glow);
-    gg.addColorStop(0.70, 'rgba(0,0,0,0)'); gg.addColorStop(1, 'rgba(0,0,0,0)');
-    sx.globalAlpha = 0.7; sx.fillStyle = gg;
+    gg.addColorStop(0, 'rgba(0,0,0,0)');
+    gg.addColorStop(Math.max(0, edgeStop - 0.20), 'rgba(0,0,0,0)');
+    gg.addColorStop(edgeStop, c.glow);
+    gg.addColorStop(1, 'rgba(0,0,0,0)');
+    sx.globalAlpha = 0.9; sx.fillStyle = gg;
     sx.beginPath(); sx.arc(x, y, gR, 0, 6.2832); sx.fill();
     sx.globalAlpha = 1;
 
