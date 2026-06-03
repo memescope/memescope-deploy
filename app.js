@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.136';
+var APP_VERSION = '2.5.137';
 
 // Image proxy — shrinks token images so they load fast even on bad wifi.
 // DexScreener's CDN (98%+ of token images) natively resizes via query params,
@@ -3754,6 +3754,7 @@ var BubbleCanvas = (function(){
       world.appendChild(cv);
     }
     ctx = cv.getContext('2d');
+    ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
     var w = world.offsetWidth, h = world.offsetHeight;
     if(w > 0 && h > 0) resize(w, h);
     return cv;
@@ -3762,10 +3763,9 @@ var BubbleCanvas = (function(){
   function resize(w, h){
     if(!cv) return;
     if(w <= 0 || h <= 0) return;   // measured while hidden — never size the buffer to 0
-    // Native resolution (up to 2x) for crisp logos/text/reticle. This is only
-    // affordable because bubbles are now cached sprites blitted each frame — the
-    // expensive per-frame gradient redraw that forced a 1x cap is gone.
-    var d = Math.min(window.devicePixelRatio || 1, 2);
+    // Render at the device's TRUE pixel ratio (cap 3). Confirmed on-screen that phones
+    // report dpr 3 while we rendered only a 2x buffer → the browser upscaled it → blurry.
+    var d = Math.min(window.devicePixelRatio || 1, 3);
     var bw = Math.round(w * d), bh = Math.round(h * d);
     // Skip only when the ACTUAL buffer already matches. cv.width can be a stale 300x150
     // default right after the canvas was recreated (e.g. showEmptyBubbleState() wiped the
@@ -3777,6 +3777,7 @@ var BubbleCanvas = (function(){
     cv.height = bh;
     cv.style.width = w + 'px';
     cv.style.height = h + 'px';
+    if(ctx){ ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high'; }
     // TEMP DIAGNOSTIC (only with ?debug) — shows real device res vs canvas buffer res.
     if(/debug/.test(location.search) || /debug/.test(location.hash)){
       var _dbg = document.getElementById('__bubdbg');
@@ -3843,10 +3844,11 @@ var BubbleCanvas = (function(){
     var pad = Math.ceil(ref * 1.2) + 2;     // glow reaches 1.2*ref
     var size = pad * 2;
     var spr = b._spr || (b._spr = document.createElement('canvas'));
-    var ss = dpr * 2;  // supersample 2x past device res — keeps thin lines/text crisp
-    var px = Math.max(1, Math.round(size * ss));   // (3x wasn't worth the extra memory)
+    var ss = Math.min(dpr * 2, 4);  // supersample past device res; capped at 4x so 3x-DPR sprites don't balloon
+    var px = Math.max(1, Math.round(size * ss));
     if(spr.width !== px){ spr.width = px; spr.height = px; }
     var sx = spr.getContext('2d');
+    sx.imageSmoothingEnabled = true; sx.imageSmoothingQuality = 'high';  // sharp logo image scaling
     sx.setTransform(ss, 0, 0, ss, 0, 0);
     sx.clearRect(0, 0, size, size);
     var x = pad, y = pad, r = ref;
