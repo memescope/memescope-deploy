@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.133';
+var APP_VERSION = '2.5.134';
 
 // Image proxy — shrinks token images so they load fast even on bad wifi.
 // DexScreener's CDN (98%+ of token images) natively resizes via query params,
@@ -3893,7 +3893,7 @@ var BubbleCanvas = (function(){
     var blockH = (showLogo ? logoSize + gapY : 0) + fsTicker + (showPct ? fsPct + gapY : 0);
     var cyy = y - blockH / 2;
     if(showLogo){
-      var im = t.img ? img(imgProxy(t.img, 80, 80)) : null;
+      var im = t.img ? img(imgProxy(t.img, 160, 160)) : null;
       if(im){
         sx.save();
         sx.beginPath(); sx.arc(x, cyy + logoSize / 2, logoSize / 2, 0, 6.2832); sx.closePath(); sx.clip();
@@ -3928,7 +3928,7 @@ var BubbleCanvas = (function(){
     var er = r * es;  // effective drawn radius (physics size × entrance)
     var tfVal = (typeof getTfVal === 'function') ? getTfVal(t, tfField) : 0;
     var ref = Math.max(1, Math.round(b.targetR || r));
-    var logoReady = !!(t.img && img(imgProxy(t.img, 80, 80)));
+    var logoReady = !!(t.img && img(imgProxy(t.img, 160, 160)));
     // Cache key on TARGET size (fixed) — so entrance/settle just scale the blit.
     var sig = ref + '|' + tfVal.toFixed(1) + '|' + (logoReady ? 1 : 0) + '|' + (t.boosted ? 1 : 0) + '|' + (t.sym || '');
     if(b._sig !== sig){ renderSprite(b, tfVal, ref); b._sig = sig; }
@@ -4077,7 +4077,7 @@ var bubs = [];
     var _entBase = performance.now();
     placed.forEach(function(p, idx){
       var t = p.it.t, r = p.r;
-      if(t.img) BubbleCanvas.img(imgProxy(t.img, 80, 80)); // preload logo for canvas
+      if(t.img) BubbleCanvas.img(imgProxy(t.img, 160, 160)); // preload logo for canvas
       var spd = 0.03 + Math.random() * 0.05;
       var ang = Math.random() * Math.PI * 2;
       bubs.push({
