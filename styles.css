@@ -2265,7 +2265,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: radial-gradient(ellipse at center, rgba(16,15,16,0.85) 0%, rgba(6,6,7,0.93) 100%);
+    background: rgba(0, 0, 0, 0.3);
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
     z-index: 1000;
@@ -3209,7 +3209,7 @@
     display: none;
     position: fixed;
     inset: 0;
-    background: radial-gradient(ellipse at center, rgba(16,15,16,0.85) 0%, rgba(6,6,7,0.93) 100%);
+    background: rgba(0, 0, 0, 0.3);
     z-index: 3000;
   }
   .wc-overlay.open { display: flex; align-items: center; justify-content: center; animation: m3OverlayIn var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard); }
@@ -3397,7 +3397,7 @@
   .bubble-modal-overlay {
     position: fixed;
     inset: 0;
-    background: radial-gradient(ellipse at center, rgba(16,15,16,0.85) 0%, rgba(6,6,7,0.93) 100%);
+    background: rgba(0, 0, 0, 0.3);
     z-index: 2000;
     visibility: hidden;
     pointer-events: none;
@@ -4605,7 +4605,7 @@
     display: none;
     position: fixed;
     inset: 0;
-    background: radial-gradient(ellipse at center, rgba(16,15,16,0.85) 0%, rgba(6,6,7,0.93) 100%);
+    background: rgba(0, 0, 0, 0.3);
     z-index: 3000;
   }
   .boost-modal-overlay.open { display: flex; align-items: center; justify-content: center; animation: m3OverlayIn var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard); }
@@ -4893,7 +4893,7 @@
     display: none;
     position: fixed;
     inset: 0;
-    background: radial-gradient(ellipse at center, rgba(16,15,16,0.85) 0%, rgba(6,6,7,0.93) 100%);
+    background: rgba(0, 0, 0, 0.3);
     z-index: 3000;
   }
   .bugreport-overlay.open { display: flex; align-items: center; justify-content: center; animation: m3OverlayIn var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard); }
@@ -5739,7 +5739,7 @@
 
     /* === TOKEN MODAL — full screen === */
     .bubble-modal-overlay {
-      background: radial-gradient(ellipse at center, rgba(16,15,16,0.85) 0%, rgba(6,6,7,0.93) 100%) !important;
+      background: rgba(0, 0, 0, 0.3) !important;
     }
     .bubble-modal {
       width: 100vw !important;
@@ -5756,14 +5756,14 @@
       -webkit-overflow-scrolling: touch;
       display: flex !important;
       flex-direction: column !important;
-      transition: transform 420ms cubic-bezier(0.2, 0, 0, 1) !important;
+      transition: transform 420ms var(--md-sys-motion-easing-emphasized-decelerate) !important;
       transform: translateY(100%) !important;
       will-change: transform !important;
     }
     .bubble-modal-overlay.open .bubble-modal {
       transform: translateY(0) !important;
       animation: none !important;
-      transition: transform var(--md-sys-motion-duration-medium4) var(--md-sys-motion-easing-emphasized-decelerate) !important;
+      transition: transform 420ms var(--md-sys-motion-easing-emphasized-decelerate) !important;
     }
     .bubble-modal-overlay.closing .bubble-modal {
       transform: translateY(100%) !important;
@@ -5799,13 +5799,13 @@
       border-top: none !important;
       padding-bottom: env(safe-area-inset-bottom) !important;
       box-shadow: 0 -4px 30px rgba(0,0,0,0.3) !important;
-      transition: transform 420ms cubic-bezier(0.2, 0, 0, 1) !important;
+      transition: transform 420ms var(--md-sys-motion-easing-emphasized-decelerate) !important;
       transform: translateY(100%) !important;
       will-change: transform !important;
     }
     .search-overlay.open .search-modal {
       transform: translateY(0) !important;
-      transition: transform 420ms cubic-bezier(0.2, 0, 0, 1) !important;
+      transition: transform 420ms var(--md-sys-motion-easing-emphasized-decelerate) !important;
     }
     .search-overlay:not(.open) .search-modal {
       transform: translateY(100%) !important;
@@ -6423,7 +6423,7 @@
     display: none;
     position: fixed;
     inset: 0;
-    background: radial-gradient(ellipse at center, rgba(16,15,16,0.85) 0%, rgba(6,6,7,0.93) 100%);
+    background: rgba(0, 0, 0, 0.3);
     z-index: 3000;
   }
   .wl-modal-overlay.open { display: block; animation: m3OverlayIn var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard); }
@@ -7003,7 +7003,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: radial-gradient(ellipse at center, rgba(16,15,16,0.85) 0%, rgba(6,6,7,0.93) 100%);
+    background: rgba(0, 0, 0, 0.3);
     z-index: 1999;
     opacity: 0;
     visibility: hidden;
@@ -7236,7 +7236,7 @@
     display: none;
     position: fixed;
     inset: 0;
-    background: radial-gradient(ellipse at center, rgba(16,15,16,0.85) 0%, rgba(6,6,7,0.93) 100%);
+    background: rgba(0, 0, 0, 0.3);
     z-index: 3000;
     overflow: hidden;
   }
@@ -7818,7 +7818,7 @@
   .bf-overlay {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
-    background: radial-gradient(ellipse at center, rgba(16,15,16,0.85) 0%, rgba(6,6,7,0.93) 100%);
+    background: rgba(0, 0, 0, 0.3);
     z-index: 1000;
     visibility: hidden;
     pointer-events: none;
@@ -8210,12 +8210,12 @@
       padding-bottom: env(safe-area-inset-bottom) !important;
       box-shadow: 0 -4px 30px rgba(0,0,0,0.3) !important;
       transform: translateY(100%) !important;
-      transition: transform 420ms cubic-bezier(0.2, 0, 0, 1) !important;
+      transition: transform 420ms var(--md-sys-motion-easing-emphasized-decelerate) !important;
       will-change: transform !important;
     }
     .bf-overlay.open .bf-modal {
       transform: translateY(0) !important;
-      transition: transform 420ms cubic-bezier(0.2, 0, 0, 1) !important;
+      transition: transform 420ms var(--md-sys-motion-easing-emphasized-decelerate) !important;
     }
     .bf-overlay:not(.open) .bf-modal {
       transform: translateY(100%) !important;
@@ -8910,13 +8910,13 @@
       padding-bottom: env(safe-area-inset-bottom, 0px);
       overflow: hidden;
       will-change: height;
-      transition: height 350ms cubic-bezier(0.16, 1, 0.3, 1);
+      transition: height 420ms var(--md-sys-motion-easing-emphasized-decelerate);
     }
     /* Scrim behind the bottom-nav Watchlist/Menu panels (dims the page above) */
     .mob-nav-scrim {
       position: fixed;
       inset: 0;
-      background: radial-gradient(ellipse at center, rgba(16,15,16,0.85) 0%, rgba(6,6,7,0.93) 100%);
+      background: rgba(0, 0, 0, 0.3);
       opacity: 0;
       pointer-events: none;
       z-index: 8999;
@@ -9115,7 +9115,7 @@
       overflow: hidden;
     }
     .mobile-bottom-nav.watchlist-open {
-      height: 70%;
+      height: calc(100% - 28px);
       background: #211f21;
       border-radius: 28px 28px 0 0;
       border-top: 1px solid rgba(255,255,255,0.06);
