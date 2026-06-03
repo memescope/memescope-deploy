@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.132';
+var APP_VERSION = '2.5.131';
 
 // Image proxy — shrinks token images so they load fast even on bad wifi.
 // DexScreener's CDN (98%+ of token images) natively resizes via query params,
@@ -3762,11 +3762,10 @@ var BubbleCanvas = (function(){
   function resize(w, h){
     if(!cv) return;
     if(w <= 0 || h <= 0) return;   // measured while hidden — never size the buffer to 0
-    // Render at the device's TRUE pixel ratio (capped at 3) so logos/text/reticle stay
-    // crisp on high-DPR phones. This used to cap at 2x — fine for desktop and 2x screens,
-    // but most phones are 3x, so the 2x buffer got upscaled to 3x by the browser → blurry.
-    // Affordable because bubbles are cached sprites blitted each frame, not redrawn.
-    var d = Math.min(window.devicePixelRatio || 1, 3);
+    // Native resolution (up to 2x) for crisp logos/text/reticle. This is only
+    // affordable because bubbles are now cached sprites blitted each frame — the
+    // expensive per-frame gradient redraw that forced a 1x cap is gone.
+    var d = Math.min(window.devicePixelRatio || 1, 2);
     var bw = Math.round(w * d), bh = Math.round(h * d);
     // Skip only when the ACTUAL buffer already matches. cv.width can be a stale 300x150
     // default right after the canvas was recreated (e.g. showEmptyBubbleState() wiped the
@@ -3832,7 +3831,7 @@ var BubbleCanvas = (function(){
     var pad = Math.ceil(ref * 1.2) + 2;     // glow reaches 1.2*ref
     var size = pad * 2;
     var spr = b._spr || (b._spr = document.createElement('canvas'));
-    var ss = Math.min(dpr * 2, 4);  // supersample past device res for crisp lines/text; capped at 4x so 3x-DPR sprites don't balloon in size/memory
+    var ss = dpr * 2;  // supersample 2x past device res — keeps thin lines/text crisp
     var px = Math.max(1, Math.round(size * ss));   // (3x wasn't worth the extra memory)
     if(spr.width !== px){ spr.width = px; spr.height = px; }
     var sx = spr.getContext('2d');
