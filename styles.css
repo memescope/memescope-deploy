@@ -9176,3 +9176,18 @@
     }
   }
 
+
+/* Desktop: restore the original darker modal scrim (mobile keeps the lighter 0.3 scrim). */
+@media (min-width: 769px) {
+  .search-overlay,
+  .wc-overlay,
+  .bubble-modal-overlay,
+  .boost-modal-overlay,
+  .bugreport-overlay,
+  .wl-modal-overlay,
+  .ms-mobile-overlay,
+  .tc-overlay,
+  .bf-overlay {
+    background: radial-gradient(ellipse at center, rgba(16,15,16,0.85) 0%, rgba(6,6,7,0.93) 100%);
+  }
+}
