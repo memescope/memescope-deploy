@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.130';
+var APP_VERSION = '2.5.131';
 
 // Image proxy — shrinks token images so they load fast even on bad wifi.
 // DexScreener's CDN (98%+ of token images) natively resizes via query params,
@@ -1367,6 +1367,7 @@ function resizeBubbles() {
   var tfField = getTimeframeField();
   var W = document.getElementById('bubbleWorld').offsetWidth;
   var H = document.getElementById('bubbleWorld').offsetHeight;
+  if(W <= 0 || H <= 0) return;   // world hidden/unmeasured — don't collapse radii to 0
   var radii = calcBubbleSizes(bubs, W, H, tfField, function(b){ return b.token; });
   
   for(var i = 0; i < bubs.length; i++) {
@@ -2374,6 +2375,28 @@ if (typeof ResizeObserver !== 'undefined') {
   var navWrap = document.querySelector('.sticky-nav-wrap');
   if (navWrap) {
     new ResizeObserver(updateStickyOffsets).observe(navWrap);
+  }
+}
+
+// Keep the bubble canvas buffer in sync whenever the bubble world changes size
+// (returning from the token page, mobile address-bar show/hide, orientation, etc.).
+// Without this the canvas buffer goes stale and the bubbles render huge/blurry.
+if (typeof ResizeObserver !== 'undefined') {
+  var _bWorld = document.getElementById('bubbleWorld');
+  if (_bWorld) {
+    var _bwPrevW = _bWorld.offsetWidth, _bwPrevH = _bWorld.offsetHeight;
+    new ResizeObserver(function(){
+      var w = _bWorld.offsetWidth, h = _bWorld.offsetHeight;
+      if (w <= 0 || h <= 0) return;                  // hidden — ignore
+      if (w === _bwPrevW && h === _bwPrevH) return;  // no real change
+      _bwPrevW = w; _bwPrevH = h;
+      if (typeof bubs !== 'undefined' && bubs && bubs.length && typeof resizeBubbles === 'function') {
+        resizeBubbles();
+        if (window.wakeBubbles) window.wakeBubbles();
+      } else if (typeof BubbleCanvas !== 'undefined' && BubbleCanvas) {
+        BubbleCanvas.resize(w, h);
+      }
+    }).observe(_bWorld);
   }
 }
 
@@ -3738,14 +3761,20 @@ var BubbleCanvas = (function(){
 
   function resize(w, h){
     if(!cv) return;
+    if(w <= 0 || h <= 0) return;   // measured while hidden — never size the buffer to 0
     // Native resolution (up to 2x) for crisp logos/text/reticle. This is only
     // affordable because bubbles are now cached sprites blitted each frame — the
     // expensive per-frame gradient redraw that forced a 1x cap is gone.
     var d = Math.min(window.devicePixelRatio || 1, 2);
-    if(w === cssW && h === cssH && d === dpr && cv.width) return;
+    var bw = Math.round(w * d), bh = Math.round(h * d);
+    // Skip only when the ACTUAL buffer already matches. cv.width can be a stale 300x150
+    // default right after the canvas was recreated (e.g. showEmptyBubbleState() wiped the
+    // world's innerHTML), so we check the real buffer — not the cached cssW/H — which is
+    // what prevents the giant blurry bubble after a chain switch / empty-state.
+    if(cv.width === bw && cv.height === bh && d === dpr) return;
     dpr = d; cssW = w; cssH = h;
-    cv.width = Math.round(w * dpr);
-    cv.height = Math.round(h * dpr);
+    cv.width = bw;
+    cv.height = bh;
     cv.style.width = w + 'px';
     cv.style.height = h + 'px';
   }
@@ -5886,6 +5915,10 @@ function closeTokenPage() {
     if (el) el.style.display = '';
   });
   unlockScroll();
+  // Re-sync the bubble canvas to the now-visible world (its buffer may be stale from
+  // while the hero was display:none) so bubbles don't render huge/blurry on return.
+  if (typeof resizeBubbles === 'function') resizeBubbles();
+  if (window.wakeBubbles) window.wakeBubbles();
 
   // Destroy chart — kill chart poll, subscribeBars intervals, then widget
   if (window._tpChartPoll) { clearInterval(window._tpChartPoll); window._tpChartPoll = null; }
