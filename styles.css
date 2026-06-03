@@ -5416,7 +5416,7 @@
     .main { margin-left: 0 !important; }
     .bubble-hero {
       margin: 0 8px !important;
-      border-radius: 0 !important; /* TEST: square corners — checking iOS rounded-clip canvas blur */
+      border-radius: 0 0 var(--md-sys-shape-corner-extra-large) var(--md-sys-shape-corner-extra-large) !important;
     }
 
     /* === HEADER — clean minimal === */
@@ -5499,7 +5499,7 @@
       max-width: 100vw !important;
       overflow: hidden !important;
       margin: 0 8px !important;
-      border-radius: 0 !important; /* TEST: square corners — checking iOS rounded-clip canvas blur */
+      border-radius: 0 0 var(--md-sys-shape-corner-extra-large) var(--md-sys-shape-corner-extra-large) !important;
       box-sizing: border-box !important;
     }
 
