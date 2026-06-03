@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.138';
+var APP_VERSION = '2.5.137';
 
 // Image proxy — shrinks token images so they load fast even on bad wifi.
 // DexScreener's CDN (98%+ of token images) natively resizes via query params,
@@ -3844,7 +3844,7 @@ var BubbleCanvas = (function(){
     var pad = Math.ceil(ref * 1.2) + 2;     // glow reaches 1.2*ref
     var size = pad * 2;
     var spr = b._spr || (b._spr = document.createElement('canvas'));
-    var ss = dpr;  // render the sprite at EXACTLY device resolution → clean 1:1 blit when settled (no soft fractional downscale; also less memory)
+    var ss = Math.min(dpr * 2, 4);  // supersample past device res; capped at 4x so 3x-DPR sprites don't balloon
     var px = Math.max(1, Math.round(size * ss));
     if(spr.width !== px){ spr.width = px; spr.height = px; }
     var sx = spr.getContext('2d');
@@ -3944,11 +3944,7 @@ var BubbleCanvas = (function(){
 
     var s = er / b._sprRef;
     var half = b._sprPad * s;
-    // Snap the blit to the device-pixel grid so settled/static bubbles aren't smeared
-    // across sub-pixels — the main remaining softener after rendering at true DPR.
-    var dx = Math.round((b.x - half) * dpr) / dpr;
-    var dy = Math.round((b.y - half) * dpr) / dpr;
-    ctx.drawImage(b._spr, dx, dy, half * 2, half * 2);
+    ctx.drawImage(b._spr, b.x - half, b.y - half, half * 2, half * 2);
 
     // Hover ring — animated white crossfade, drawn live. Drawn a bit thinner than
     // the sprite's ring: solid hard-edged white reads heavier than the soft,
