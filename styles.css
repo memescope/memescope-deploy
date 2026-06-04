@@ -5669,6 +5669,11 @@
     tbody tr:hover td:first-child {
       background: #252527 !important;
     }
+    /* Opaque match for the row's 0.12 active tint over #1c1b1d, so the sticky token
+       column doesn't go a different shade than the rest of the row on tap. */
+    tbody tr:active:not(:has(.token-dots:active)) td:first-child {
+      background: #373638 !important;
+    }
     thead th:first-child {
       background: #2b2930 !important;
       z-index: 3 !important;
