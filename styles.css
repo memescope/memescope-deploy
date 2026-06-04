@@ -5665,6 +5665,9 @@
       left: 0 !important;
       z-index: 2 !important;
       background: #1c1b1d !important;
+      /* Match the row's bg transition (line ~284) so the sticky column changes
+         color at the same time as the scrolling columns, not instantly before them. */
+      transition: background var(--md-sys-motion-duration-short2) linear !important;
     }
     tbody tr:hover td:first-child {
       background: #252527 !important;
