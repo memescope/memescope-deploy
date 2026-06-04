@@ -1,4 +1,4 @@
-var CACHE_NAME = 'memescope-v2.5.137';
+var CACHE_NAME = 'memescope-v2.5.140';
 // On localhost the service worker is disabled entirely so development always
 // sees fresh files (no stale-cache confusion). Production keeps full caching.
 var IS_DEV = (self.location.hostname === 'localhost' || self.location.hostname === '127.0.0.1');
@@ -62,7 +62,8 @@ self.addEventListener('activate', function(e) {
   self.clients.claim();
 });
 
-// Fetch — stale-while-revalidate for static assets, network-first for API
+// Fetch — NETWORK-FIRST for the app shell so new deploys show up immediately;
+// the cache is only an offline fallback now (no more stale-version surprises).
 self.addEventListener('fetch', function(e) {
   if (IS_DEV) return;  // dev: always go to network, never serve from cache
   var url = new URL(e.request.url);
@@ -80,20 +81,17 @@ self.addEventListener('fetch', function(e) {
     return;
   }
 
-  // Static assets — stale-while-revalidate
+  // Same-origin app shell — NETWORK-FIRST: always try the network so the latest
+  // deploy is served immediately; fall back to cache only when offline.
   e.respondWith(
-    caches.open(CACHE_NAME).then(function(cache) {
-      return cache.match(e.request).then(function(cached) {
-        var fetchPromise = fetch(e.request).then(function(response) {
-          if (response.ok) {
-            cache.put(e.request, response.clone());
-          }
-          return response;
-        }).catch(function() {
-          return cached;
-        });
-        return cached || fetchPromise;
-      });
+    fetch(e.request).then(function(response) {
+      if (response.ok) {
+        var copy = response.clone();
+        caches.open(CACHE_NAME).then(function(cache) { cache.put(e.request, copy); });
+      }
+      return response;
+    }).catch(function() {
+      return caches.match(e.request);
     })
   );
 });
