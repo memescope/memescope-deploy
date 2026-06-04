@@ -283,7 +283,7 @@
     -webkit-tap-highlight-color: transparent;
     transition: background var(--md-sys-motion-duration-short2) linear;
   }
-  tbody tr:active {
+  tbody tr:active:not(:has(.token-dots:active)) {
     background: rgba(255, 255, 255, 0.12) !important;
   }
 
