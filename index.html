@@ -19,7 +19,7 @@
 window._earlyTokens = fetch('/api/tokens').then(function(r){return r.json()}).catch(function(){return null});
 </script>
 <meta charset="UTF-8">
-<meta name="version" content="2.5.143">
+<meta name="version" content="2.5.144">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -689,7 +689,7 @@ window._earlyTokens = fetch('/api/tokens').then(function(r){return r.json()}).ca
     </div>
 
   <div style="text-align:center;padding:24px 16px 32px;border-top:1px solid rgba(255,255,255,0.04);margin-top:20px">
-    <div style="font-size:11px;color:rgba(255,255,255,0.25);font-family:'Inter',sans-serif;margin-bottom:6px">memescope.eth &middot; <span data-version>v2.5.143</span></div>
+    <div style="font-size:11px;color:rgba(255,255,255,0.25);font-family:'Inter',sans-serif;margin-bottom:6px">memescope.eth &middot; <span data-version>v2.5.144</span></div>
     <div style="font-size:11px;color:rgba(255,255,255,0.2);font-family:'Inter',sans-serif">&copy; 2026 Memescope.io. All rights reserved.</div>
   </div>
 
@@ -1254,7 +1254,7 @@ window._earlyTokens = fetch('/api/tokens').then(function(r){return r.json()}).ca
         </div>
       </div>
       <span class="bm-price-big" id="bmPriceBig" onclick="togglePriceCurrency()" title="Click to switch USD / native token"></span>
-      <button class="bm-close" onclick="history.back()">
+      <button class="bm-close" onclick="var n=document.getElementById('mobileBottomNav');if(n&&n.classList.contains('coin-open')){closeBubbleModal();}else{history.back();}">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
     </div>
@@ -1570,8 +1570,9 @@ window._earlyTokens = fetch('/api/tokens').then(function(r){return r.json()}).ca
   </div>
   <div class="mob-nav-search" id="mobNavSearch"></div>
   <div class="mob-nav-watchlist" id="mobNavWatchlist"></div>
+  <div class="mob-nav-coin" id="mobNavCoin"></div>
 </nav>
-<div class="mob-nav-scrim" id="mobNavScrim" onclick="var n=document.getElementById('mobileBottomNav'); if(n&&n.classList.contains('watchlist-open')){if(typeof closeWatchlistModal==='function')closeWatchlistModal();} else if(n&&n.classList.contains('search-open')){if(typeof closeSearchModal==='function')closeSearchModal();} else if(n&&n.classList.contains('menu-open')){if(typeof closeMobMenu==='function')closeMobMenu();}"></div>
+<div class="mob-nav-scrim" id="mobNavScrim" onclick="var n=document.getElementById('mobileBottomNav'); if(n&&n.classList.contains('watchlist-open')){if(typeof closeWatchlistModal==='function')closeWatchlistModal();} else if(n&&n.classList.contains('search-open')){if(typeof closeSearchModal==='function')closeSearchModal();} else if(n&&n.classList.contains('menu-open')){if(typeof closeMobMenu==='function')closeMobMenu();} else if(n&&n.classList.contains('coin-open')){if(typeof closeBubbleModal==='function')closeBubbleModal();}"></div>
 
 </body>
 </html>

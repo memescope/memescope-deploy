@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.143';
+var APP_VERSION = '2.5.144';
 
 // Image proxy — shrinks token images so they load fast even on bad wifi.
 // DexScreener's CDN (98%+ of token images) natively resizes via query params,
@@ -4855,8 +4855,23 @@ function openBubbleModal(t) {
     }
   }
 
-  // Show modal
-  ov.classList.add("open");
+  // Show modal — on mobile, open it AS the bottom nav: move the sheet into the nav's
+  // coin slot and expand the nav (same motion as search/watchlist). Desktop keeps the overlay.
+  if (_isMobile) {
+    var _coinNav = document.getElementById('mobileBottomNav');
+    var _coinBm = ov.querySelector('.bubble-modal');
+    var _coinSlot = document.getElementById('mobNavCoin');
+    if (_coinNav && _coinBm && _coinSlot) {
+      window._bubbleModalParent = _coinBm.parentNode;
+      _coinSlot.appendChild(_coinBm);
+      _coinNav.classList.add('coin-open');
+      _coinNav.querySelectorAll('.mob-nav-item').forEach(function(b){ b.classList.remove('active'); });
+    } else {
+      ov.classList.add("open");
+    }
+  } else {
+    ov.classList.add("open");
+  }
   loadTradingView(function() { _initModalChart(t); });
 
   // Update URL
@@ -5079,6 +5094,28 @@ function _convFormatDisplay(n, unit) {
 }
 
 function updateConverterV3() {
+  // Size the input to its RENDERED content width (pixel-exact in every browser) so the
+  // unit pill hugs the number. size-attr widths differ per browser (Firefox renders them
+  // wider) and field-sizing isn't in Firefox — so we measure the text with a hidden span.
+  (function(){
+    var ci = document.getElementById('bmConvInput');
+    if (!ci) return;
+    if (window.innerWidth > 768) { ci.style.width = ''; return; }
+    var m = window._bmConvMeasure;
+    if (!m) {
+      m = window._bmConvMeasure = document.createElement('span');
+      m.style.cssText = 'position:absolute;visibility:hidden;white-space:pre;top:-9999px;left:-9999px;pointer-events:none';
+      document.body.appendChild(m);
+    }
+    var cs = getComputedStyle(ci);
+    m.style.fontFamily = cs.fontFamily;
+    m.style.fontSize = cs.fontSize;
+    m.style.fontWeight = cs.fontWeight;
+    m.style.letterSpacing = cs.letterSpacing;
+    m.style.fontVariantNumeric = cs.fontVariantNumeric;
+    m.textContent = ci.value || '0';
+    ci.style.width = Math.ceil(m.getBoundingClientRect().width + 2) + 'px';
+  })();
   var t = window._modalToken;
   if (!t || !t.price) return;
   var input = document.getElementById('bmConvInput');
@@ -5242,8 +5279,21 @@ document.addEventListener('click', function(e) {
 
 function closeBubbleModal() {
   var ov = document.getElementById("bubbleModalOverlay");
-  if(!ov || !ov.classList.contains("open")) return;
-  m3CloseOverlay(ov);
+  var _coinNav = document.getElementById('mobileBottomNav');
+  var _coinOpen = !!(_coinNav && _coinNav.classList.contains('coin-open'));
+  if(!_coinOpen && (!ov || !ov.classList.contains("open"))) return;
+  if (_coinOpen) {
+    // Collapse the nav and move the sheet back into its (hidden) overlay
+    var _coinSlot = document.getElementById('mobNavCoin');
+    var _coinBm = _coinSlot && _coinSlot.querySelector('.bubble-modal');
+    if (_coinBm && window._bubbleModalParent) { window._bubbleModalParent.appendChild(_coinBm); window._bubbleModalParent = null; }
+    _coinNav.classList.remove('coin-open');
+    var _cbtns = _coinNav.querySelectorAll('.mob-nav-item');
+    _cbtns.forEach(function(b){ b.classList.remove('active'); });
+    if (_cbtns[0]) _cbtns[0].classList.add('active');
+  } else {
+    m3CloseOverlay(ov);
+  }
   unlockScroll();
   document.title = 'MemeScope — The Meme Coin Scope & Scanner';
   if (document.body.classList.contains('modal-scroll-lock')) {
@@ -5283,7 +5333,8 @@ function closeBubbleModal() {
 // Close modal on browser back / swipe back
 window.addEventListener('popstate', function() {
   var ov = document.getElementById("bubbleModalOverlay");
-  if(ov && ov.classList.contains("open")) {
+  var _cnav = document.getElementById("mobileBottomNav");
+  if((ov && ov.classList.contains("open")) || (_cnav && _cnav.classList.contains("coin-open"))) {
     closeBubbleModal();
   }
   // Also close token page if open

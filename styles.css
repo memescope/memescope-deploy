@@ -5840,6 +5840,17 @@
     .bm-bs-val { font-size: 12px !important; }
     .bm-bs-label { font-size: 9px !important; }
     .bm-converter { padding: 8px 12px 12px !important; }
+    /* Mobile: hide the quickset preset chips (type the amount) + the rate text,
+       so the YOU RECEIVE label reads just "YOU RECEIVE". */
+    .bm-conv-presets, .bm-conv-rate { display: none !important; }
+    /* Left side: USD pill hugs the number (instead of the input stretching full width
+       and shoving the pill to the far edge) — mirrors the ticker pill on the right. */
+    .bm-conv-left-row { justify-content: flex-start !important; }
+    .bm-conv-hero-input {
+      flex: 0 0 auto !important;
+      min-width: 1ch !important;
+      max-width: 62% !important;
+    }
 
     /* === BOOST MODAL === */
     .boost-modal {
@@ -8932,6 +8943,7 @@
     }
     .mobile-bottom-nav.menu-open ~ .mob-nav-scrim,
     .mobile-bottom-nav.watchlist-open ~ .mob-nav-scrim,
+    .mobile-bottom-nav.coin-open ~ .mob-nav-scrim,
     .mobile-bottom-nav.search-open ~ .mob-nav-scrim {
       opacity: 1;
       pointer-events: auto;
@@ -9181,6 +9193,35 @@
       box-shadow: none !important;
       border: none !important;
       background: transparent !important;
+    }
+
+    /* Coin sheet hosted inside the nav (mirrors search/watchlist) */
+    .mob-nav-coin {
+      display: none;
+      flex-direction: column;
+      flex: 1;
+      overflow: hidden;
+    }
+    .mobile-bottom-nav.coin-open {
+      height: calc(100% - 28px);
+      background: #1c1b1d;
+      border-radius: 28px 28px 0 0;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      box-shadow: 0 -4px 30px rgba(0,0,0,0.4);
+    }
+    .mobile-bottom-nav.coin-open .mob-nav-icons { display: none; }
+    .mobile-bottom-nav.coin-open .mob-nav-coin { display: flex; }
+    .mob-nav-coin .bubble-modal {
+      position: static !important;
+      transform: none !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      height: 100% !important;
+      max-height: 100% !important;
+      border-radius: 0 !important;
+      box-shadow: none !important;
+      border: none !important;
+      animation: none !important;
     }
   }
 
