@@ -5839,7 +5839,8 @@
     .bm-buysell { padding: 8px 12px 10px !important; }
     .bm-bs-val { font-size: 12px !important; }
     .bm-bs-label { font-size: 9px !important; }
-    .bm-converter { padding: 8px 12px 12px !important; }
+    .bm-converter { padding: 5px 12px 7px !important; }
+    .bm-conv-left, .bm-conv-right { gap: 2px !important; }
     /* Mobile: hide the quickset preset chips (type the amount) + the rate text,
        so the YOU RECEIVE label reads just "YOU RECEIVE". */
     .bm-conv-presets, .bm-conv-rate { display: none !important; }
