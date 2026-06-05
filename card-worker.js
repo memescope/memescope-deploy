@@ -35,7 +35,7 @@ const DEXSCREENER_API = 'https://api.dexscreener.com/latest/dex/tokens/';
 
 // Bumped on every deploy (with package.json/app.js/sw.js). Edge-cache keys for HTML
 // include this, so a new deploy = new key = old cached HTML is ignored instantly.
-const CACHE_VERSION = '2.5.121';
+const CACHE_VERSION = '2.5.148';
 
 const VALID_CHAINS = new Set([
   'solana', 'eth', 'ethereum', 'base', 'bsc', 'sui', 'tron',
@@ -372,8 +372,8 @@ function buildBotHtml(token, chain, ca) {
   const title = `${token.name} ($${token.ticker}) — MemeScope`;
   const mcap = fmtNum(token.mcap);
   const desc = `$${token.ticker} on ${CHAIN_DISPLAY[chain] || chain} | MCap: $${mcap.value}${mcap.unit} | Scoped on MemeScope`;
-  const imageUrl = `https://memescope.io/card-image/${encodeURIComponent(chain)}/${encodeURIComponent(ca)}.png`;
-  const pageUrl = `https://memescope.io/${encodeURIComponent(chain)}/${encodeURIComponent(ca)}`;
+  const imageUrl = `https://memescopes.com/card-image/${encodeURIComponent(chain)}/${encodeURIComponent(ca)}.png`;
+  const pageUrl = `https://memescopes.com/${encodeURIComponent(chain)}/${encodeURIComponent(ca)}`;
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -514,9 +514,15 @@ export default {
     const pathname = url.pathname;
     const ua = request.headers.get('user-agent') || '';
 
+    // ─── Old domain → new domain (memescope.io → memescopes.com) ────
+    if (url.hostname === 'memescope.io' || url.hostname === 'www.memescope.io') {
+      url.hostname = 'memescopes.com';
+      return Response.redirect(url.toString(), 301);
+    }
+
     // ─── www → non-www redirect (SEO canonical) ────────────────────
-    if (url.hostname === 'www.memescope.io') {
-      url.hostname = 'memescope.io';
+    if (url.hostname === 'www.memescopes.com') {
+      url.hostname = 'memescopes.com';
       return Response.redirect(url.toString(), 301);
     }
 
@@ -551,7 +557,7 @@ export default {
       } catch (err) {
         console.error('Card generation error:', err.message, err.stack);
         // Fallback: redirect to static OG image
-        return Response.redirect('https://memescope.io/og-image.png', 302);
+        return Response.redirect('https://memescopes.com/og-image.png', 302);
       }
     }
 

@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.147';
+var APP_VERSION = '2.5.148';
 
 // Image proxy — shrinks token images so they load fast even on bad wifi.
 // DexScreener's CDN (98%+ of token images) natively resizes via query params,
@@ -1913,8 +1913,8 @@ function toggleWlShareMenu(btn) {
         }
       });
     }
-    text += '\nTrack yours at memescope.io';
-    navigator.share({ title: 'My MemeScope Watchlist', text: text, url: 'https://memescope.io' }).catch(function(){});
+    text += '\nTrack yours at memescopes.com';
+    navigator.share({ title: 'My MemeScope Watchlist', text: text, url: 'https://memescopes.com' }).catch(function(){});
     return;
   }
   // Desktop or fallback: use dropdown menu
@@ -1945,7 +1945,7 @@ function shareWatchlist(platform) {
       text += '⚪ $' + sym + '\n';
     }
   });
-  text += '\nTrack yours at memescope.io';
+  text += '\nTrack yours at memescopes.com';
 
   var encoded = encodeURIComponent(text);
   var url = '';
@@ -1955,7 +1955,7 @@ function shareWatchlist(platform) {
       url = 'https://x.com/intent/tweet?text=' + encoded;
       break;
     case 'telegram':
-      url = 'https://t.me/share/url?url=' + encodeURIComponent('https://memescope.io') + '&text=' + encoded;
+      url = 'https://t.me/share/url?url=' + encodeURIComponent('https://memescopes.com') + '&text=' + encoded;
       break;
     case 'whatsapp':
       url = 'https://wa.me/?text=' + encoded;
@@ -5419,7 +5419,7 @@ function _initModalChart(t) {
           description: t.name || t.sym,
           type: 'crypto',
           session: '24x7',
-          exchange: 'memescope.io',
+          exchange: 'memescopes.com',
           timezone: 'Etc/UTC',
           format: 'price',
           pricescale: ps,
@@ -6101,7 +6101,7 @@ function initTokenPageChart(t) {
           description: t.name || t.sym,
           type: 'crypto',
           session: '24x7',
-          exchange: 'memescope.io',
+          exchange: 'memescopes.com',
           timezone: 'Etc/UTC',
           format: 'price',
           pricescale: ps,

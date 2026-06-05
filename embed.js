@@ -23,14 +23,14 @@ if(window._embedMode) {
     // Watermark inside chart
     var wm = document.createElement('div');
     wm.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:100;pointer-events:none;opacity:0.06;font-family:Inter,sans-serif;font-size:42px;font-weight:800;color:#fff;letter-spacing:4px;white-space:nowrap;user-select:none;';
-    wm.textContent = 'memescope.io';
+    wm.textContent = 'memescopes.com';
     c.appendChild(wm);
     embed.appendChild(c);
 
     // Footer
     var f = document.createElement('div');
     f.style.cssText = 'padding:6px 16px;text-align:center;border-top:1px solid var(--border);';
-    f.innerHTML = '<a href="'+location.origin+'" target="_blank" style="color:rgba(255,255,255,0.3);text-decoration:none;font-size:11px">Powered by memescope.io</a>';
+    f.innerHTML = '<a href="'+location.origin+'" target="_blank" style="color:rgba(255,255,255,0.3);text-decoration:none;font-size:11px">Powered by memescopes.com</a>';
     embed.appendChild(f);
     document.body.appendChild(embed);
 
