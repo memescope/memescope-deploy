@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.146';
+var APP_VERSION = '2.5.147';
 
 // Image proxy — shrinks token images so they load fast even on bad wifi.
 // DexScreener's CDN (98%+ of token images) natively resizes via query params,
@@ -4872,7 +4872,9 @@ function openBubbleModal(t) {
   } else {
     ov.classList.add("open");
   }
-  loadTradingView(function() { _initModalChart(t); });
+  // Let the open animation finish before loading the chart — the heavy TradingView init
+  // jolts/reshuffles the sheet if it runs mid-open. The reserved placeholder shows meanwhile.
+  setTimeout(function() { loadTradingView(function() { _initModalChart(t); }); }, 460);
 
   // Update URL
   try {
