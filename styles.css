@@ -7881,7 +7881,7 @@
     align-items: center;
     justify-content: space-between;
     padding: 20px 24px 12px;
-    background: #211f21;
+    background: #292729;
     border-bottom: 1px solid rgba(255,255,255,0.06);
   }
   .bf-title {
@@ -7895,13 +7895,15 @@
     align-items: center;
     gap: 12px;
   }
+  .bf-reset-btn.has-filters { color: var(--md-sys-color-primary); }
+
   .bf-reset-btn {
     display: inline-flex;
     align-items: center;
     gap: 5px;
     background: none;
     border: none;
-    color: var(--md-sys-color-primary);
+    color: #908c8e;
     font-family: 'Inter', sans-serif;
     font-size: 13px;
     font-weight: 500;
@@ -8118,7 +8120,7 @@
     justify-content: space-between;
     padding: 12px 24px;
     border-top: 1px solid rgba(255,255,255,0.08);
-    background: rgba(74, 158, 255, 0.04);
+    background: #292729;
     font-size: 13px;
     font-weight: 600;
     color: var(--md-sys-color-on-surface);
@@ -8129,11 +8131,13 @@
     line-height: 1;
   }
   .bf-live-text { color: rgba(230, 225, 227, 0.92); }
+  button.bf-apply-btn.has-filters { color: var(--md-sys-color-primary); }
+
   button.bf-apply-btn {
     all: unset;
     display: inline-block;
     padding: 6px 12px;
-    color: var(--md-sys-color-primary);
+    color: #908c8e;
     font-family: 'Inter', sans-serif;
     font-size: 13px;
     font-weight: 500;
@@ -8153,7 +8157,7 @@
   }
   /* Quick Presets section — distinct from regular filter chips */
   .bf-presets {
-    background: rgba(74, 158, 255, 0.04);
+    background: transparent;
     margin: -8px -20px 8px -20px;
     padding: 14px 20px 16px 20px;
     border-radius: 0;
@@ -8219,6 +8223,7 @@
 
   /* ─── BUBBLE FILTER MODAL MOBILE ─── */
   @media (max-width: 768px) {
+    .bf-overlay { z-index: 9500 !important; }
     .bf-modal {
       width: 100vw !important;
       max-width: 100vw !important;
