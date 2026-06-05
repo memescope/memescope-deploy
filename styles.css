@@ -7896,6 +7896,9 @@
     gap: 12px;
   }
   .bf-reset-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
     background: none;
     border: none;
     color: var(--md-sys-color-primary);
