@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.152';
+var APP_VERSION = '2.5.153';
 
 // Image proxy — shrinks token images so they load fast even on bad wifi.
 // DexScreener's CDN (98%+ of token images) natively resizes via query params,
@@ -3841,6 +3841,13 @@ var BubbleCanvas = (function(){
   function renderSprite(b, tfVal, ref){
     var t = b.token;
     var c = colors(tfVal);
+    // Boosted: replace the green/red performance palette with gold so the whole
+    // bubble reads gold — body, glow and ring — with no red/green tint underneath.
+    if(t.boosted){
+      c = { glow:'rgba(255,205,0,0.42)',
+            bodyC:'hsl(47,82%,46%)', bodyM:'hsl(45,82%,32%)', bodyE:'hsl(44,84%,20%)', dim:'hsl(43,84%,15%)',
+            ring:'rgba(255,215,0,0.9)', ringW:1.5, pct:'#E6E1E5', sign:c.sign };
+    }
     var pad = Math.ceil(ref * 1.2) + 2;     // glow reaches 1.2*ref
     var size = pad * 2;
     var spr = b._spr || (b._spr = document.createElement('canvas'));
@@ -3855,10 +3862,11 @@ var BubbleCanvas = (function(){
 
     // Glow
     var gR = r * 1.2;
+    var _glowC = c.glow;
     var gg = sx.createRadialGradient(x, y, 0, x, y, gR);
-    gg.addColorStop(0, c.glow); gg.addColorStop(0.35, c.glow);
+    gg.addColorStop(0, _glowC); gg.addColorStop(0.35, _glowC);
     gg.addColorStop(0.70, 'rgba(0,0,0,0)'); gg.addColorStop(1, 'rgba(0,0,0,0)');
-    sx.globalAlpha = 0.7; sx.fillStyle = gg;
+    sx.globalAlpha = t.boosted ? 0.85 : 0.7; sx.fillStyle = gg;
     sx.beginPath(); sx.arc(x, y, gR, 0, 6.2832); sx.fill();
     sx.globalAlpha = 1;
 
@@ -3875,12 +3883,12 @@ var BubbleCanvas = (function(){
 
     // Scope reticle
     if(r > 20){
-      sx.lineWidth = 1; sx.strokeStyle = 'rgba(220,220,220,0.12)';
+      sx.lineWidth = 1; sx.strokeStyle = t.boosted ? 'rgba(255,215,0,0.22)' : 'rgba(220,220,220,0.12)';
       sx.beginPath(); sx.arc(x, y, r * 0.56, 0, 6.2832); sx.stroke();
     }
     if(r > 22){
       var e = r * 0.84, g = r * 0.20;
-      sx.strokeStyle = 'rgba(255,255,255,0.16)'; sx.lineWidth = 1;
+      sx.strokeStyle = t.boosted ? 'rgba(255,215,0,0.30)' : 'rgba(255,255,255,0.16)'; sx.lineWidth = 1;
       sx.beginPath();
       sx.moveTo(x - e, y); sx.lineTo(x - g, y);
       sx.moveTo(x + g, y); sx.lineTo(x + e, y);
@@ -3888,18 +3896,17 @@ var BubbleCanvas = (function(){
       sx.moveTo(x, y + g); sx.lineTo(x, y + e);
       sx.stroke();
     }
-    if(t.boosted){
-      sx.lineWidth = 2; sx.strokeStyle = 'rgba(255,184,39,0.85)';
-      sx.beginPath(); sx.arc(x, y, r - 1, 0, 6.2832); sx.stroke();
-    }
-
     // Content
     var showLogo = r > 18, showPct = r > 16;
+    var bc = t.boosted ? (t.boostCount || 0) : 0;
+    var showBadge = t.boosted && r > 24 && bc > 0;
     var logoSize = Math.max(13, r * 0.38) + 4;
     var fsTicker = Math.max(7, r * 0.30);
     var fsPct = Math.max(5, r * 0.18);
+    var fsBadge = Math.max(7, r * 0.19);
     var gapY = Math.max(1, r * 0.05);
-    var blockH = (showLogo ? logoSize + gapY : 0) + fsTicker + (showPct ? fsPct + gapY : 0);
+    var badgeH = fsBadge;
+    var blockH = (showLogo ? logoSize + gapY : 0) + fsTicker + (showPct ? fsPct + gapY : 0) + (showBadge ? badgeH + gapY : 0);
     var cyy = y - blockH / 2;
     if(showLogo){
       var im = t.img ? img(imgProxy(t.img, 80, 80)) : null;
@@ -3924,6 +3931,24 @@ var BubbleCanvas = (function(){
       sx.fillStyle = c.pct;
       sx.font = "600 " + fsPct + "px 'Inter', sans-serif";
       sx.fillText(c.sign + tfVal.toFixed(1) + '%', x, cyy);
+      cyy += fsPct + gapY;
+    }
+    if(showBadge){
+      // Lightning-bolt icon (the app's boost bolt) + white count, no pill
+      var cntTxt = '' + bc;
+      sx.font = "800 " + fsBadge + "px 'Inter', sans-serif";
+      var cntW = sx.measureText(cntTxt).width;
+      var bs = fsBadge / 20;                       // scale 24-viewBox bolt (bbox h≈20) to digit height
+      var boltW = 18 * bs, bgap = fsBadge * 0.14;  // bbox w≈18
+      var gx = x - (boltW + bgap + cntW) / 2;       // center the bolt+count group
+      sx.save();
+      sx.translate(gx - 3 * bs, cyy - 2 * bs);      // path bbox starts at (3,2)
+      sx.scale(bs, bs);
+      sx.fillStyle = '#FFC400';
+      sx.fill(new Path2D('M13 2L3 14h9l-1 8 10-12h-9l1-8z'));
+      sx.restore();
+      sx.fillStyle = '#FFFFFF'; sx.textAlign = 'left'; sx.textBaseline = 'top';
+      sx.fillText(cntTxt, gx + boltW + bgap, cyy);
     }
 
     b._sprPad = pad; b._sprRef = ref; b._ringW = c.ringW;
@@ -3939,7 +3964,7 @@ var BubbleCanvas = (function(){
     var ref = Math.max(1, Math.round(b.targetR || r));
     var logoReady = !!(t.img && img(imgProxy(t.img, 80, 80)));
     // Cache key on TARGET size (fixed) — so entrance/settle just scale the blit.
-    var sig = ref + '|' + tfVal.toFixed(1) + '|' + (logoReady ? 1 : 0) + '|' + (t.boosted ? 1 : 0) + '|' + (t.sym || '');
+    var sig = ref + '|' + tfVal.toFixed(1) + '|' + (logoReady ? 1 : 0) + '|' + (t.boosted ? 1 : 0) + '|' + (t.boosted ? (t.boostCount||0) : 0) + '|' + (t.sym || '');
     if(b._sig !== sig){ renderSprite(b, tfVal, ref); b._sig = sig; }
 
     var s = er / b._sprRef;
