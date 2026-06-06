@@ -1,4 +1,4 @@
-var CACHE_NAME = 'memescope-v2.5.151';
+var CACHE_NAME = 'memescope-v2.5.152';
 // On localhost the service worker is disabled entirely so development always
 // sees fresh files (no stale-cache confusion). Production keeps full caching.
 var IS_DEV = /^localhost$|^127\.|^192\.168\.|^10\.|^172\.(1[6-9]|2[0-9]|3[01])\./.test(self.location.hostname);
