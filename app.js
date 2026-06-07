@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.173';
+var APP_VERSION = '2.5.174';
 
 // Image proxy — shrinks token images so they load fast even on bad wifi.
 // DexScreener's CDN (98%+ of token images) natively resizes via query params,
@@ -302,13 +302,8 @@ function _injectMissingBoostedTokens() {
       .then(function(r) { return r.json(); })
       .then(function(pairs) {
         if (!pairs || !pairs.length) return null;
-        // Pick the pair with highest liquidity
-        var pair = pairs[0];
-        for (var k = 1; k < pairs.length; k++) {
-          if ((pairs[k].liquidity && pairs[k].liquidity.usd || 0) > (pair.liquidity && pair.liquidity.usd || 0)) {
-            pair = pairs[k];
-          }
-        }
+        // Pick the consensus pair (rejects mis-priced outlier pools).
+        var pair = _pickConsensusPair(pairs);
         var pc = pair.priceChange || {};
         var vol = pair.volume || {};
         var netMap = { solana: 'solana', ethereum: 'eth', base: 'base', bsc: 'bsc', sui: 'sui', tron: 'tron', arbitrum: 'arbitrum', avalanche: 'avalanche', polygon: 'polygon', optimism: 'optimism', blast: 'blast', ton: 'ton', seiv2: 'seiv2', pulsechain: 'pulsechain', sonic: 'sonic', hyperliquid: 'hyperliquid', berachain: 'berachain', monad: 'monad', cronos: 'cronos', aptos: 'aptos', linea: 'linea', zksync: 'zksync', fantom: 'fantom', mantle: 'mantle', scroll: 'scroll', manta: 'manta', starknet: 'starknet' };
@@ -6647,6 +6642,31 @@ function isRugged(ca) {
   return true;
 }
 
+// Pick the "real" pair for a token from DexScreener's list. A token can have a
+// poisoned pool reporting a wildly wrong price/mcap (often with high liquidity),
+// so we take the highest-liquidity pair whose price agrees with the consensus
+// (median of all pairs) — rejecting >10x price outliers like an $80 price on a
+// token that's really $0.016 (which would otherwise show an 80B market cap).
+function _pickConsensusPair(pairs) {
+  if (!pairs || !pairs.length) return null;
+  var prices = [];
+  for (var i = 0; i < pairs.length; i++) {
+    var pr = parseFloat(pairs[i].priceUsd) || 0;
+    if (pr > 0) prices.push(pr);
+  }
+  prices.sort(function (a, b) { return a - b; });
+  var med = prices.length ? prices[Math.floor(prices.length / 2)] : 0;
+  var best = null, bestLiq = -1;
+  for (var j = 0; j < pairs.length; j++) {
+    var p = pairs[j];
+    var price = parseFloat(p.priceUsd) || 0;
+    var liq = (p.liquidity && p.liquidity.usd) || 0;
+    if (med > 0 && price > 0 && (price > med * 10 || price < med / 10)) continue; // reject outlier pool
+    if (liq > bestLiq) { bestLiq = liq; best = p; }
+  }
+  return best || pairs[0];
+}
+
 async function verifyTopTokens(skipBubbleRender) {
   if (_verifyInProgress) return;
   _verifyInProgress = true;
@@ -6669,6 +6689,9 @@ async function verifyTopTokens(skipBubbleRender) {
         .then(function(resp) { return resp.ok ? resp.json() : null; });
     }));
 
+    // Collect ALL pairs per ca first, then pick the consensus pair (so a single
+    // poisoned high-liquidity pool can't set a bogus price/market cap).
+    var _allPairsByCa = {};
     for (var r = 0; r < results.length; r++) {
       if (results[r].status !== 'fulfilled' || !results[r].value || !results[r].value.pairs) continue;
       var pairs = results[r].value.pairs;
@@ -6676,12 +6699,11 @@ async function verifyTopTokens(skipBubbleRender) {
         var p = pairs[i];
         var ca = p.baseToken ? p.baseToken.address : null;
         if (!ca) continue;
-        var existingLiq = pairByCa[ca] && pairByCa[ca].liquidity ? (pairByCa[ca].liquidity.usd || 0) : 0;
-        var newLiq = p.liquidity ? (p.liquidity.usd || 0) : 0;
-        if (!pairByCa[ca] || newLiq > existingLiq) {
-          pairByCa[ca] = p;
-        }
+        (_allPairsByCa[ca] || (_allPairsByCa[ca] = [])).push(p);
       }
+    }
+    for (var _ca in _allPairsByCa) {
+      pairByCa[_ca] = _pickConsensusPair(_allPairsByCa[_ca]);
     }
 
     // Build set of CAs we actually sent to DexScreener
