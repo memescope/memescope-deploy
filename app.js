@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.159';
+var APP_VERSION = '2.5.160';
 
 // Image proxy — shrinks token images so they load fast even on bad wifi.
 // DexScreener's CDN (98%+ of token images) natively resizes via query params,
@@ -220,6 +220,31 @@ function _applyAdminBoosts(tokens) {
   }
 }
 
+// Keep the REAL LIVE_TOKENS objects' boosted flag in sync with _serverBoosts.
+// _applyAdminBoosts can flag a throwaway copy (incoming / getFilteredTokens
+// result) instead of the kept object, leaving the rendered bubble + table row
+// unboosted. This fixes the kept objects and repaints BOTH the canvas and the
+// table the instant it corrects one. Called at build, on boost arrival, and on
+// a 2s safety poll.
+function _reconcileBoosts() {
+  if (typeof LIVE_TOKENS === 'undefined') return 0;
+  var fixed = 0;
+  for (var i = 0; i < LIVE_TOKENS.length; i++) {
+    var b = _serverBoosts[(LIVE_TOKENS[i].ca || '').toLowerCase()];
+    if (b && !LIVE_TOKENS[i].boosted) {
+      LIVE_TOKENS[i].boosted = true;
+      LIVE_TOKENS[i].boostCount = b.count || LIVE_TOKENS[i].boostCount;
+      fixed++;
+    }
+  }
+  if (fixed) {
+    if (typeof window.wakeBubbles === 'function') window.wakeBubbles();
+    if (typeof loadData === 'function') loadData();
+    if (window._boostDebug) console.log('[BD] reconciled ' + fixed + ' token(s) -> gold + list');
+  }
+  return fixed;
+}
+
 // Check if a specific token is admin-boosted (used at render time)
 function _isAdminBoosted(ca) {
   var boosts = _getAdminBoosts();
@@ -246,6 +271,7 @@ function _fetchServerBoosts() {
       if (typeof LIVE_TOKENS !== 'undefined' && LIVE_TOKENS.length > 0) {
         _applyAdminBoosts(LIVE_TOKENS);
         _injectMissingBoostedTokens();
+        _reconcileBoosts();   // flag the kept objects + repaint immediately
       }
       return active;
     })
@@ -363,27 +389,16 @@ _fetchServerBoosts();
 if (/[?&]boostdebug/.test(location.search)) window._boostDebug = true;
 setInterval(function () {
   try {
-    var sb = Object.keys(_serverBoosts);
-    var fixed = [];
-    for (var s = 0; s < sb.length; s++) {
-      var ca = sb[s];
-      for (var i = 0; i < LIVE_TOKENS.length; i++) {
-        if ((LIVE_TOKENS[i].ca || '').toLowerCase() === ca && !LIVE_TOKENS[i].boosted) {
-          LIVE_TOKENS[i].boosted = true;
-          LIVE_TOKENS[i].boostCount = (_serverBoosts[ca] && _serverBoosts[ca].count) || LIVE_TOKENS[i].boostCount;
-          fixed.push(ca.slice(0, 5));
-        }
-      }
-    }
-    if (fixed.length && typeof window.wakeBubbles === 'function') window.wakeBubbles();
+    _reconcileBoosts();   // safety net — instant paths handle the common cases
     if (window._boostDebug) {
+      var sb = Object.keys(_serverBoosts);
       var per = sb.map(function (ca) {
         var ms = LIVE_TOKENS.filter(function (t) { return (t.ca || '').toLowerCase() === ca; });
         return ca.slice(0, 5) + '(n=' + ms.length + ',flags=' + (ms.map(function (t) { return t.boosted ? 'T' : 'F'; }).join('') || '-') + ')';
       });
       var r = (typeof window._dbgBoost === 'function') ? window._dbgBoost() : {};
       console.log('[BD-HB] t=' + Math.round(performance.now() / 1000) + 's sb=' + sb.length + ' ' + per.join(' ') +
-        ' reconciled=' + JSON.stringify(fixed) + ' || sleeping=' + r.sleeping + ' gold=' + JSON.stringify(r.gold || []));
+        ' || sleeping=' + r.sleeping + ' gold=' + JSON.stringify(r.gold || []));
     }
   } catch (e) { if (window._boostDebug) console.log('[BD-HB] err', e && e.message); }
 }, 2000);
@@ -6869,6 +6884,7 @@ async function fetchLiveTokens() {
                 window._bubbleBuildDeferred = false;
                 _injectMissingBoostedTokens();
                 if(typeof init === 'function') init();   // single clean entrance, final sizes
+                if(typeof _reconcileBoosts === 'function') _reconcileBoosts();   // gold on first paint
                 var bl = document.getElementById('bubbleLoading'); if(bl) bl.classList.add('hidden');
               };
               verifyTopTokens(true).then(_buildBubblesOnce, _buildBubblesOnce);
