@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.162';
+var APP_VERSION = '2.5.164';
 
 // Image proxy — shrinks token images so they load fast even on bad wifi.
 // DexScreener's CDN (98%+ of token images) natively resizes via query params,
@@ -272,6 +272,14 @@ function _fetchServerBoosts() {
         _applyAdminBoosts(LIVE_TOKENS);
         _injectMissingBoostedTokens();
         _reconcileBoosts();   // flag the kept objects + repaint immediately
+      }
+      // Whenever the boost SET changes, wake the canvas unconditionally so the
+      // live gold render repaints — even if the canvas had gone idle before the
+      // boost data arrived and the reconciler had nothing to flag.
+      var _bk = Object.keys(active).sort().join(',');
+      if (_bk !== window._lastBoostSig) {
+        window._lastBoostSig = _bk;
+        if (Object.keys(active).length && typeof window.wakeBubbles === 'function') window.wakeBubbles();
       }
       return active;
     })
