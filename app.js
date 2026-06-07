@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.155';
+var APP_VERSION = '2.5.156';
 
 // Image proxy — shrinks token images so they load fast even on bad wifi.
 // DexScreener's CDN (98%+ of token images) natively resizes via query params,
@@ -232,21 +232,10 @@ function _fetchServerBoosts() {
       }
       _serverBoosts = active;
       _boostsFetched = true;
-      // Detect a change in the active boost set. On a cold/hard load /api/boosts
-      // can resolve AFTER the bubbles were built and the canvas went idle
-      // (asleep), so the gold never paints until a manual refresh. Repaint here.
-      var _bsig = Object.keys(active).sort().join(',');
-      var _boostsChanged = (_bsig !== window._lastBoostSig);
-      window._lastBoostSig = _bsig;
       // Re-apply to current tokens if any loaded
       if (typeof LIVE_TOKENS !== 'undefined' && LIVE_TOKENS.length > 0) {
         _applyAdminBoosts(LIVE_TOKENS);
         _injectMissingBoostedTokens();
-        if (_boostsChanged && window._firstLoadDone && Object.keys(active).length > 0 && typeof init === 'function') {
-          init();                               // force-include boosted tokens + paint gold
-        } else if (typeof window.wakeBubbles === 'function') {
-          window.wakeBubbles();                 // wake the idle canvas so sprites repaint
-        }
       }
       return active;
     })
