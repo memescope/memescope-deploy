@@ -3,4 +3,4 @@ Allow: /
 Disallow: /embed/
 Disallow: /ms-ctrl-8f7a2b.html
 
-Sitemap: https://memescope.io/sitemap.xml
+Sitemap: https://memescopes.com/sitemap.xml

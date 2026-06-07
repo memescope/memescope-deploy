@@ -446,7 +446,7 @@
           onRes({
             name: t.sym + '/' + (pairTokenMap[chain] || 'SOL'),
             description: t.name || t.sym,
-            type: 'crypto', session: '24x7', exchange: 'memescope.io', timezone: 'Etc/UTC',
+            type: 'crypto', session: '24x7', exchange: 'Memescopes', timezone: 'Etc/UTC',
             format: 'price', pricescale: ps, minmov: 1, has_intraday: true,
             supported_resolutions: ['1', '5', '15', '60', '240', '1D'], volume_precision: 2, data_status: 'streaming',
           });
