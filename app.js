@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.163';
+var APP_VERSION = '2.5.162';
 
 // Image proxy — shrinks token images so they load fast even on bad wifi.
 // DexScreener's CDN (98%+ of token images) natively resizes via query params,
@@ -209,6 +209,15 @@ function _applyAdminBoosts(tokens) {
       tokens[i].boostCreatedAt = 0;
     }
   }
+  if (window._boostDebug) {
+    var _sbn = Object.keys(adminBoosts).length;
+    if (_sbn > 0) {
+      var _mc = 0, _fc = 0;
+      for (var _z = 0; _z < tokens.length; _z++) { if (adminBoosts[(tokens[_z].ca || '').toLowerCase()]) _mc++; if (tokens[_z].boosted) _fc++; }
+      var _m = 'arr=' + tokens.length + ' matchCA=' + _mc + ' flagged=' + _fc;
+      if (_m !== window._bdLastApply) { window._bdLastApply = _m; console.log('[BD] applyAdminBoosts ' + _m); }
+    }
+  }
 }
 
 // Keep the REAL LIVE_TOKENS objects' boosted flag in sync with _serverBoosts.
@@ -231,6 +240,7 @@ function _reconcileBoosts() {
   if (fixed) {
     if (typeof window.wakeBubbles === 'function') window.wakeBubbles();
     if (typeof loadData === 'function') loadData();
+    if (window._boostDebug) console.log('[BD] reconciled ' + fixed + ' token(s) -> gold + list');
   }
   return fixed;
 }
@@ -256,6 +266,7 @@ function _fetchServerBoosts() {
       }
       _serverBoosts = active;
       _boostsFetched = true;
+      if (window._boostDebug) console.log('[BD] /api/boosts ->', (data.boosts || []).length, 'raw,', Object.keys(active).length, 'active:', Object.keys(active).join(','));
       // Re-apply to current tokens if any loaded
       if (typeof LIVE_TOKENS !== 'undefined' && LIVE_TOKENS.length > 0) {
         _applyAdminBoosts(LIVE_TOKENS);
@@ -266,6 +277,7 @@ function _fetchServerBoosts() {
     })
     .catch(function(e) {
       _boostsFetched = true;   // don't let a failed boost fetch hang the bubble build
+      if (window._boostDebug) console.log('[BD] /api/boosts FETCH ERROR — keeping', Object.keys(_serverBoosts).length, e && e.message);
       console.log('MemeScope: Boost fetch error', e);
       return _serverBoosts;
     });
@@ -367,11 +379,29 @@ function _calcAge(ts) {
 // Fetch boosts on page load
 _fetchServerBoosts();
 
-// Safety-net poll: the instant paths (boost arrival + first build) cover the
-// common cases; this just catches any odd-timing load where a boosted token
-// settles late, so it never stays ungold.
+// ─── Boost reconciler (FIX) ───────────────────────────────────────────────
+// Root cause: the boosted flag gets applied to a throwaway token copy (the
+// `incoming` array / getFilteredTokens result) rather than the kept object in
+// the global LIVE_TOKENS, so on a cold load the rendered object stays
+// boosted=false until a full merge rebuild (~30s) — that's why the gold only
+// appeared after waiting or a manual reload. This keeps the REAL LIVE_TOKENS
+// objects in sync with _serverBoosts every 2s and wakes the canvas if it fixed
+// one, so a boosted bubble paints gold within ~2s of the boost data arriving.
+if (/[?&]boostdebug/.test(location.search)) window._boostDebug = true;
 setInterval(function () {
-  try { _reconcileBoosts(); } catch (e) {}
+  try {
+    _reconcileBoosts();   // safety net — instant paths handle the common cases
+    if (window._boostDebug) {
+      var sb = Object.keys(_serverBoosts);
+      var per = sb.map(function (ca) {
+        var ms = LIVE_TOKENS.filter(function (t) { return (t.ca || '').toLowerCase() === ca; });
+        return ca.slice(0, 5) + '(n=' + ms.length + ',flags=' + (ms.map(function (t) { return t.boosted ? 'T' : 'F'; }).join('') || '-') + ')';
+      });
+      var r = (typeof window._dbgBoost === 'function') ? window._dbgBoost() : {};
+      console.log('[BD-HB] t=' + Math.round(performance.now() / 1000) + 's sb=' + sb.length + ' ' + per.join(' ') +
+        ' || sleeping=' + r.sleeping + ' gold=' + JSON.stringify(r.gold || []));
+    }
+  } catch (e) { if (window._boostDebug) console.log('[BD-HB] err', e && e.message); }
 }, 2000);
 
 // --- Price Worker (background thread for DexScreener polling) ---
@@ -4340,6 +4370,14 @@ var bubs = [];
     }
   }
   window.wakeBubbles = wakeBubbles;
+  // Boost diagnostics probe — render-side state (gated logging reads this).
+  window._dbgBoost = function () {
+    return {
+      sleeping: _sleeping,
+      total: bubs.length,
+      gold: bubs.filter(function (b) { return b.token && b.token.boosted; }).map(function (b) { return b.token.sym; })
+    };
+  };
 
   // Wake on any interaction with the bubble area
   var _heroEl = document.getElementById("bubbleHero");
