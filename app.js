@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.156';
+var APP_VERSION = '2.5.157';
 
 // Image proxy — shrinks token images so they load fast even on bad wifi.
 // DexScreener's CDN (98%+ of token images) natively resizes via query params,
@@ -209,6 +209,11 @@ function _applyAdminBoosts(tokens) {
       tokens[i].boostCreatedAt = 0;
     }
   }
+  if (window._boostDebug) {
+    var _bn = 0; for (var _bi = 0; _bi < tokens.length; _bi++) if (tokens[_bi].boosted) _bn++;
+    var _sbn = Object.keys(adminBoosts).length;
+    if (_sbn > 0 && _bn === 0) console.log('[BD] applyAdminBoosts: serverBoosts=' + _sbn + ' but flagged=0/' + tokens.length + ' — CA MISMATCH. boostCAs=', Object.keys(adminBoosts), 'sampleTokenCA=', (tokens[0] && tokens[0].ca));
+  }
 }
 
 // Check if a specific token is admin-boosted (used at render time)
@@ -232,6 +237,7 @@ function _fetchServerBoosts() {
       }
       _serverBoosts = active;
       _boostsFetched = true;
+      if (window._boostDebug) console.log('[BD] /api/boosts ->', (data.boosts || []).length, 'raw,', Object.keys(active).length, 'active:', Object.keys(active).join(','));
       // Re-apply to current tokens if any loaded
       if (typeof LIVE_TOKENS !== 'undefined' && LIVE_TOKENS.length > 0) {
         _applyAdminBoosts(LIVE_TOKENS);
@@ -240,6 +246,7 @@ function _fetchServerBoosts() {
       return active;
     })
     .catch(function(e) {
+      if (window._boostDebug) console.log('[BD] /api/boosts FETCH ERROR — keeping', Object.keys(_serverBoosts).length, e && e.message);
       console.log('MemeScope: Boost fetch error', e);
       return _serverBoosts;
     });
@@ -340,6 +347,23 @@ function _calcAge(ts) {
 
 // Fetch boosts on page load
 _fetchServerBoosts();
+
+// ─── Boost diagnostics (gated on ?boostdebug=1) — no behavior change ───
+if (/[?&]boostdebug/.test(location.search)) window._boostDebug = true;
+setInterval(function () {
+  if (!window._boostDebug) return;
+  try {
+    var sb = Object.keys(_serverBoosts);
+    var per = sb.map(function (ca) {
+      var tok = null;
+      for (var i = 0; i < LIVE_TOKENS.length; i++) { if ((LIVE_TOKENS[i].ca || '').toLowerCase() === ca) { tok = LIVE_TOKENS[i]; break; } }
+      return ca.slice(0, 5) + '(inLive=' + (!!tok) + ',flag=' + (tok ? tok.boosted : '-') + ')';
+    });
+    var r = (typeof window._dbgBoost === 'function') ? window._dbgBoost() : {};
+    console.log('[BD-HB] t=' + Math.round(performance.now() / 1000) + 's serverBoosts=' + sb.length + ' ' + per.join(' ') +
+      ' || canvasSleeping=' + r.sleeping + ' bubbles=' + r.total + ' goldBubbles=' + JSON.stringify(r.gold || []));
+  } catch (e) { console.log('[BD-HB] err', e && e.message); }
+}, 2000);
 
 // --- Price Worker (background thread for DexScreener polling) ---
 var _priceWorker = null;
@@ -4297,6 +4321,14 @@ var bubs = [];
     }
   }
   window.wakeBubbles = wakeBubbles;
+  // Boost diagnostics probe — render-side state (gated logging reads this).
+  window._dbgBoost = function () {
+    return {
+      sleeping: _sleeping,
+      total: bubs.length,
+      gold: bubs.filter(function (b) { return b.token && b.token.boosted; }).map(function (b) { return b.token.sym; })
+    };
+  };
 
   // Wake on any interaction with the bubble area
   var _heroEl = document.getElementById("bubbleHero");
