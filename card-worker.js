@@ -35,7 +35,7 @@ const DEXSCREENER_API = 'https://api.dexscreener.com/latest/dex/tokens/';
 
 // Bumped on every deploy (with package.json/app.js/sw.js). Edge-cache keys for HTML
 // include this, so a new deploy = new key = old cached HTML is ignored instantly.
-const CACHE_VERSION = '2.5.169';
+const CACHE_VERSION = '2.5.170';
 
 const VALID_CHAINS = new Set([
   'solana', 'eth', 'ethereum', 'base', 'bsc', 'sui', 'tron',
@@ -48,6 +48,30 @@ const CHAIN_DISPLAY = {
   arbitrum: 'Arbitrum', avalanche: 'Avalanche', avax: 'Avalanche',
   polygon: 'Polygon', optimism: 'Optimism', blast: 'Blast', ton: 'TON',
 };
+
+// ─── Per-chain SEO landing pages (/solana, /ethereum, …) ──────────────
+// Served as the normal SPA, but the Worker rewrites <title>/meta/<h1>/canonical
+// so each chain is its own indexable, keyword-targeted page.
+const CHAIN_PAGES = { '/solana': 'Solana', '/ethereum': 'Ethereum', '/base': 'Base', '/bsc': 'BSC', '/sui': 'Sui' };
+async function rewriteChainSeo(resp, name, path) {
+  const u = 'https://memescopes.com' + path;
+  const title = name + ' Meme Coins — Live Bubble Map & Scanner | Memescopes';
+  const desc = 'Live ' + name + ' meme coin scanner and bubble map on Memescopes. Track trending ' + name + ' meme coins in real time — prices, market cap, volume, charts and on-chain data.';
+  const h1 = name + ' Meme Coins — Live Bubble Map & Scanner';
+  const out = new HTMLRewriter()
+    .on('title', { element(e) { e.setInnerContent(title); } })
+    .on('link[rel="canonical"]', { element(e) { e.setAttribute('href', u); } })
+    .on('meta[name="description"]', { element(e) { e.setAttribute('content', desc); } })
+    .on('meta[property="og:title"]', { element(e) { e.setAttribute('content', title); } })
+    .on('meta[property="og:url"]', { element(e) { e.setAttribute('content', u); } })
+    .on('meta[property="og:description"]', { element(e) { e.setAttribute('content', desc); } })
+    .on('meta[name="twitter:title"]', { element(e) { e.setAttribute('content', title); } })
+    .on('meta[name="twitter:description"]', { element(e) { e.setAttribute('content', desc); } })
+    .on('h1', { element(e) { e.setInnerContent(h1); } })
+    .transform(resp);
+  const html = await out.text();   // buffer so it can be edge-cached + returned safely
+  return new Response(html, { status: 200, headers: new Headers(resp.headers) });
+}
 
 // Bot user-agent patterns
 const BOT_UA_RE = /Twitterbot|facebookexternalhit|LinkedInBot|Slackbot|Discordbot|TelegramBot|WhatsApp|Googlebot|bingbot|Baiduspider|yandex|rogerbot|embedly|showyoubot|outbrain|pinterest|applebot|vkShare|W3C_Validator|redditbot|Applebot|crawler|spider|bot\b/i;
@@ -904,7 +928,13 @@ export default {
         h.set('Pragma', 'no-cache');
         h.set('Link', EARLY_HINT_LINKS.join(', '));
         const body = await probe.arrayBuffer();
-        const htmlResp = new Response(body, { status: probe.status, headers: h });
+        let htmlResp = new Response(body, { status: probe.status, headers: h });
+        // Per-chain SEO landing pages — rewrite title/meta/h1/canonical for /solana, etc.
+        const _np = url.pathname.replace(/\/+$/, '');
+        const _chainName = CHAIN_PAGES[_np];
+        if (_chainName && probe.status === 200) {
+          try { htmlResp = await rewriteChainSeo(htmlResp, _chainName, _np); } catch (e) {}
+        }
         if (probe.status === 200) ctx.waitUntil(htmlCache.put(htmlKey, htmlResp.clone()));
         return htmlResp;
       }

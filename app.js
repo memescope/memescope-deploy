@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.169';
+var APP_VERSION = '2.5.170';
 
 // Image proxy — shrinks token images so they load fast even on bad wifi.
 // DexScreener's CDN (98%+ of token images) natively resizes via query params,
@@ -564,6 +564,11 @@ const LIVE_TOKENS = [];
 let currentTimeframe = '1h';
 let currentCategory = 'trending';
 let currentChain = 'all';
+// SEO chain landing pages: /solana, /ethereum, /base, /bsc, /sui auto-filter to that chain.
+try {
+  var _chainSeg = (location.pathname.match(/^\/(solana|ethereum|base|bsc|sui)\/?$/) || [])[1];
+  if (_chainSeg) currentChain = { solana: 'solana', ethereum: 'eth', base: 'base', bsc: 'bsc', sui: 'sui' }[_chainSeg];
+} catch (e) {}
 let currentSort = { col: null, asc: false };
 
 // Age string to hours for sorting
