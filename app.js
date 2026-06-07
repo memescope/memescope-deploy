@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.160';
+var APP_VERSION = '2.5.161';
 
 // Image proxy — shrinks token images so they load fast even on bad wifi.
 // DexScreener's CDN (98%+ of token images) natively resizes via query params,
@@ -276,6 +276,7 @@ function _fetchServerBoosts() {
       return active;
     })
     .catch(function(e) {
+      _boostsFetched = true;   // don't let a failed boost fetch hang the bubble build
       if (window._boostDebug) console.log('[BD] /api/boosts FETCH ERROR — keeping', Object.keys(_serverBoosts).length, e && e.message);
       console.log('MemeScope: Boost fetch error', e);
       return _serverBoosts;
@@ -6879,12 +6880,20 @@ async function fetchLiveTokens() {
               if(!window._firstLoadDone) { window._firstLoadDone = true; window.scrollTo(0, 0); checkUrlForToken(); var ls=document.getElementById('loadingScreen'); if(ls) ls.remove(); var app=document.querySelector('.app'); if(app) app.classList.add('ready'); }
               window._bubbleBuildDeferred = true;   // hold off waitAndInit until verified
               var _builtOnce = false;
+              var _buildFirst = 0;
               var _buildBubblesOnce = function(){
-                if(_builtOnce) return; _builtOnce = true;
+                if(_builtOnce) return;
+                if(!_buildFirst) _buildFirst = Date.now();
+                // Wait briefly for /api/boosts so boosted tokens paint GOLD on the
+                // first frame instead of flipping a moment later. Capped at 1.5s so
+                // a slow/failed boost endpoint never hangs the bubbles.
+                if(!_boostsFetched && (Date.now() - _buildFirst) < 1500){ setTimeout(_buildBubblesOnce, 60); return; }
+                _builtOnce = true;
                 window._bubbleBuildDeferred = false;
+                if(typeof _reconcileBoosts === 'function') _reconcileBoosts();   // flag tokens BEFORE building
                 _injectMissingBoostedTokens();
-                if(typeof init === 'function') init();   // single clean entrance, final sizes
-                if(typeof _reconcileBoosts === 'function') _reconcileBoosts();   // gold on first paint
+                if(typeof init === 'function') init();   // builds gold from frame 0
+                if(typeof _reconcileBoosts === 'function') _reconcileBoosts();   // safety after build
                 var bl = document.getElementById('bubbleLoading'); if(bl) bl.classList.add('hidden');
               };
               verifyTopTokens(true).then(_buildBubblesOnce, _buildBubblesOnce);
