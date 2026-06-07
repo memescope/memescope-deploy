@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.161';
+var APP_VERSION = '2.5.162';
 
 // Image proxy — shrinks token images so they load fast even on bad wifi.
 // DexScreener's CDN (98%+ of token images) natively resizes via query params,
@@ -3904,9 +3904,15 @@ var BubbleCanvas = (function(){
   function renderSprite(b, tfVal, ref){
     var t = b.token;
     var c = colors(tfVal);
+    // Gold is driven by a LIVE check against _serverBoosts (not the stored
+    // t.boosted flag), so a boosted bubble paints gold regardless of flag-apply
+    // timing or token-object churn on refresh.
+    var _ab = (typeof _isAdminBoosted === 'function') ? _isAdminBoosted(t.ca) : null;
+    var bst = t.boosted || !!_ab;
+    var bcnt = (_ab && _ab.count) || t.boostCount || 0;
     // Boosted: replace the green/red performance palette with gold so the whole
     // bubble reads gold — body, glow and ring — with no red/green tint underneath.
-    if(t.boosted){
+    if(bst){
       c = { glow:'rgba(255,205,0,0.42)',
             bodyC:'hsl(47,82%,46%)', bodyM:'hsl(45,82%,32%)', bodyE:'hsl(44,84%,20%)', dim:'hsl(43,84%,15%)',
             ring:'rgba(255,215,0,0.9)', ringW:1.5, pct:'#E6E1E5', sign:c.sign };
@@ -3946,12 +3952,12 @@ var BubbleCanvas = (function(){
 
     // Scope reticle
     if(r > 20){
-      sx.lineWidth = 1; sx.strokeStyle = t.boosted ? 'rgba(255,215,0,0.22)' : 'rgba(220,220,220,0.12)';
+      sx.lineWidth = 1; sx.strokeStyle = bst ? 'rgba(255,215,0,0.22)' : 'rgba(220,220,220,0.12)';
       sx.beginPath(); sx.arc(x, y, r * 0.56, 0, 6.2832); sx.stroke();
     }
     if(r > 22){
       var e = r * 0.84, g = r * 0.20;
-      sx.strokeStyle = t.boosted ? 'rgba(255,215,0,0.30)' : 'rgba(255,255,255,0.16)'; sx.lineWidth = 1;
+      sx.strokeStyle = bst ? 'rgba(255,215,0,0.30)' : 'rgba(255,255,255,0.16)'; sx.lineWidth = 1;
       sx.beginPath();
       sx.moveTo(x - e, y); sx.lineTo(x - g, y);
       sx.moveTo(x + g, y); sx.lineTo(x + e, y);
@@ -3961,8 +3967,8 @@ var BubbleCanvas = (function(){
     }
     // Content
     var showLogo = r > 18, showPct = r > 16;
-    var bc = t.boosted ? (t.boostCount || 0) : 0;
-    var showBadge = t.boosted && r > 24 && bc > 0;
+    var bc = bst ? bcnt : 0;
+    var showBadge = bst && r > 24 && bc > 0;
     var logoSize = Math.max(13, r * 0.38) + 4;
     var fsTicker = Math.max(7, r * 0.30);
     var fsPct = Math.max(5, r * 0.18);
@@ -4027,7 +4033,11 @@ var BubbleCanvas = (function(){
     var ref = Math.max(1, Math.round(b.targetR || r));
     var logoReady = !!(t.img && img(imgProxy(t.img, 80, 80)));
     // Cache key on TARGET size (fixed) — so entrance/settle just scale the blit.
-    var sig = ref + '|' + tfVal.toFixed(1) + '|' + (logoReady ? 1 : 0) + '|' + (t.boosted ? 1 : 0) + '|' + (t.boosted ? (t.boostCount||0) : 0) + '|' + (t.sym || '');
+    // Boost state is a LIVE check (matches renderSprite) so the sprite repaints
+    // the moment a boost arrives/expires, independent of the stored flag.
+    var _abS = (typeof _isAdminBoosted === 'function') ? _isAdminBoosted(t.ca) : null;
+    var _bstS = t.boosted || !!_abS;
+    var sig = ref + '|' + tfVal.toFixed(1) + '|' + (logoReady ? 1 : 0) + '|' + (_bstS ? 1 : 0) + '|' + (_bstS ? ((_abS && _abS.count) || t.boostCount || 0) : 0) + '|' + (t.sym || '');
     if(b._sig !== sig){ renderSprite(b, tfVal, ref); b._sig = sig; }
 
     var s = er / b._sprRef;
