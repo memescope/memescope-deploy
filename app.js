@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.171';
+var APP_VERSION = '2.5.172';
 
 // Image proxy — shrinks token images so they load fast even on bad wifi.
 // DexScreener's CDN (98%+ of token images) natively resizes via query params,
@@ -801,7 +801,7 @@ function toggleLaunchpadFilter() {
 
 var _chainLinkSvg = '<svg width="14" height="14" viewBox="0 0 100 100" fill="currentColor" style="vertical-align:-2px;margin-right:4px"><path d="M34.971 61.094l-11.303 11.303c-1.087 1.087-2.85 1.087-3.937 0l-4.497-4.497c-1.087-1.087-1.087-2.85 0-3.937l24.364-24.364c1.087-1.087 2.85-1.087 3.937 0l14.709 14.71c3.874-5.72 3.283-13.583-1.779-18.646l-4.497-4.497c-5.735-5.735-15.067-5.735-20.803 0L6.802 55.53c-5.735 5.735-5.735 15.067 0 20.803l4.497 4.497c5.735 5.735 15.067 5.735 20.803 0l10.027-10.027-2.53-2.53c-2.09-2.09-3.638-4.546-4.627-7.18z"/><path d="M93.198 23.668l-4.497-4.497c-5.735-5.735-15.067-5.735-20.803 0L57.872 29.197l2.53 2.53c2.09 2.09 3.637 4.547 4.627 7.18l11.303-11.303c1.087-1.087 2.85-1.087 3.937 0l4.497 4.497c1.087 1.087 1.087 2.85 0 3.937L60.402 60.401c-1.087 1.087-2.85 1.087-3.937 0l-14.709-14.71c-3.874 5.72-3.284 13.583 1.779 18.646l4.497 4.497c5.735 5.735 15.068 5.735 20.803 0l24.364-24.364c5.735-5.735 5.735-15.067 0-20.803z"/></svg>';
 
-function toggleChain(el, chain) {
+function toggleChain(el, chain, skipPush) {
   currentChain = chain;
   _lastRowOrder = null;
   // Deactivate leaf if active
@@ -819,7 +819,7 @@ function toggleChain(el, chain) {
   }
   document.getElementById('chain-dropdown-menu').querySelectorAll('.dropdown-item').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.ms-nav-link[onclick*="toggleChain"], .ms-mobile-item[onclick*="toggleChain"]').forEach(b => b.classList.remove('active'));
-  el.classList.add('active');
+  if (el) el.classList.add('active');
   // Sync sidebar active state when chain is selected from dropdown
   var sidebarMatch = document.querySelector('.ms-nav-link[onclick*="toggleChain(this,\'' + chain + '\')"]');
   if (sidebarMatch) sidebarMatch.classList.add('active');
@@ -849,7 +849,20 @@ function toggleChain(el, chain) {
   currentPage = 1;
   loadData();
   if(typeof init === 'function') init();
+  // Sync the URL with the chain filter so /solana etc. is shareable + consistent.
+  if (!skipPush) {
+    var _slug = { solana: 'solana', eth: 'ethereum', base: 'base', bsc: 'bsc', sui: 'sui' }[chain];
+    var _path = _slug ? '/' + _slug : '/';
+    if (location.pathname !== _path) { try { history.pushState({ chain: chain }, '', _path); } catch (e) {} }
+  }
 }
+
+// Keep the chain filter in sync with the URL on back/forward navigation.
+window.addEventListener('popstate', function () {
+  var _seg = (location.pathname.match(/^\/(solana|ethereum|base|bsc|sui)\/?$/) || [])[1];
+  var _ch = _seg ? { solana: 'solana', ethereum: 'eth', base: 'base', bsc: 'bsc', sui: 'sui' }[_seg] : 'all';
+  if (_ch !== currentChain) toggleChain(null, _ch, true);
+});
 
 let currentLaunchpad = 'all';
 function toggleLaunchpad(el, pad) {
