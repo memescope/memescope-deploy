@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.172';
+var APP_VERSION = '2.5.173';
 
 // Image proxy — shrinks token images so they load fast even on bad wifi.
 // DexScreener's CDN (98%+ of token images) natively resizes via query params,
@@ -564,11 +564,30 @@ const LIVE_TOKENS = [];
 let currentTimeframe = '1h';
 let currentCategory = 'trending';
 let currentChain = 'all';
-// SEO chain landing pages: /solana, /ethereum, /base, /bsc, /sui auto-filter to that chain.
+// SEO chain landing pages: /solana, /ethereum, /base, /bsc, /sui auto-filter to that
+// chain AND reflect it in the sidebar + chain button on direct load (UI only, no re-render).
 try {
   var _chainSeg = (location.pathname.match(/^\/(solana|ethereum|base|bsc|sui)\/?$/) || [])[1];
-  if (_chainSeg) currentChain = { solana: 'solana', ethereum: 'eth', base: 'base', bsc: 'bsc', sui: 'sui' }[_chainSeg];
+  if (_chainSeg) {
+    currentChain = { solana: 'solana', ethereum: 'eth', base: 'base', bsc: 'bsc', sui: 'sui' }[_chainSeg];
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { _syncChainNav(currentChain); });
+    else _syncChainNav(currentChain);
+  }
 } catch (e) {}
+function _syncChainNav(chain) {
+  try {
+    document.querySelectorAll('.ms-nav-link[onclick*="toggleChain"], .ms-mobile-item[onclick*="toggleChain"]').forEach(function (b) { b.classList.remove('active'); });
+    document.querySelectorAll('.ms-nav-link[onclick*="toggleChain(this,\'' + chain + '\')"], .ms-mobile-item[onclick*="toggleChain(this,\'' + chain + '\')"]').forEach(function (b) { b.classList.add('active'); });
+    var names = { solana: 'Solana', eth: 'Ethereum', base: 'Base', bsc: 'BSC', sui: 'Sui' };
+    var btn = document.querySelector('.topbar-btn[onclick*="toggleChainFilter"]');
+    if (btn && names[chain]) {
+      var logo = (chain === 'base')
+        ? "<img src=\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='264' height='264' viewBox='0 0 264 264' fill='none'%3E%3Cpath d='M131.706 263.876C204.705 263.876 263.876 204.81 263.876 131.938C263.876 59.066 204.705 0 131.706 0C62.4541 0 5.64694 53.1764 0 120.845H174.697V143.032H0C5.64694 210.7 62.4541 263.876 131.706 263.876Z' fill='%230052FF'/%3E%3C/svg%3E\" width=\"14\" height=\"14\" style=\"border-radius:50%;vertical-align:-2px;margin-right:4px\">"
+        : '<img src="https://dd.dexscreener.com/ds-data/chains/' + ({ solana: 'solana', eth: 'ethereum', bsc: 'bsc', sui: 'sui' }[chain]) + '.png" width="14" height="14" style="border-radius:50%;vertical-align:-2px;margin-right:4px">';
+      btn.innerHTML = logo + names[chain] + ' ▾';
+    }
+  } catch (e) {}
+}
 let currentSort = { col: null, asc: false };
 
 // Age string to hours for sorting
