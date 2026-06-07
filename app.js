@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.157';
+var APP_VERSION = '2.5.158';
 
 // Image proxy — shrinks token images so they load fast even on bad wifi.
 // DexScreener's CDN (98%+ of token images) natively resizes via query params,
@@ -210,9 +210,13 @@ function _applyAdminBoosts(tokens) {
     }
   }
   if (window._boostDebug) {
-    var _bn = 0; for (var _bi = 0; _bi < tokens.length; _bi++) if (tokens[_bi].boosted) _bn++;
     var _sbn = Object.keys(adminBoosts).length;
-    if (_sbn > 0 && _bn === 0) console.log('[BD] applyAdminBoosts: serverBoosts=' + _sbn + ' but flagged=0/' + tokens.length + ' — CA MISMATCH. boostCAs=', Object.keys(adminBoosts), 'sampleTokenCA=', (tokens[0] && tokens[0].ca));
+    if (_sbn > 0) {
+      var _mc = 0, _fc = 0;
+      for (var _z = 0; _z < tokens.length; _z++) { if (adminBoosts[(tokens[_z].ca || '').toLowerCase()]) _mc++; if (tokens[_z].boosted) _fc++; }
+      var _m = 'arr=' + tokens.length + ' matchCA=' + _mc + ' flagged=' + _fc;
+      if (_m !== window._bdLastApply) { window._bdLastApply = _m; console.log('[BD] applyAdminBoosts ' + _m); }
+    }
   }
 }
 
@@ -355,9 +359,8 @@ setInterval(function () {
   try {
     var sb = Object.keys(_serverBoosts);
     var per = sb.map(function (ca) {
-      var tok = null;
-      for (var i = 0; i < LIVE_TOKENS.length; i++) { if ((LIVE_TOKENS[i].ca || '').toLowerCase() === ca) { tok = LIVE_TOKENS[i]; break; } }
-      return ca.slice(0, 5) + '(inLive=' + (!!tok) + ',flag=' + (tok ? tok.boosted : '-') + ')';
+      var ms = LIVE_TOKENS.filter(function (t) { return (t.ca || '').toLowerCase() === ca; });
+      return ca.slice(0, 5) + '(n=' + ms.length + ',flags=' + (ms.map(function (t) { return t.boosted ? 'T' : 'F'; }).join('') || '-') + ',sym=' + (ms.map(function (t) { return t.sym; }).join('/') || '-') + ')';
     });
     var r = (typeof window._dbgBoost === 'function') ? window._dbgBoost() : {};
     console.log('[BD-HB] t=' + Math.round(performance.now() / 1000) + 's serverBoosts=' + sb.length + ' ' + per.join(' ') +
