@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.158';
+var APP_VERSION = '2.5.159';
 
 // Image proxy — shrinks token images so they load fast even on bad wifi.
 // DexScreener's CDN (98%+ of token images) natively resizes via query params,
@@ -352,20 +352,40 @@ function _calcAge(ts) {
 // Fetch boosts on page load
 _fetchServerBoosts();
 
-// ─── Boost diagnostics (gated on ?boostdebug=1) — no behavior change ───
+// ─── Boost reconciler (FIX) ───────────────────────────────────────────────
+// Root cause: the boosted flag gets applied to a throwaway token copy (the
+// `incoming` array / getFilteredTokens result) rather than the kept object in
+// the global LIVE_TOKENS, so on a cold load the rendered object stays
+// boosted=false until a full merge rebuild (~30s) — that's why the gold only
+// appeared after waiting or a manual reload. This keeps the REAL LIVE_TOKENS
+// objects in sync with _serverBoosts every 2s and wakes the canvas if it fixed
+// one, so a boosted bubble paints gold within ~2s of the boost data arriving.
 if (/[?&]boostdebug/.test(location.search)) window._boostDebug = true;
 setInterval(function () {
-  if (!window._boostDebug) return;
   try {
     var sb = Object.keys(_serverBoosts);
-    var per = sb.map(function (ca) {
-      var ms = LIVE_TOKENS.filter(function (t) { return (t.ca || '').toLowerCase() === ca; });
-      return ca.slice(0, 5) + '(n=' + ms.length + ',flags=' + (ms.map(function (t) { return t.boosted ? 'T' : 'F'; }).join('') || '-') + ',sym=' + (ms.map(function (t) { return t.sym; }).join('/') || '-') + ')';
-    });
-    var r = (typeof window._dbgBoost === 'function') ? window._dbgBoost() : {};
-    console.log('[BD-HB] t=' + Math.round(performance.now() / 1000) + 's serverBoosts=' + sb.length + ' ' + per.join(' ') +
-      ' || canvasSleeping=' + r.sleeping + ' bubbles=' + r.total + ' goldBubbles=' + JSON.stringify(r.gold || []));
-  } catch (e) { console.log('[BD-HB] err', e && e.message); }
+    var fixed = [];
+    for (var s = 0; s < sb.length; s++) {
+      var ca = sb[s];
+      for (var i = 0; i < LIVE_TOKENS.length; i++) {
+        if ((LIVE_TOKENS[i].ca || '').toLowerCase() === ca && !LIVE_TOKENS[i].boosted) {
+          LIVE_TOKENS[i].boosted = true;
+          LIVE_TOKENS[i].boostCount = (_serverBoosts[ca] && _serverBoosts[ca].count) || LIVE_TOKENS[i].boostCount;
+          fixed.push(ca.slice(0, 5));
+        }
+      }
+    }
+    if (fixed.length && typeof window.wakeBubbles === 'function') window.wakeBubbles();
+    if (window._boostDebug) {
+      var per = sb.map(function (ca) {
+        var ms = LIVE_TOKENS.filter(function (t) { return (t.ca || '').toLowerCase() === ca; });
+        return ca.slice(0, 5) + '(n=' + ms.length + ',flags=' + (ms.map(function (t) { return t.boosted ? 'T' : 'F'; }).join('') || '-') + ')';
+      });
+      var r = (typeof window._dbgBoost === 'function') ? window._dbgBoost() : {};
+      console.log('[BD-HB] t=' + Math.round(performance.now() / 1000) + 's sb=' + sb.length + ' ' + per.join(' ') +
+        ' reconciled=' + JSON.stringify(fixed) + ' || sleeping=' + r.sleeping + ' gold=' + JSON.stringify(r.gold || []));
+    }
+  } catch (e) { if (window._boostDebug) console.log('[BD-HB] err', e && e.message); }
 }, 2000);
 
 // --- Price Worker (background thread for DexScreener polling) ---
