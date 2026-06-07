@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.165';
+var APP_VERSION = '2.5.166';
 
 // Image proxy — shrinks token images so they load fast even on bad wifi.
 // DexScreener's CDN (98%+ of token images) natively resizes via query params,
@@ -3819,18 +3819,6 @@ var BubbleCanvas = (function(){
     cv.style.width = w + 'px';
     cv.style.height = h + 'px';
     if(ctx){ ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high'; }
-    // TEMP DIAGNOSTIC (only with ?debug) — shows real device res vs canvas buffer res.
-    if(/debug/.test(location.search) || /debug/.test(location.hash)){
-      var _dbg = document.getElementById('__bubdbg');
-      if(!_dbg){ _dbg = document.createElement('div'); _dbg.id = '__bubdbg';
-        _dbg.style.cssText = 'position:fixed;top:64px;left:6px;z-index:2147483647;background:rgba(0,0,0,.85);color:#0f0;font:12px/1.5 monospace;padding:6px 9px;border-radius:6px;pointer-events:none;white-space:pre';
-        document.body.appendChild(_dbg); }
-      _dbg.textContent = 'devicePixelRatio: ' + (window.devicePixelRatio||1) +
-        '\ncap used (d):    ' + d +
-        '\ncanvas css:    ' + w + ' x ' + h +
-        '\ncanvas buffer: ' + cv.width + ' x ' + cv.height +
-        '\nbuffer/css:    ' + (cv.width/w).toFixed(2) + '  (want = dpr)';
-    }
   }
 
   // Logo image cache. Returns a drawable Image once loaded, else null.
