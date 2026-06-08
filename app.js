@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.175';
+var APP_VERSION = '2.5.176';
 
 // Image proxy — shrinks token images so they load fast even on bad wifi.
 // DexScreener's CDN (98%+ of token images) natively resizes via query params,
