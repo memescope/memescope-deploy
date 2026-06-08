@@ -8937,7 +8937,6 @@
       border-top: 1px solid rgba(255,255,255,0.1);
       padding-bottom: env(safe-area-inset-bottom, 0px);
       overflow: hidden;
-      will-change: height;
       transition: height 420ms var(--md-sys-motion-easing-emphasized-decelerate);
     }
     /* Scrim behind the bottom-nav Watchlist/Menu panels (dims the page above) */
