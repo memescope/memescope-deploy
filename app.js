@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.177';
+var APP_VERSION = '2.5.178';
 
 // Image proxy — shrinks token images so they load fast even on bad wifi.
 // DexScreener's CDN (98%+ of token images) natively resizes via query params,
@@ -3574,7 +3574,7 @@ function selectSearchResult(ca, sym) {
       .then(function(r){ return r.json(); })
       .then(function(d){
         if(d && d.pairs && d.pairs.length > 0) {
-          var p = d.pairs[0];
+          var p = _pickConsensusPair(d.pairs);
           var pc = p.priceChange || {};
           var chainMap = {solana:'solana',ethereum:'eth',base:'base',bsc:'bsc',sui:'sui',tron:'tron',arbitrum:'arbitrum',avalanche:'avalanche',polygon:'polygon',optimism:'optimism',blast:'blast',ton:'ton',seiv2:'seiv2',pulsechain:'pulsechain'};
           var t = {
@@ -4743,7 +4743,7 @@ function openBubbleModal(t) {
     fetchDexToken(t.ca)
       .then(function(d) {
         if (!d.pairs || !d.pairs.length) return;
-        var pair = d.pairs.reduce(function(b,p) { return (p.liquidity&&p.liquidity.usd||0) > (b.liquidity&&b.liquidity.usd||0) ? p : b; }, d.pairs[0]);
+        var pair = _pickConsensusPair(d.pairs);
         _bmBuySellData = { txns: pair.txns || {}, volume: pair.volume || {} };
         if (_bmActiveTf) renderBuySell(_bmActiveTf);
       }).catch(function() {});
@@ -4833,7 +4833,7 @@ function openBubbleModal(t) {
     fetchDexToken(t.ca)
       .then(function(d) {
         if (!d.pairs || !d.pairs.length) return;
-        var pair = d.pairs.reduce(function(b,p) { return (p.liquidity&&p.liquidity.usd||0) > (b.liquidity&&b.liquidity.usd||0) ? p : b; }, d.pairs[0]);
+        var pair = _pickConsensusPair(d.pairs);
         var pn = pair.priceNative ? parseFloat(pair.priceNative) : 0;
         var qs = pair.quoteToken ? pair.quoteToken.symbol.toUpperCase() : '';
         if (pn && window._modalToken && window._modalToken.ca === t.ca) {
@@ -4875,7 +4875,7 @@ function openBubbleModal(t) {
   if (t.ca) {
     fetchDexToken(t.ca).then(function(d) {
       if (!d.pairs || !d.pairs.length) return;
-      var pair = d.pairs.reduce(function(b,p) { return (p.liquidity&&p.liquidity.usd||0) > (b.liquidity&&b.liquidity.usd||0) ? p : b; }, d.pairs[0]);
+      var pair = _pickConsensusPair(d.pairs);
       var fdv = pair.fdv || 0;
       var price = parseFloat(pair.priceUsd) || t.price;
       var supplyEl = document.getElementById("bmSupply");
@@ -5004,7 +5004,7 @@ function toggleBuySell(tf) {
   fetchDexToken(t.ca)
     .then(function(d) {
       if (!d.pairs || !d.pairs.length) return;
-      var pair = d.pairs.reduce(function(b,p) { return (p.liquidity&&p.liquidity.usd||0) > (b.liquidity&&b.liquidity.usd||0) ? p : b; }, d.pairs[0]);
+      var pair = _pickConsensusPair(d.pairs);
       _bmBuySellData = { txns: pair.txns || {}, volume: pair.volume || {} };
       if (_bmActiveTf) renderBuySell(_bmActiveTf);
     }).catch(function() {});
@@ -5480,7 +5480,7 @@ function _initModalChart(t) {
       if (done) return;
       if (d && d.pairs && d.pairs.length) {
         var cp = d.pairs.filter(function(p){return p.chainId === dexNet});
-        var best = (cp.length ? cp : d.pairs).reduce(function(b,p){return (p.liquidity&&p.liquidity.usd||0)>(b.liquidity&&b.liquidity.usd||0)?p:b},(cp.length?cp:d.pairs)[0]);
+        var best = _pickConsensusPair(cp.length ? cp : d.pairs);
         if (best.pairAddress) { done = true; t._discoveredPool = best.pairAddress; cb(best.pairAddress); }
       }
     }).catch(function(){});
@@ -5594,7 +5594,7 @@ function _initModalChart(t) {
             fetchDexToken(t.ca).then(function(dexData) {
               var lp = bars.length > 0 ? bars[bars.length - 1].close : 0;
               if (dexData && dexData.pairs && dexData.pairs.length) {
-                var bestPair = dexData.pairs.reduce(function(b,p) { return (p.liquidity&&p.liquidity.usd||0) > (b.liquidity&&b.liquidity.usd||0) ? p : b; }, dexData.pairs[0]);
+                var bestPair = _pickConsensusPair(dexData.pairs);
                 var p = parseFloat(bestPair.priceUsd);
                 if (p) lp = p;
               }
@@ -5626,7 +5626,7 @@ function _initModalChart(t) {
       function _handleTick(d) {
         try {
           if (!d.pairs || !d.pairs.length) return;
-          var pair = d.pairs.reduce(function(b,p) { return (p.liquidity&&p.liquidity.usd||0) > (b.liquidity&&b.liquidity.usd||0) ? p : b; }, d.pairs[0]);
+          var pair = _pickConsensusPair(d.pairs);
           var price = parseFloat(pair.priceUsd);
           if (!price) return;
           var barTime = Math.floor(Date.now() / resMs) * resMs;
@@ -5822,7 +5822,7 @@ function checkUrlForToken() {
     fetchDexToken(ca)
       .then(function(data) {
         if(data.pairs && data.pairs.length > 0) {
-          var p = data.pairs[0];
+          var p = _pickConsensusPair(data.pairs);
           var pc = p.priceChange || {};
           var t = {
             sym: p.baseToken ? p.baseToken.symbol.toUpperCase() : '???',
@@ -6160,7 +6160,7 @@ function initTokenPageChart(t) {
       if (done) return;
       if (d && d.pairs && d.pairs.length) {
         var cp = d.pairs.filter(function(p){return p.chainId === dexNet});
-        var best = (cp.length ? cp : d.pairs).reduce(function(b,p){return (p.liquidity&&p.liquidity.usd||0)>(b.liquidity&&b.liquidity.usd||0)?p:b},(cp.length?cp:d.pairs)[0]);
+        var best = _pickConsensusPair(cp.length ? cp : d.pairs);
         if (best.pairAddress) { done = true; t._discoveredPool = best.pairAddress; cb(best.pairAddress); }
       }
     }).catch(function(){});
@@ -6282,7 +6282,7 @@ function initTokenPageChart(t) {
             fetchDexToken(t.ca).then(function(dexData) {
               var lp = bars.length > 0 ? bars[bars.length - 1].close : 0;
               if (dexData && dexData.pairs && dexData.pairs.length) {
-                var bestPair = dexData.pairs.reduce(function(b,p) { return (p.liquidity&&p.liquidity.usd||0) > (b.liquidity&&b.liquidity.usd||0) ? p : b; }, dexData.pairs[0]);
+                var bestPair = _pickConsensusPair(dexData.pairs);
                 var p = parseFloat(bestPair.priceUsd);
                 if (p) lp = p;
               }
@@ -6314,7 +6314,7 @@ function initTokenPageChart(t) {
       function _handleTick(d) {
         try {
           if (!d.pairs || !d.pairs.length) return;
-          var pair = d.pairs.reduce(function(b,p) { return (p.liquidity&&p.liquidity.usd||0) > (b.liquidity&&b.liquidity.usd||0) ? p : b; }, d.pairs[0]);
+          var pair = _pickConsensusPair(d.pairs);
           var price = parseFloat(pair.priceUsd);
           if (!price) return;
           var barTime = Math.floor(Date.now() / resMs) * resMs;
@@ -6568,7 +6568,7 @@ function _fetchAndRenderTxns(t) {
     fetchDexToken(t.ca).then(function(d){
       if (d && d.pairs && d.pairs.length) {
         var cp = d.pairs.filter(function(p){return p.chainId === dNet});
-        var best = (cp.length ? cp : d.pairs).reduce(function(b,p){return (p.liquidity&&p.liquidity.usd||0)>(b.liquidity&&b.liquidity.usd||0)?p:b},(cp.length?cp:d.pairs)[0]);
+        var best = _pickConsensusPair(cp.length ? cp : d.pairs);
         if (best.pairAddress) { t._discoveredPool = best.pairAddress; _doFetch(best.pairAddress); return; }
       }
       // Fallback: GeckoTerminal pool discovery
