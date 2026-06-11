@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.178';
+var APP_VERSION = '2.5.179';
 
 // Image proxy — shrinks token images so they load fast even on bad wifi.
 // DexScreener's CDN (98%+ of token images) natively resizes via query params,
@@ -6853,16 +6853,14 @@ async function fetchLiveTokens() {
                 var fresh = incomingByCa[exKey];
                 if(fresh) {
                   // Update dynamic fields, keep the same object reference so bubbles don't respawn
-                  ex.price = fresh.price;
-                  ex.mcap = fresh.mcap;
+                  // price / mcap / % are NOT taken from the trending API here — its numbers
+                  // are unreliable and often disagree in sign/scale with DexScreener, which
+                  // caused a green->red->green color flash (and a brief poisoned-mcap blip)
+                  // on every 30s refresh. verifyTopTokens (consensus pair) is the single
+                  // source of truth and refreshes them moments later in this same cycle, so
+                  // the last verified values just hold until then — no flicker.
                   ex.vol = fresh.vol;
                   ex.liq = fresh.liq;
-                  // Only overwrite % fields with non-zero values — API sometimes sends 0
-                  // before DexScreener verify fills in the real numbers
-                  if(fresh.p5m) ex.p5m = fresh.p5m;
-                  if(fresh.p1h) ex.p1h = fresh.p1h;
-                  if(fresh.p6h) ex.p6h = fresh.p6h;
-                  if(fresh.p24h) ex.p24h = fresh.p24h;
                   ex.txn = fresh.txn;
                   ex.age = fresh.age;
                   if(fresh.name) ex.name = fresh.name;
