@@ -35,7 +35,7 @@ const DEXSCREENER_API = 'https://api.dexscreener.com/latest/dex/tokens/';
 
 // Bumped on every deploy (with package.json/app.js/sw.js). Edge-cache keys for HTML
 // include this, so a new deploy = new key = old cached HTML is ignored instantly.
-const CACHE_VERSION = '2.5.188';
+const CACHE_VERSION = '2.5.189';
 
 const VALID_CHAINS = new Set([
   'solana', 'eth', 'ethereum', 'base', 'bsc', 'sui', 'tron',
@@ -725,11 +725,12 @@ export default {
       }
     }
 
-    // ─── GeckoTerminal Pro API Proxy ───────────────────────────────
-    // Proxies /api/gecko/* to CoinGecko Pro on-chain API with server-side key
+    // ─── GeckoTerminal (free) API Proxy ───────────────────────────────
+    // Proxies /api/gecko/* to the public GeckoTerminal v2 API (no key).
+    // NOTE: free tier is rate-limited (~30 req/min/IP); the edge-cache TTLs below soften that.
     if (pathname.startsWith('/api/gecko/')) {
       const geckoPath = pathname.replace('/api/gecko/', '');
-      const proxyUrl = 'https://pro-api.coingecko.com/api/v3/onchain/' + geckoPath + url.search;
+      const proxyUrl = 'https://api.geckoterminal.com/api/v2/' + geckoPath + url.search;
       const corsHeaders = {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'GET, OPTIONS',
@@ -756,11 +757,9 @@ export default {
       }
 
       try {
-        const apiKey = env.CG_API_KEY || '';
         const proxyResp = await fetch(proxyUrl, {
           headers: {
             'Accept': 'application/json',
-            'x-cg-pro-api-key': apiKey,
           },
         });
 
