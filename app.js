@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.180';
+var APP_VERSION = '2.5.188';
 
 // Image proxy — shrinks token images so they load fast even on bad wifi.
 // DexScreener's CDN (98%+ of token images) natively resizes via query params,
@@ -38,6 +38,15 @@ function unlockScroll() {
   document.body.classList.remove('modal-open');
   document.body.style.top = '';
   window.scrollTo(0, _scrollLockY);
+}
+
+// True when any full-screen modal/overlay is open — used to freeze bubble
+// hover/push so background bubbles don't react behind a modal.
+function _anyModalOpen(){
+  if(document.body.classList.contains('modal-open')) return true;
+  var s = document.getElementById('search-overlay');
+  if(s && s.classList.contains('open')) return true;
+  return false;
 }
 
 // M3 animated modal close helper
@@ -4312,7 +4321,7 @@ var bubs = [];
 
       // Hover hit-test (skip while dragging) for cursor + ring highlight
       var hoverIdx = -1;
-      if(mouseActive && !dragBubble){
+      if(mouseActive && !dragBubble && !_anyModalOpen()){
         for(var hi = bubs.length - 1; hi >= 0; hi--){
           if(Math.hypot(mouseX - bubs[hi].x, mouseY - bubs[hi].y) < bubs[hi].r){ hoverIdx = hi; break; }
         }
@@ -4406,6 +4415,8 @@ var bubs = [];
   document.addEventListener("mousemove", function(e){
     var hero = document.getElementById("bubbleHero");
     if(!hero) return;
+    // While a modal is open, don't let the cursor hover/push the bubbles behind it
+    if(_anyModalOpen()){ if(mouseActive){ mouseActive = false; wakeBubbles(); } return; }
     var rect = hero.getBoundingClientRect();
     var newX = e.clientX - rect.left;
     var newY = e.clientY - rect.top;
@@ -5112,11 +5123,6 @@ function toggleModalMenu() {
   if (t.twitter) html += '<a href="'+t.twitter+'" data-safelink="x" target="_blank" onclick="event.stopPropagation()"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>Community</a>';
   if (t.website) html += '<a href="'+t.website+'" data-safelink="website" target="_blank" onclick="event.stopPropagation()"><svg class="ico-globe" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="currentColor"><path d="M325-111.5q-73-31.5-127.5-86t-86-127.5Q80-398 80-480.5t31.5-155q31.5-72.5 86-127t127.5-86Q398-880 480.5-880t155 31.5q72.5 31.5 127 86t86 127Q880-563 880-480.5T848.5-325q-31.5 73-86 127.5t-127 86Q563-80 480.5-80T325-111.5ZM480-162q26-36 45-75t31-83H404q12 44 31 83t45 75Zm-104-16q-18-33-31.5-68.5T322-320H204q29 50 72.5 87t99.5 55Zm208 0q56-18 99.5-55t72.5-87H638q-9 38-22.5 73.5T584-178ZM170-400h136q-3-20-4.5-39.5T300-480q0-21 1.5-40.5T306-560H170q-5 20-7.5 39.5T160-480q0 21 2.5 40.5T170-400Zm216 0h188q3-20 4.5-39.5T580-480q0-21-1.5-40.5T574-560H386q-3 20-4.5 39.5T380-480q0 21 1.5 40.5T386-400Zm268 0h136q5-20 7.5-39.5T800-480q0-21-2.5-40.5T790-560H654q3 20 4.5 39.5T660-480q0 21-1.5 40.5T654-400Zm-16-240h118q-29-50-72.5-87T584-782q18 33 31.5 68.5T638-640Zm-234 0h152q-12-44-31-83t-45-75q-26 36-45 75t-31 83Zm-200 0h118q9-38 22.5-73.5T376-782q-56 18-99.5 55T204-640Z"/></svg>Website</a>';
   html += '<a href="'+exp.url+'" target="_blank" onclick="event.stopPropagation()"><img src="'+expIcon+'" onerror="this.style.display=\'none\'">'+exp.name+'</a>';
-  // Bubblemaps — only show for supported chains
-  var _bmChains = {solana:1,eth:1,bsc:1,tron:1,base:1,ton:1,avalanche:1,polygon:1};
-  if (_bmChains[net]) {
-    html += '<span onclick="event.stopPropagation();closeModalMenu();showBubblemapsView()"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 151 97" width="26" height="17" style="vertical-align:-3px"><g transform="matrix(0.358637,0,0,0.442707,-3370.29,-2535.37)"><g transform="matrix(-0.569944,-0.461713,0.569944,-0.461713,4403.48,14658.4)"><path d="M5074.5,13845.5C5074.5,13845.5 5137,13879.9 5137,13924.5C5137,13959 5108.99,13987 5074.5,13987C5040.01,13987 5012,13959 5012,13924.5C5012,13879.9 5074.5,13845.5 5074.5,13845.5Z" style="fill:url(#_dd1)"/></g><g transform="matrix(0.723552,-0.338414,0.417743,0.586151,299.802,-598.176)"><path d="M4796.35,13671.2C4796.35,13628.2 4856.64,13595 4856.64,13595C4856.64,13595 4916.94,13628.2 4916.94,13671.2V13867.3C4916.94,13900.6 4889.92,13927.6 4856.64,13927.6C4823.36,13927.6 4796.35,13900.6 4796.35,13867.3V13671.2Z" style="fill:url(#_dd2)"/></g><g transform="matrix(0.723552,-0.338414,0.417743,0.586151,459.141,-598.176)"><path d="M4796.35,13671.2C4796.35,13628.2 4856.64,13595 4856.64,13595C4856.64,13595 4916.94,13628.2 4916.94,13671.2V13867.3C4916.94,13900.6 4889.92,13927.6 4856.64,13927.6C4823.36,13927.6 4796.35,13900.6 4796.35,13867.3V13671.2Z" style="fill:url(#_dd3)"/></g></g><defs><linearGradient gradientTransform="matrix(5.22e-16,-141.487,160.148,5.91e-16,5074.5,13987)" gradientUnits="userSpaceOnUse" id="_dd1"><stop offset="0" stop-color="rgb(111,23,186)"/><stop offset="1" stop-color="rgb(176,56,250)"/></linearGradient><linearGradient gradientTransform="matrix(2.04e-14,-332.592,917.287,5.62e-14,4856.64,13927.6)" gradientUnits="userSpaceOnUse" id="_dd2"><stop offset="0" stop-color="rgb(196,27,175)"/><stop offset="1" stop-color="rgb(245,37,134)"/></linearGradient><linearGradient gradientTransform="matrix(2.04e-14,-332.592,917.287,5.62e-14,4856.64,13927.6)" gradientUnits="userSpaceOnUse" id="_dd3"><stop offset="0" stop-color="rgb(48,84,182)"/><stop offset="1" stop-color="rgb(0,164,252)"/></linearGradient></defs></svg> Bubblemaps</span>';
-  }
   html += '<span onclick="event.stopPropagation();closeModalMenu();if(typeof openBoostModal===\'function\')openBoostModal()" style="background:rgba(234,179,8,0.15);color:#eab308;border-radius:0 0 10px 10px;margin:0;padding:10px 14px;box-sizing:border-box"><svg viewBox="0 0 24 24" fill="none" stroke="#eab308" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg> Boost Token</span>';
   dd.innerHTML = html;
 
@@ -5146,30 +5152,6 @@ document.addEventListener('click', function(e) {
   if (_bmDropdown && !e.target.closest('.bm-dots') && !e.target.closest('.bm-dropdown')) closeModalMenu();
 });
 
-// ── Bubblemaps iframe view ──
-function showBubblemapsView() {
-  var t = window._modalToken;
-  if (!t || !t.ca) return;
-  var net = (t.net || 'solana').toLowerCase();
-  var supported = {solana:'solana',eth:'eth',bsc:'bsc',tron:'tron',base:'base',ton:'ton',avalanche:'avalanche',polygon:'polygon'};
-  var chain = supported[net];
-  if (!chain) return;
-  window.open('https://app.bubblemaps.io/' + chain + '/token/' + t.ca, '_blank');
-}
-function closeBubblemapsView() {
-  var overlay = document.getElementById('bmBubblemapsOverlay');
-  var chart = document.getElementById('bmChartWrap');
-  var footer = document.querySelector('.bm-footer');
-  var frame = document.getElementById('bmBubblemapsFrame');
-  if (overlay) { overlay.classList.remove('open'); overlay.style.display = 'none'; }
-  if (frame) frame.src = '';
-  var modal = document.querySelector('.bubble-modal');
-  if (modal) { modal.classList.remove('bm-bubblemaps-active'); modal.style.height = ''; }
-  var statsBar = document.querySelector('.bm-stats-bar');
-  if (statsBar) statsBar.style.display = '';
-  if (chart) chart.style.display = '';
-  if (footer) footer.style.display = '';
-}
 
 /* ── Converter V3 ── */
 var _convFrom = 'USD';
@@ -5400,7 +5382,6 @@ function closeBubbleModal() {
     window.scrollTo(0, window._scrollY || 0);
   }
   closeModalMenu();
-  closeBubblemapsView();
   if(_candlePollTimer) { clearInterval(_candlePollTimer); _candlePollTimer = null; }
   // Destroy TradingView modal chart
   if (window._bmChartPoll) { clearInterval(window._bmChartPoll); window._bmChartPoll = null; }
@@ -6436,7 +6417,7 @@ function initTokenPageChart(t) {
 function tpSwitchTab(el, tab) {
   document.querySelectorAll('.tp-tab').forEach(function(t) { t.classList.remove('active'); });
   el.classList.add('active');
-  ['txns','traders','holders','bubblemaps'].forEach(function(id) {
+  ['txns','traders','holders'].forEach(function(id) {
     var pane = document.getElementById('tpPane' + id.charAt(0).toUpperCase() + id.slice(1));
     if (pane) pane.style.display = (id === tab || (id==='txns' && tab==='txns')) ? '' : 'none';
   });
@@ -6444,7 +6425,6 @@ function tpSwitchTab(el, tab) {
   document.getElementById('tpPaneTxns').style.display = tab === 'txns' ? '' : 'none';
   document.getElementById('tpPaneTraders').style.display = tab === 'traders' ? '' : 'none';
   document.getElementById('tpPaneHolders').style.display = tab === 'holders' ? '' : 'none';
-  document.getElementById('tpPaneBubblemaps').style.display = tab === 'bubblemaps' ? '' : 'none';
 }
 
 function tpCopyCA() {
