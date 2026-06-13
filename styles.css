@@ -2291,7 +2291,7 @@
     z-index: 1001;
     background: var(--md-sys-color-surface-container-highest);
     border: none;
-    border-radius: 28px;
+    border-radius: 32px;
     box-shadow: 0 8px 32px rgba(0,0,0,0.4);
     overflow: hidden;
     display: flex;
@@ -2304,17 +2304,16 @@
     }
   }
   @keyframes searchDrop {
-    from { max-height: 46px; opacity: 0.8; }
-    to { max-height: 75vh; opacity: 1; }
+    from { opacity: 0; }
+    to { opacity: 1; }
   }
 
   .search-modal-input-wrap {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 16px 24px 12px;
+    padding: 14px 24px 8px;
     position: relative;
-    border-bottom: 1px solid rgba(255,255,255,0.08);
     background: none;
     border-radius: 0;
   }
@@ -2360,120 +2359,46 @@
     color: var(--text-primary);
   }
 
-  /* Chain filter (desktop): globe replaces the X; pick a chain to filter
-     search results to that chain only. Hidden on mobile (X stays there). */
-  .search-chain-wrap {
-    position: relative;
+  /* Chain filter row: horizontal-scrolling chips under the search input
+     (replaces the old globe dropdown). Shown on desktop + mobile. */
+  .search-chain-row {
     display: flex;
     align-items: center;
-    flex-shrink: 0;
+    gap: 8px;
+    padding: 10px 16px 20px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
   }
-  .search-modal-esc { display: none; }
-  .search-chain-btn {
-    width: 28px;
-    height: 28px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
-    border: none;
-    border-radius: 50%;
-    cursor: pointer;
-    background: rgba(255,255,255,0.12);
-    transition: background var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard), box-shadow var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard);
-  }
-  .search-chain-btn:hover { background: rgba(255,255,255,0.18); }
-  .search-chain-btn img {
-    width: 17px;
-    height: 17px;
-    border-radius: 50%;
-    object-fit: cover;
-    display: block;
-  }
-  .search-chain-menu {
-    display: none;
-    position: absolute;
-    top: calc(100% + 8px);
-    right: 0;
-    width: 320px;
-    max-height: 360px;
-    overflow-y: auto;
-    background: var(--md-sys-color-surface-container-highest);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 16px;
-    padding: 12px 12px 14px;
-    z-index: 100;
-    box-shadow: 0 12px 36px rgba(0,0,0,0.55);
-  }
-  .search-chain-menu {
-    transform-origin: top right;
-  }
-  .search-chain-menu.open {
-    display: block;
-    animation: m3PanelIn var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-emphasized-decelerate);
-  }
-  .search-chain-title {
-    font-family: 'Inter', sans-serif;
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--text-secondary);
-    text-align: center;
-    padding: 2px 4px 10px;
-    margin-bottom: 8px;
-    border-bottom: 1px solid rgba(255,255,255,0.08);
-  }
-  .search-chain-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 4px;
-  }
-  .search-chain-opt {
-    display: flex;
-    flex-direction: column;
+  .search-chain-row::-webkit-scrollbar { display: none; }
+  .search-chain-chip {
+    flex: 0 0 auto;
+    display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 10px 4px 8px;
-    background: transparent;
+    padding: 6px 12px 6px 8px;
     border: none;
-    border-radius: 12px;
+    border-radius: 999px;
     cursor: pointer;
+    background: rgba(255,255,255,0.06);
     color: var(--text-secondary);
     font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: -0.1px;
+    white-space: nowrap;
     transition: background var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard), color var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard);
   }
-  .search-chain-opt:hover { background: rgba(255,255,255,0.06); color: var(--text-primary); }
-  .search-chain-opt.active { background: rgba(255,255,255,0.10); color: var(--text-primary); }
-  .search-chain-ic {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 46px;
-    height: 46px;
-    border-radius: 50%;
-    background: #333039;
-    transition: box-shadow var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard);
-  }
-  .search-chain-ic img {
-    width: 26px;
-    height: 26px;
+  .search-chain-chip:hover { background: rgba(255,255,255,0.12); color: var(--text-primary); }
+  .search-chain-chip.active { background: #4a4fd8; color: #fff; }
+  .search-chain-chip-ic {
+    width: 18px;
+    height: 18px;
     border-radius: 50%;
     object-fit: cover;
     display: block;
-  }
-  .search-chain-lbl {
-    font-size: 10px;
-    font-weight: 500;
-    max-width: 100%;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    line-height: 1.2;
-  }
-  @media (max-width: 768px) {
-    .search-chain-wrap { display: none; }
-    .search-modal-esc { display: flex; }
+    flex-shrink: 0;
   }
 
   .search-modal-body {
@@ -2484,6 +2409,36 @@
     background: rgba(0,0,0,0.25);
   }
   .search-modal-body::-webkit-scrollbar { display: none; }
+
+  /* Inset search card (search + chains) inside the modal, like YouTube.
+     Same pattern both sizes: card = the ORIGINAL surface color, frame
+     (modal/sheet) = that surface darkened ~25% so the card reads as raised. */
+  .search-modal-top {
+    margin: 8px;
+    border-radius: 24px;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .search-modal-body {
+    background: none;
+    padding: 4px 12px 12px;
+  }
+  /* Desktop: card = the modal surface; frame = that surface darkened. */
+  @media (min-width: 769px) {
+    .search-modal {
+      background: linear-gradient(rgba(0,0,0,0.25), rgba(0,0,0,0.25)), var(--md-sys-color-surface-container-highest);
+    }
+    .search-modal-top {
+      background: var(--md-sys-color-surface-container-highest);
+    }
+  }
+  /* Mobile: card = the original sheet color (#44404c); the sheet/frame is
+     darkened (below) so the card reads as raised — same idea as desktop. */
+  @media (max-width: 768px) {
+    .search-modal-top {
+      background: #44404c;
+    }
+  }
 
   /* External-link safety warning modal — M3, matches the site's other modals */
   .safelink-overlay{
@@ -9190,7 +9145,7 @@
     }
     .mobile-bottom-nav.search-open {
       height: calc(100% - 28px);
-      background: #44404c;
+      background: linear-gradient(rgba(0,0,0,0.25), rgba(0,0,0,0.25)), #44404c;
       border-radius: 28px 28px 0 0;
       border-top: none;
       box-shadow: 0 -4px 30px rgba(0,0,0,0.4);

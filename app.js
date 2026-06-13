@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.190';
+var APP_VERSION = '2.5.191';
 
 // Image proxy — shrinks token images so they load fast even on bad wifi.
 // DexScreener's CDN (98%+ of token images) natively resizes via query params,
@@ -3103,14 +3103,9 @@ function openSearchModal() {
   if (!isMobile) input.focus();
   else setTimeout(function() { input.focus(); }, 300);
   searchHighlightIdx = -1;
-  // Reset chain filter to All on each open
+  // Reset chain filter to All on each open + (re)build the chain row
   _searchChain = 'all';
-  var chainCur = document.getElementById('searchChainCurrent');
-  if (chainCur) chainCur.src = '/img/globe-chains.svg';
-  var chainBtn = document.getElementById('searchChainBtn');
-  if (chainBtn) chainBtn.classList.remove('filtered');
-  var chainMenu = document.getElementById('searchChainMenu');
-  if (chainMenu) chainMenu.classList.remove('open');
+  _buildSearchChainRow();
   showSearchDefault();
 }
 
@@ -3342,47 +3337,27 @@ var SEARCH_CHAINS = [
   { id: 'starknet', label: 'Starknet' }
 ];
 
-function _buildSearchChainMenu() {
-  var menu = document.getElementById('searchChainMenu');
-  if (!menu) return;
-  menu.innerHTML = '<div class="search-chain-title">Filter by chain</div>' +
-    '<div class="search-chain-grid">' +
-    SEARCH_CHAINS.map(function(c) {
-      var icon = c.icon || CHAIN_ICONS[c.id] || '';
-      var active = (_searchChain === c.id) ? ' active' : '';
-      return '<button class="search-chain-opt' + active + '" onclick="event.stopPropagation(); setSearchChain(\'' + c.id + '\')" title="' + c.label + '">' +
-        '<span class="search-chain-ic"><img src="' + icon + '" alt="' + c.label + '"></span>' +
-        '<span class="search-chain-lbl">' + c.label + '</span></button>';
-    }).join('') + '</div>';
-}
-
-function toggleSearchChainMenu() {
-  var menu = document.getElementById('searchChainMenu');
-  if (!menu) return;
-  if (menu.classList.contains('open')) { menu.classList.remove('open'); return; }
-  _buildSearchChainMenu();
-  menu.classList.add('open');
+function _buildSearchChainRow() {
+  var row = document.getElementById('searchChainRow');
+  if (!row) return;
+  row.innerHTML = SEARCH_CHAINS.map(function(c) {
+    var icon = c.icon || CHAIN_ICONS[c.id] || '';
+    var active = (_searchChain === c.id) ? ' active' : '';
+    return '<button class="search-chain-chip' + active + '" data-chain="' + c.id + '" onclick="event.stopPropagation(); setSearchChain(\'' + c.id + '\')" title="' + c.label + '">' +
+      (icon ? '<img class="search-chain-chip-ic" src="' + icon + '" alt="">' : '') +
+      '<span>' + c.label + '</span></button>';
+  }).join('');
 }
 
 function setSearchChain(chain) {
   _searchChain = chain || 'all';
-  var cur = document.getElementById('searchChainCurrent');
-  if (cur) cur.src = (_searchChain === 'all') ? '/img/globe-chains.svg' : (CHAIN_ICONS[_searchChain] || '/img/globe-chains.svg');
-  var btn = document.getElementById('searchChainBtn');
-  if (btn) btn.classList.toggle('filtered', _searchChain !== 'all');
-  var menu = document.getElementById('searchChainMenu');
-  if (menu) menu.classList.remove('open');
+  var row = document.getElementById('searchChainRow');
+  if (row) row.querySelectorAll('.search-chain-chip').forEach(function(b) {
+    b.classList.toggle('active', b.getAttribute('data-chain') === _searchChain);
+  });
   var input = document.getElementById('search-modal-input');
   if (input) handleSearchInput(input.value);
 }
-
-// Close the chain menu when clicking anywhere else
-document.addEventListener('click', function(e) {
-  var menu = document.getElementById('searchChainMenu');
-  if (!menu || !menu.classList.contains('open')) return;
-  if (e.target.closest && e.target.closest('.search-chain-wrap')) return;
-  menu.classList.remove('open');
-});
 
 function handleSearchInput(query) {
   var q = query.trim().toLowerCase();
@@ -7522,6 +7497,8 @@ function mobNavGo(tab) {
         var input = document.getElementById('search-modal-input');
         if (input) { input.value = ''; setTimeout(function() { input.focus(); }, 350); }
         searchHighlightIdx = -1;
+        _searchChain = 'all';
+        _buildSearchChainRow();
         showSearchDefault();
       }
     } else {
