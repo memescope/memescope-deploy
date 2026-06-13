@@ -35,7 +35,7 @@ const DEXSCREENER_API = 'https://api.dexscreener.com/latest/dex/tokens/';
 
 // Bumped on every deploy (with package.json/app.js/sw.js). Edge-cache keys for HTML
 // include this, so a new deploy = new key = old cached HTML is ignored instantly.
-const CACHE_VERSION = '2.5.189';
+const CACHE_VERSION = '2.5.190';
 
 const VALID_CHAINS = new Set([
   'solana', 'eth', 'ethereum', 'base', 'bsc', 'sui', 'tron',
@@ -757,28 +757,65 @@ export default {
       }
 
       try {
-        const proxyResp = await fetch(proxyUrl, {
-          headers: {
-            'Accept': 'application/json',
-          },
-        });
+        const cache = caches.default;
+        const cacheKey = new Request(proxyUrl);
+        const staleKey = new Request(proxyUrl + (proxyUrl.includes('?') ? '&' : '?') + '__lastgood=1');
 
-        // Don't cache error responses
-        const isError = proxyResp.status >= 400;
-        const cacheHeader = isError
-          ? 'no-cache, no-store'
-          : `public, max-age=${cacheTtl}, s-maxage=${cacheTtl}`;
+        // 1. Fresh edge hit → serve without calling GeckoTerminal. This collapses
+        //    every user + every chart auto-refresh for the same data into ONE upstream
+        //    call per TTL window — the main guard against the free tier's 30 req/min limit.
+        const hit = await cache.match(cacheKey);
+        if (hit) return hit;
 
-        const body = await proxyResp.arrayBuffer();
-        return new Response(body, {
+        // 2. Miss → one call to GeckoTerminal.
+        const proxyResp = await fetch(proxyUrl, { headers: { 'Accept': 'application/json' } });
+
+        if (proxyResp.status === 200) {
+          const body = await proxyResp.arrayBuffer();
+          const resp = new Response(body, {
+            status: 200,
+            headers: {
+              'Content-Type': 'application/json',
+              'Cache-Control': `public, max-age=${cacheTtl}, s-maxage=${cacheTtl}`,
+              ...corsHeaders,
+            },
+          });
+          // Cache for the TTL window (dedup) + keep a 10-min "last good" copy for the 429 fallback.
+          ctx.waitUntil(cache.put(cacheKey, resp.clone()));
+          ctx.waitUntil(cache.put(staleKey, new Response(body, {
+            headers: { 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=600' },
+          })));
+          return resp;
+        }
+
+        // 3. Throttled (429) or upstream 5xx → serve the last good copy if we have one,
+        //    so a brief rate-limit shows slightly-stale data instead of a broken chart.
+        if (proxyResp.status === 429 || proxyResp.status >= 500) {
+          const stale = await cache.match(staleKey);
+          if (stale) {
+            const sb = await stale.arrayBuffer();
+            return new Response(sb, {
+              status: 200,
+              headers: { 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=10', 'X-MS-Stale': '1', ...corsHeaders },
+            });
+          }
+        }
+
+        // 4. No stale fallback → pass the upstream status through, uncached.
+        const eb = await proxyResp.arrayBuffer();
+        return new Response(eb, {
           status: proxyResp.status,
-          headers: {
-            'Content-Type': 'application/json',
-            'Cache-Control': cacheHeader,
-            ...corsHeaders,
-          },
+          headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache, no-store', ...corsHeaders },
         });
       } catch (e) {
+        // Network failure → last good copy if available.
+        try {
+          const stale = await caches.default.match(new Request(proxyUrl + (proxyUrl.includes('?') ? '&' : '?') + '__lastgood=1'));
+          if (stale) {
+            const sb = await stale.arrayBuffer();
+            return new Response(sb, { status: 200, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=10', 'X-MS-Stale': '1', ...corsHeaders } });
+          }
+        } catch (e2) {}
         return new Response(JSON.stringify({ error: 'Proxy error' }), {
           status: 502,
           headers: { 'Content-Type': 'application/json', ...corsHeaders },
