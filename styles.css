@@ -2311,7 +2311,7 @@
   .search-modal-input-wrap {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 8px;
     padding: 14px 24px 8px;
     position: relative;
     background: none;
@@ -2357,6 +2357,14 @@
   .search-modal-esc:hover {
     background: rgba(255,255,255,0.12);
     color: var(--text-primary);
+  }
+  /* No X on desktop — close via click-outside (full-screen scrim) or Esc */
+  @media (min-width: 769px) {
+    .search-modal-esc { display: none; }
+  }
+  /* Mobile: tuck the X close button nearer the edge */
+  @media (max-width: 768px) {
+    .search-modal-input-wrap { padding-right: 12px; }
   }
 
   /* Chain filter row: horizontal-scrolling chips under the search input
