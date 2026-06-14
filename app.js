@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.195';
+var APP_VERSION = '2.5.196';
 
 // Image proxy — shrinks token images so they load fast even on bad wifi.
 // DexScreener's CDN (98%+ of token images) natively resizes via query params,
@@ -5509,7 +5509,11 @@ function _initModalChart(t) {
           geckoFetch(url,{headers:{'Accept':'application/json'},signal:ctrl.signal}).then(function(r){
             clearTimeout(tid);
             if (r.status === 429 || r.status === 403) {
-              if (attempt < 3) { setTimeout(tryFetch, attempt * 700); return; }
+              // Rate-limited is NOT "no data": the candles exist, the free tier just
+              // throttled this request. Keep the chart in its loading state and retry with
+              // backoff so it fills in once a slot frees (or the proxy serves a stale copy),
+              // instead of flashing the empty/no-data overlay.
+              if (attempt < 20) { setTimeout(tryFetch, Math.min(attempt * 800, 4000)); return; }
               _seedFromLivePrice(); return;
             }
             return r.json();
@@ -6197,7 +6201,9 @@ function initTokenPageChart(t) {
           geckoFetch(url,{headers:{'Accept':'application/json'},signal:ctrl.signal}).then(function(r){
             clearTimeout(tid);
             if (r.status === 429 || r.status === 403) {
-              if (attempt < 3) { setTimeout(tryFetch, attempt * 700); return; }
+              // Rate-limited is NOT "no data": keep retrying with backoff and leave the chart
+              // in its loading state instead of hiding it / showing the empty overlay.
+              if (attempt < 20) { setTimeout(tryFetch, Math.min(attempt * 800, 4000)); return; }
               _seedFromLivePrice2(); return;
             }
             return r.json();

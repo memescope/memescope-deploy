@@ -35,7 +35,7 @@ const DEXSCREENER_API = 'https://api.dexscreener.com/latest/dex/tokens/';
 
 // Bumped on every deploy (with package.json/app.js/sw.js). Edge-cache keys for HTML
 // include this, so a new deploy = new key = old cached HTML is ignored instantly.
-const CACHE_VERSION = '2.5.195';
+const CACHE_VERSION = '2.5.196';
 
 const VALID_CHAINS = new Set([
   'solana', 'eth', 'ethereum', 'base', 'bsc', 'sui', 'tron',
@@ -751,7 +751,7 @@ export default {
       } else if (geckoPath.includes('/search') || geckoPath.includes('/trending')) {
         cacheTtl = 300;  // Search/trending: 5 min — changes slowly
       } else if (geckoPath.includes('/tokens/') || geckoPath.includes('/info')) {
-        cacheTtl = 180;  // Token info: 3 min — metadata is stable
+        cacheTtl = 600;  // Token info + pool discovery: 10 min — metadata and a token's pools are stable
       } else if (geckoPath.includes('/networks')) {
         cacheTtl = 600;  // Network list: 10 min — almost never changes
       }
@@ -780,10 +780,11 @@ export default {
               ...corsHeaders,
             },
           });
-          // Cache for the TTL window (dedup) + keep a 10-min "last good" copy for the 429 fallback.
+          // Cache for the TTL window (dedup) + keep a 30-min "last good" copy for the 429 fallback,
+          // so a throttled coin shows slightly-stale candles instead of a hidden/empty chart.
           ctx.waitUntil(cache.put(cacheKey, resp.clone()));
           ctx.waitUntil(cache.put(staleKey, new Response(body, {
-            headers: { 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=600' },
+            headers: { 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=1800' },
           })));
           return resp;
         }
