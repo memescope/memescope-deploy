@@ -35,7 +35,7 @@ const DEXSCREENER_API = 'https://api.dexscreener.com/latest/dex/tokens/';
 
 // Bumped on every deploy (with package.json/app.js/sw.js). Edge-cache keys for HTML
 // include this, so a new deploy = new key = old cached HTML is ignored instantly.
-const CACHE_VERSION = '2.5.194';
+const CACHE_VERSION = '2.5.195';
 
 const VALID_CHAINS = new Set([
   'solana', 'eth', 'ethereum', 'base', 'bsc', 'sui', 'tron',
@@ -743,7 +743,7 @@ export default {
       // Smart cache TTLs by endpoint type to save API credits
       let cacheTtl = 30; // default 30s
       if (geckoPath.includes('/ohlcv/')) {
-        cacheTtl = 30;   // OHLCV: 30s — needs freshness for live charts
+        cacheTtl = 90;   // OHLCV: 90s — balance freshness vs the free-tier rate limit
       } else if (geckoPath.includes('/trades')) {
         cacheTtl = 15;   // Trades: 15s — most time-sensitive
       } else if (geckoPath.includes('/pools/') && !geckoPath.includes('/ohlcv/')) {

@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.194';
+var APP_VERSION = '2.5.195';
 
 // Image proxy — shrinks token images so they load fast even on bad wifi.
 // DexScreener's CDN (98%+ of token images) natively resizes via query params,
@@ -5505,11 +5505,11 @@ function _initModalChart(t) {
         function tryFetch() {
           attempt++;
           var ctrl = new AbortController();
-          var tid = setTimeout(function(){ ctrl.abort(); }, 12000);
+          var tid = setTimeout(function(){ ctrl.abort(); }, 8000);
           geckoFetch(url,{headers:{'Accept':'application/json'},signal:ctrl.signal}).then(function(r){
             clearTimeout(tid);
             if (r.status === 429 || r.status === 403) {
-              if (attempt < 5) { setTimeout(tryFetch, attempt * 2000); return; }
+              if (attempt < 3) { setTimeout(tryFetch, attempt * 700); return; }
               _seedFromLivePrice(); return;
             }
             return r.json();
@@ -5560,7 +5560,7 @@ function _initModalChart(t) {
             });
           }).catch(function(){
             clearTimeout(tid);
-            if (attempt < 5) { setTimeout(tryFetch, attempt * 2000); return; }
+            if (attempt < 3) { setTimeout(tryFetch, attempt * 700); return; }
             _seedFromLivePrice();
           });
         }
@@ -6193,11 +6193,11 @@ function initTokenPageChart(t) {
         function tryFetch() {
           attempt++;
           var ctrl = new AbortController();
-          var tid = setTimeout(function(){ ctrl.abort(); }, 12000);
+          var tid = setTimeout(function(){ ctrl.abort(); }, 8000);
           geckoFetch(url,{headers:{'Accept':'application/json'},signal:ctrl.signal}).then(function(r){
             clearTimeout(tid);
             if (r.status === 429 || r.status === 403) {
-              if (attempt < 5) { setTimeout(tryFetch, attempt * 2000); return; }
+              if (attempt < 3) { setTimeout(tryFetch, attempt * 700); return; }
               _seedFromLivePrice2(); return;
             }
             return r.json();
@@ -6248,7 +6248,7 @@ function initTokenPageChart(t) {
             });
           }).catch(function(){
             clearTimeout(tid);
-            if (attempt < 5) { setTimeout(tryFetch, attempt * 2000); return; }
+            if (attempt < 3) { setTimeout(tryFetch, attempt * 700); return; }
             _seedFromLivePrice2();
           });
         }
