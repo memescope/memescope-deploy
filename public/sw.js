@@ -1,4 +1,4 @@
-var CACHE_NAME = 'memescope-v2.5.193';
+var CACHE_NAME = 'memescope-v2.5.194';
 // On localhost the service worker is disabled entirely so development always
 // sees fresh files (no stale-cache confusion). Production keeps full caching.
 var IS_DEV = /^localhost$|^127\.|^192\.168\.|^10\.|^172\.(1[6-9]|2[0-9]|3[01])\./.test(self.location.hostname);
@@ -83,15 +83,23 @@ self.addEventListener('fetch', function(e) {
 
   // Same-origin app shell — NETWORK-FIRST: always try the network so the latest
   // deploy is served immediately; fall back to cache only when offline.
-  e.respondWith(
-    fetch(e.request).then(function(response) {
-      if (response.ok) {
+  e.respondWith((async function() {
+    var cached = await caches.match(e.request);
+    var network = fetch(e.request).then(function(response) {
+      if (response && response.ok) {
         var copy = response.clone();
         caches.open(CACHE_NAME).then(function(cache) { cache.put(e.request, copy); });
       }
       return response;
-    }).catch(function() {
-      return caches.match(e.request);
-    })
-  );
+    }).catch(function() { return cached; });   // offline -> cache
+    // No cached copy: we have to wait for the network.
+    if (!cached) return network;
+    // Network-first, but if the connection is hung/stale (common after an idle
+    // tab) and doesn't answer within 5s, serve the cached shell so the app can
+    // still boot instead of the request stalling indefinitely.
+    return Promise.race([
+      network,
+      new Promise(function(resolve) { setTimeout(function() { resolve(cached); }, 5000); })
+    ]);
+  })());
 });
