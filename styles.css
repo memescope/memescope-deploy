@@ -397,7 +397,7 @@
     border: none;
     color: var(--md-sys-color-on-surface-variant);
     font-family: 'Inter', sans-serif;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 500;
     cursor: pointer;
     transition: all var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard);
@@ -522,7 +522,7 @@
     background: transparent;
     color: var(--md-sys-color-on-surface-variant);
     font-family: 'Inter', sans-serif;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 500;
     position: relative;
     z-index: 1;
@@ -566,7 +566,7 @@
     -webkit-backdrop-filter: blur(12px);
     color: var(--md-sys-color-on-surface-variant);
     font-family: 'Inter', sans-serif;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 500;
     cursor: pointer;
     transition: all var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard);
@@ -5512,7 +5512,7 @@
     }
     .filter-group .filter-btn {
       display: flex !important;
-      font-size: 13px !important;
+      font-size: 14px !important;
       font-weight: 500 !important;
       padding: 8px 10px !important;
       border-radius: var(--md-sys-shape-corner-full) !important;
@@ -5522,7 +5522,7 @@
       color: #e6e1e3 !important;
     }
     .filter-group .filter-btn.active {
-      font-size: 13px !important;
+      font-size: 14px !important;
       padding: 8px 10px !important;
       background: transparent !important;
       color: #e6e1e3 !important;
@@ -5545,7 +5545,7 @@
       gap: 0 !important;
     }
     .filter-group.mobile-expanded .filter-btn {
-      font-size: 13px !important;
+      font-size: 14px !important;
       padding: 8px 10px !important;
       border-radius: var(--md-sys-shape-corner-full) !important;
       width: auto;
@@ -5557,7 +5557,7 @@
 
     /* Category chips — M3 filter chips */
     .filter-chip {
-      font-size: 13px !important;
+      font-size: 14px !important;
       font-weight: 500 !important;
       padding: 8px 10px !important;
       white-space: nowrap;
@@ -5590,7 +5590,7 @@
       border: none !important;
     }
     .topbar-btn {
-      font-size: 11px !important;
+      font-size: 14px !important;
       font-weight: 500 !important;
       padding: 8px 10px !important;
       white-space: nowrap;
@@ -5918,7 +5918,7 @@
     }
     table { min-width: 550px; }
     .filter-btn, .tf-pill, .cat-pill, .filter-pill, .topbar-btn {
-      font-size: 13px !important;
+      font-size: 14px !important;
       padding: 6px 8px !important;
     }
     .bm-ca-link span { display: none; }
