@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.198';
+var APP_VERSION = '2.5.199';
 
 // Image proxy — shrinks token images so they load fast even on bad wifi.
 // DexScreener's CDN (98%+ of token images) natively resizes via query params,
@@ -5500,7 +5500,7 @@ function _initModalChart(t) {
       }
       _discoverPoolModal(function(pool) {
         if (!pool) { _seedFromLivePrice(); return; }
-        var url = 'https://memescope-scraper.memescope-io.workers.dev/ohlcv?chain='+encodeURIComponent(geckoNet)+'&address='+encodeURIComponent(t.ca)+'&resolution='+encodeURIComponent(res)+'&pool='+encodeURIComponent(pool);
+        var url = 'https://api.geckoterminal.com/api/v2/networks/'+geckoNet+'/pools/'+pool+'/ohlcv/'+rc.agg+'?aggregate='+rc.mult+'&limit=1000&currency=usd';
         var attempt = 0;
         function tryFetch() {
           attempt++;
@@ -5519,7 +5519,7 @@ function _initModalChart(t) {
             return r.json();
           }).then(function(d){
             if (!d) return;
-            var list = d && d.bars;   // scraper /ohlcv returns pre-parsed bars [{time,open,high,low,close,volume}]
+            var list = d && d.data && d.data.attributes && d.data.attributes.ohlcv_list;
             if (!list || !list.length) {
               _seedFromLivePrice();
               return;
@@ -5528,11 +5528,11 @@ function _initModalChart(t) {
             var bars = [];
             for (var i = 0; i < list.length; i++) {
               var c = list[i];
-              var tm = c.time;   // scraper bars carry time in ms already
+              var tm = c[0] * 1000;
               tm = Math.floor(tm / resMs) * resMs;
               if (!tm || seen[tm]) continue;
               seen[tm] = true;
-              bars.push({ time: tm, open: +c.open, high: +c.high, low: +c.low, close: +c.close, volume: +c.volume });
+              bars.push({ time: tm, open: +c[1], high: +c[2], low: +c[3], close: +c[4], volume: +c[5] });
             }
             bars.sort(function(a,b){ return a.time - b.time; });
             // Place live candle RIGHT AFTER last OHLCV bar (eliminates time gap)
@@ -6192,7 +6192,7 @@ function initTokenPageChart(t) {
       }
       _discoverPool(function(pool) {
         if (!pool) { _seedFromLivePrice2(); return; }
-        var url = 'https://memescope-scraper.memescope-io.workers.dev/ohlcv?chain='+encodeURIComponent(geckoNet)+'&address='+encodeURIComponent(t.ca)+'&resolution='+encodeURIComponent(res)+'&pool='+encodeURIComponent(pool);
+        var url = 'https://api.geckoterminal.com/api/v2/networks/'+geckoNet+'/pools/'+pool+'/ohlcv/'+rc.agg+'?aggregate='+rc.mult+'&limit=1000&currency=usd';
         var attempt = 0;
         function tryFetch() {
           attempt++;
@@ -6209,7 +6209,7 @@ function initTokenPageChart(t) {
             return r.json();
           }).then(function(d){
             if (!d) return;
-            var list = d && d.bars;   // scraper /ohlcv returns pre-parsed bars [{time,open,high,low,close,volume}]
+            var list = d && d.data && d.data.attributes && d.data.attributes.ohlcv_list;
             if (!list || !list.length) {
               _seedFromLivePrice2();
               return;
@@ -6218,11 +6218,11 @@ function initTokenPageChart(t) {
             var bars = [];
             for (var i = 0; i < list.length; i++) {
               var c = list[i];
-              var tm = c.time;   // scraper bars carry time in ms already
+              var tm = c[0] * 1000;
               tm = Math.floor(tm / resMs) * resMs;
               if (!tm || seen[tm]) continue;
               seen[tm] = true;
-              bars.push({ time: tm, open: +c.open, high: +c.high, low: +c.low, close: +c.close, volume: +c.volume });
+              bars.push({ time: tm, open: +c[1], high: +c[2], low: +c[3], close: +c[4], volume: +c[5] });
             }
             bars.sort(function(a,b){ return a.time - b.time; });
             // Place live candle RIGHT AFTER last OHLCV bar (eliminates time gap)
