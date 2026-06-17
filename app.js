@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.204';
+var APP_VERSION = '2.5.205';
 
 // Image proxy — shrinks token images so they load fast even on bad wifi.
 // DexScreener's CDN (98%+ of token images) natively resizes via query params,
@@ -4840,9 +4840,12 @@ function openBubbleModal(t) {
   clearTimeout(window._bmGlowTimer);
   var _glowP5m = t.p5m || 0;
   window._bmGlowTimer = setTimeout(function() {
+    // Modal counts as open on desktop (overlay .open) OR mobile (bottom-nav .coin-open).
     var ov = document.getElementById('bubbleModalOverlay');
+    var nav = document.getElementById('mobileBottomNav');
+    var open = (ov && ov.classList.contains('open')) || (nav && nav.classList.contains('coin-open'));
     var h = document.querySelector('.bm-header');
-    if (h && ov && ov.classList.contains('open')) {
+    if (h && open && window._modalToken && window._modalToken.ca === t.ca) {
       h.classList.remove('glow-up','glow-down');
       void h.offsetWidth;
       h.classList.add(_glowP5m >= 0 ? 'glow-up' : 'glow-down');
