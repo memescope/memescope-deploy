@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.200';
+var APP_VERSION = '2.5.201';
 
 // Image proxy — shrinks token images so they load fast even on bad wifi.
 // DexScreener's CDN (98%+ of token images) natively resizes via query params,
@@ -4832,14 +4832,23 @@ function openBubbleModal(t) {
       }).catch(function() {});
   }
 
-  // Initial header glow based on 5m change
+  // Header glow: stay calm during the entrance, then ONE 5m-direction glow at 5s,
+  // after which live price ticks glow normally. (Avoids the double-flash on open.)
   var hdr = document.querySelector('.bm-header');
-  if (hdr) {
-    hdr.classList.remove('glow-up','glow-down');
-    void hdr.offsetWidth;
-    var p5m = t.p5m || 0;
-    hdr.classList.add(p5m >= 0 ? 'glow-up' : 'glow-down');
-  }
+  if (hdr) hdr.classList.remove('glow-up','glow-down');
+  window._bmGlowArmed = false;
+  clearTimeout(window._bmGlowTimer);
+  var _glowP5m = t.p5m || 0;
+  window._bmGlowTimer = setTimeout(function() {
+    var ov = document.getElementById('bubbleModalOverlay');
+    var h = document.querySelector('.bm-header');
+    if (h && ov && ov.classList.contains('open')) {
+      h.classList.remove('glow-up','glow-down');
+      void h.offsetWidth;
+      h.classList.add(_glowP5m >= 0 ? 'glow-up' : 'glow-down');
+    }
+    window._bmGlowArmed = true; // live ticks may glow from here on
+  }, 5000);
 
   // Contract Address — just store on the element for copyCA()
   var caEl = document.getElementById("bmCA");
@@ -5633,7 +5642,7 @@ function _initModalChart(t) {
             if (window._modalToken && _bmOv && _bmOv.classList.contains('open')) document.title = fmt(_mc) + ' | ' + (window._modalToken.sym || '') + ' — MemeScope';
             // Header glow
             var hdr = document.querySelector('.bm-header');
-            if (hdr && prevPrice && _price !== prevPrice) {
+            if (hdr && window._bmGlowArmed && prevPrice && _price !== prevPrice) {
               hdr.classList.remove('glow-up','glow-down');
               void hdr.offsetWidth; // reflow to restart animation
               hdr.classList.add(_price > prevPrice ? 'glow-up' : 'glow-down');
