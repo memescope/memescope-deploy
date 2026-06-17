@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.201';
+var APP_VERSION = '2.5.202';
 
 // Image proxy — shrinks token images so they load fast even on bad wifi.
 // DexScreener's CDN (98%+ of token images) natively resizes via query params,
@@ -5573,7 +5573,11 @@ function _initModalChart(t) {
             });
           }).catch(function(){
             clearTimeout(tid);
-            if (attempt < 3) { setTimeout(tryFetch, attempt * 700); return; }
+            // Direct browser fetch rejected — almost always GeckoTerminal's CORS-less 429
+            // (throttle). Fall back to the same-origin proxy (reads the 429, serves stale/
+            // cached) so a throttle shows a chart instead of flashing false "no data".
+            if (url.indexOf('/api/gecko/') === -1) { url = url.replace('https://api.geckoterminal.com/api/v2/', '/api/gecko/'); setTimeout(tryFetch, 300); return; }
+            if (attempt < 20) { setTimeout(tryFetch, Math.min(attempt * 800, 4000)); return; }
             _seedFromLivePrice();
           });
         }
@@ -6263,7 +6267,11 @@ function initTokenPageChart(t) {
             });
           }).catch(function(){
             clearTimeout(tid);
-            if (attempt < 3) { setTimeout(tryFetch, attempt * 700); return; }
+            // Direct browser fetch rejected — almost always GeckoTerminal's CORS-less 429
+            // (throttle). Fall back to the same-origin proxy (reads the 429, serves stale/
+            // cached) so a throttle shows a chart instead of flashing false "no data".
+            if (url.indexOf('/api/gecko/') === -1) { url = url.replace('https://api.geckoterminal.com/api/v2/', '/api/gecko/'); setTimeout(tryFetch, 300); return; }
+            if (attempt < 20) { setTimeout(tryFetch, Math.min(attempt * 800, 4000)); return; }
             _seedFromLivePrice2();
           });
         }
