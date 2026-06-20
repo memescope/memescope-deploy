@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.206';
+var APP_VERSION = '2.5.207';
 
 // Image proxy — shrinks token images so they load fast even on bad wifi.
 // DexScreener's CDN (98%+ of token images) natively resizes via query params,
@@ -5719,7 +5719,7 @@ function _initModalChart(t) {
     autosize: true,
     theme: 'dark',
     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-    loading_screen: { backgroundColor: '#18171A', foregroundColor: '#4A9EFF' },
+    loading_screen: { backgroundColor: '#18171A', foregroundColor: '#4a4fd8' },
     overrides: {
       'paneProperties.background': '#18171A',
       'paneProperties.backgroundType': 'solid',
@@ -6360,7 +6360,7 @@ function initTokenPageChart(t) {
     autosize: true,
     theme: 'dark',
     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-    loading_screen: { backgroundColor: '#18171A', foregroundColor: '#4A9EFF' },
+    loading_screen: { backgroundColor: '#18171A', foregroundColor: '#4a4fd8' },
     overrides: {
       'paneProperties.background': '#18171A',
       'paneProperties.backgroundType': 'solid',

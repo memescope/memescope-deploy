@@ -25,9 +25,12 @@
     --md-sys-color-surface-container: #1c1b1d;
     --md-sys-color-surface-container-high: #2b292c;
     --md-sys-color-surface-container-highest: #44404c;
+    --ms-bar-control: #444244; /* neutral for raised controls: chips, timeframe pills, search bar, header buttons, modal close (X) circles */
+    --ms-bar-control-hover: #383638; /* neutral hover for bar controls (de-purpled #37353e) */
+    --ms-page-bg: #181618; /* page canvas color — one knob; drives html, body, .main and the sticky-nav-wrap */
     --md-sys-color-on-surface: #e6e1e3;
     --md-sys-color-on-surface-variant: #e6e1e3;
-    --md-sys-color-primary: #4A9EFF;
+    --md-sys-color-primary: #4a4fd8;
     --md-sys-color-on-primary: #e6e1e3;
     --md-sys-color-primary-container: #553f5d;
     --md-sys-color-on-primary-container: #e6e1e3;
@@ -145,11 +148,11 @@
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
   html {
-    background: var(--md-sys-color-surface);
+    background: var(--ms-page-bg);
   }
   body {
     overflow-y: auto;
-    background: var(--md-sys-color-surface);
+    background: var(--ms-page-bg);
     padding-top: env(safe-area-inset-top);
     padding-bottom: env(safe-area-inset-bottom);
     padding-left: env(safe-area-inset-left);
@@ -195,21 +198,21 @@
     z-index: 0;
     opacity: 0.03;
     background-image:
-      radial-gradient(1px 1px at 10% 15%, #4A9EFF 50%, transparent 100%),
+      radial-gradient(1px 1px at 10% 15%, #4a4fd8 50%, transparent 100%),
       radial-gradient(1px 1px at 25% 40%, #fff 50%, transparent 100%),
-      radial-gradient(1.5px 1.5px at 45% 10%, #4A9EFF 50%, transparent 100%),
+      radial-gradient(1.5px 1.5px at 45% 10%, #4a4fd8 50%, transparent 100%),
       radial-gradient(1px 1px at 60% 65%, #fff 50%, transparent 100%),
-      radial-gradient(1px 1px at 80% 25%, #4A9EFF 50%, transparent 100%),
+      radial-gradient(1px 1px at 80% 25%, #4a4fd8 50%, transparent 100%),
       radial-gradient(1.5px 1.5px at 15% 70%, #fff 50%, transparent 100%),
-      radial-gradient(1px 1px at 90% 50%, #4A9EFF 50%, transparent 100%),
+      radial-gradient(1px 1px at 90% 50%, #4a4fd8 50%, transparent 100%),
       radial-gradient(1px 1px at 35% 85%, #fff 50%, transparent 100%),
-      radial-gradient(1.5px 1.5px at 70% 80%, #4A9EFF 50%, transparent 100%),
+      radial-gradient(1.5px 1.5px at 70% 80%, #4a4fd8 50%, transparent 100%),
       radial-gradient(1px 1px at 50% 35%, #fff 50%, transparent 100%),
-      radial-gradient(1px 1px at 5% 90%, #4A9EFF 50%, transparent 100%),
+      radial-gradient(1px 1px at 5% 90%, #4a4fd8 50%, transparent 100%),
       radial-gradient(1px 1px at 85% 70%, #fff 50%, transparent 100%),
-      radial-gradient(1.5px 1.5px at 30% 20%, #4A9EFF 50%, transparent 100%),
+      radial-gradient(1.5px 1.5px at 30% 20%, #4a4fd8 50%, transparent 100%),
       radial-gradient(1px 1px at 95% 10%, #fff 50%, transparent 100%),
-      radial-gradient(1px 1px at 55% 55%, #4A9EFF 50%, transparent 100%);
+      radial-gradient(1px 1px at 55% 55%, #4a4fd8 50%, transparent 100%);
     animation: particleDrift 60s linear infinite;
   }
   @keyframes particleDrift {
@@ -300,7 +303,7 @@
 
     /* ---- MAIN CONTENT ---- */
   .main {
-    background: linear-gradient(to bottom, var(--md-sys-color-surface-container-low) 0px, var(--md-sys-color-surface-container-low) 60px, var(--md-sys-color-surface) 60px);
+    background: var(--ms-page-bg);
     margin-left: 0;
     flex: 1;
     display: flex;
@@ -391,7 +394,7 @@
   .topbar-btn {
     padding: 12px 16px;
     border-radius: var(--md-sys-shape-corner-full);
-    background: var(--md-sys-color-surface-container-highest);
+    background: var(--ms-bar-control);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     border: none;
@@ -405,7 +408,7 @@
 
   .topbar-btn:hover {
     color: var(--md-sys-color-on-surface);
-    background: #37353e;
+    background: var(--ms-bar-control-hover);
     box-shadow: none;
   }
 
@@ -474,7 +477,7 @@
     position: sticky;
     top: 0;
     z-index: 960;
-    background: var(--md-sys-color-surface-container-low);
+    background: var(--ms-page-bg);
     box-shadow: none;
   }
   .sticky-nav-wrap::before {
@@ -484,7 +487,7 @@
     left: 0;
     right: 0;
     height: 100px;
-    background: var(--md-sys-color-surface-container-low);
+    background: var(--ms-page-bg);
     z-index: -1;
   }
   .filter-bar {
@@ -494,7 +497,7 @@
     gap: 8px;
     padding: 10px 16px 10px 24px;
     border-bottom: none;
-    background: #2b2930;
+    background: #2e2c2e;
     margin: 0 8px 0 8px;
     border-radius: 0;
     flex-wrap: wrap;
@@ -507,7 +510,7 @@
   .filter-group {
     display: flex;
     gap: 0;
-    background: var(--md-sys-color-surface-container-highest);
+    background: var(--ms-bar-control);
     border-radius: var(--md-sys-shape-corner-full);
     padding: 0;
     border: none;
@@ -554,14 +557,14 @@
 
   .filter-btn:not(.active):hover {
     color: #e6e1e3;
-    background: #37353e;
+    background: var(--ms-bar-control-hover);
   }
 
   .filter-chip {
     padding: 12px 16px;
     border-radius: var(--md-sys-shape-corner-full);
     border: none;
-    background: var(--md-sys-color-surface-container-highest);
+    background: var(--ms-bar-control);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     color: var(--md-sys-color-on-surface-variant);
@@ -599,7 +602,7 @@
   }
   .filter-chip:hover {
     color: var(--md-sys-color-on-surface);
-    background: #37353e;
+    background: var(--ms-bar-control-hover);
   }
   .filter-chip.active-chip {
     background: #4a4fd8;
@@ -802,7 +805,7 @@
   thead th {
     position: sticky;
     top: 52px;
-    background: #2b2930;
+    background: #2e2c2e;
     padding: 12px 14px;
     text-align: right;
     font-family: 'Inter', sans-serif;
@@ -1758,7 +1761,7 @@
     width: auto;
     border: none;
     background: linear-gradient(#0e0d18, #0e0d18) padding-box,
-                linear-gradient(90deg, #4A9EFF, #a78bfa, #f093fb, #fb7185, #fbbf24, #22C55E, #38bdf8, #4A9EFF) border-box;
+                linear-gradient(90deg, #4a4fd8, #a78bfa, #f093fb, #fb7185, #fbbf24, #22C55E, #38bdf8, #4a4fd8) border-box;
     border: 2px solid transparent;
     background-size: 100% 100%, 300% 100%;
     animation: borderGlow 3s linear infinite;
@@ -1874,7 +1877,7 @@
     align-items: center;
     justify-content: space-between;
     padding: 10px 24px 10px 24px;
-    background: #2b2930;
+    background: #2e2c2e;
     border-bottom: 1px solid rgba(255,255,255,0.08);
     flex-shrink: 0;
     z-index: 950;
@@ -1904,7 +1907,7 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    background: var(--md-sys-color-surface-container-highest);
+    background: var(--ms-bar-control);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     border: none;
@@ -1918,7 +1921,7 @@
     transition: background var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
   }
   .top-header-search:hover {
-    background: #494550;
+    background: var(--ms-bar-control-hover);
     outline: 1px solid #4a4fd8;
     outline-offset: -1px;
   }
@@ -2289,7 +2292,7 @@
     transform: translateX(-50%);
     transform-origin: top center;
     z-index: 1001;
-    background: var(--md-sys-color-surface-container-highest);
+    background: #2e2c2e;
     border: none;
     border-radius: 32px;
     box-shadow: 0 8px 32px rgba(0,0,0,0.4);
@@ -2318,9 +2321,9 @@
     border-radius: 0;
   }
   .search-modal-input-wrap svg {
-    color: var(--text-secondary);
+    color: #fff;
     flex-shrink: 0;
-    opacity: 0.7;
+    opacity: 1;
   }
   .search-modal-input {
     flex: 1;
@@ -2419,8 +2422,8 @@
   .search-modal-body::-webkit-scrollbar { display: none; }
 
   /* Inset search card (search + chains) inside the modal, like YouTube.
-     Same pattern both sizes: card = the ORIGINAL surface color, frame
-     (modal/sheet) = that surface darkened ~25% so the card reads as raised. */
+     card = #444244 (bar-control color) reads as raised on the
+     frame (modal/sheet) = #2e2c2e (bar color). */
   .search-modal-top {
     margin: 8px;
     border-radius: 24px;
@@ -2431,20 +2434,19 @@
     background: none;
     padding: 4px 12px 12px;
   }
-  /* Desktop: card = the modal surface; frame = that surface darkened. */
+  /* Desktop: #444244 card on #2e2c2e frame. */
   @media (min-width: 769px) {
     .search-modal {
-      background: linear-gradient(rgba(0,0,0,0.25), rgba(0,0,0,0.25)), var(--md-sys-color-surface-container-highest);
+      background: #2e2c2e;
     }
     .search-modal-top {
-      background: var(--md-sys-color-surface-container-highest);
+      background: #444244;
     }
   }
-  /* Mobile: card = the original sheet color (#44404c); the sheet/frame is
-     darkened (below) so the card reads as raised — same idea as desktop. */
+  /* Mobile: #444244 card on #2e2c2e sheet — same as desktop. */
   @media (max-width: 768px) {
     .search-modal-top {
-      background: #44404c;
+      background: #444244;
     }
   }
 
@@ -3246,7 +3248,7 @@
     width: 32px; height: 32px;
     border-radius: 50%;
     border: none;
-    background: var(--md-sys-color-surface-container-highest);
+    background: var(--ms-bar-control);
     color: var(--text-secondary);
     display: flex; align-items: center; justify-content: center;
     cursor: pointer;
@@ -3316,7 +3318,7 @@
     border-top: none;
   }
   .wc-footer a {
-    color: #4A9EFF;
+    color: #4a4fd8;
     text-decoration: none;
     font-weight: 600;
   }
@@ -3693,7 +3695,7 @@
   }
   .bm-dropdown svg.ico-globe, .bm-dropdown svg.ico-search { width: 18px; height: 18px; }
   .bm-close {
-    background: var(--md-sys-color-surface-container-highest);
+    background: var(--ms-bar-control);
     border: none;
     color: var(--text-secondary);
     cursor: pointer;
@@ -3711,6 +3713,15 @@
   }
   .bm-close:active {
     background: rgba(255,255,255,0.12);
+  }
+  /* Match all modal close-circle X icons to the coin modal's proportion (18px in the 32px circle).
+     CSS overrides the inline 14px svg attrs, so the wallet modal's JS-rebuilt button inherits it too. */
+  .wc-close svg,
+  .wl-modal-close svg,
+  .bugreport-close svg,
+  .boost-modal-close svg {
+    width: 18px;
+    height: 18px;
   }
 
   /* ── Horizontal stats bar ── */
@@ -4901,7 +4912,7 @@
   }
   .bugreport-close {
     width: 32px; height: 32px;
-    background: var(--md-sys-color-surface-container-highest);
+    background: var(--ms-bar-control);
     border: none; border-radius: 50%;
     color: var(--text-secondary);
     cursor: pointer; display: flex; align-items: center; justify-content: center;
@@ -4944,7 +4955,7 @@
     width: 100%;
     padding: 14px;
     border: none; border-radius: 14px;
-    background: var(--md-sys-color-surface-container-highest);
+    background: var(--ms-bar-control);
     color: var(--text-primary); font-family: 'Inter', sans-serif;
     font-size: 13px; font-weight: 600;
     cursor: pointer;
@@ -5336,13 +5347,13 @@
   .refresh-progress-bar {
     height: 100%;
     width: 0%;
-    background: #4A9EFF;
+    background: #4a4fd8;
     border-radius: 2 2px 1px 1;
     transition: width 1s linear;
   }
   .refresh-progress-bar.fetching {
     width: 100% !important;
-    background: linear-gradient(90deg, #4A9EFF, #8FCFFF, #4A9EFF);
+    background: linear-gradient(90deg, #4a4fd8, #8FCFFF, #4a4fd8);
     background-size: 200% 100%;
     animation: progressShimmer 1s ease infinite;
   }
@@ -5384,7 +5395,7 @@
     .main {
       max-width: 100vw !important;
       overflow: visible !important;
-      background: #141314 !important;
+      background: var(--ms-page-bg) !important;
     }
 
     /* === LAYOUT === */
@@ -5396,12 +5407,12 @@
 
     /* === HEADER — clean minimal === */
     .sticky-nav-wrap {
-      background: #141314 !important;
+      background: var(--ms-page-bg) !important;
       position: relative;
       z-index: 10;
     }
     .sticky-nav-wrap::before {
-      background: #141314 !important;
+      background: var(--ms-page-bg) !important;
     }
     .top-header-bar {
       left: 0 !important;
@@ -5409,7 +5420,7 @@
       border-bottom: 1px solid rgba(255,255,255,0.08) !important;
       margin: 8px 8px 0 8px !important;
       border-radius: var(--md-sys-shape-corner-extra-large) var(--md-sys-shape-corner-extra-large) 0 0 !important;
-      background: #2b2930 !important;
+      background: #2e2c2e !important;
     }
     .memescope-logo { font-size: 26px !important; letter-spacing: 0.5px; }
     .memescope-icon { height: 15px !important; width: 15px !important; vertical-align: -1px !important; margin: 0 1px !important; }
@@ -5484,7 +5495,7 @@
       gap: 8px !important;
       overflow-x: auto !important;
       flex-wrap: nowrap !important;
-      background: #2b2930 !important;
+      background: #2e2c2e !important;
       align-items: center !important;
       -webkit-overflow-scrolling: touch;
       border-bottom: none !important;
@@ -5502,7 +5513,7 @@
       padding: 0 !important;
       gap: 0 !important;
       border: none !important;
-      background: var(--md-sys-color-surface-container-highest) !important;
+      background: var(--ms-bar-control) !important;
       border-radius: var(--md-sys-shape-corner-full) !important;
       overflow: hidden !important;
       flex-shrink: 0;
@@ -5564,7 +5575,7 @@
       border-radius: var(--md-sys-shape-corner-full) !important;
       flex-shrink: 0;
       letter-spacing: 0.2px;
-      background: var(--md-sys-color-surface-container-highest) !important;
+      background: var(--ms-bar-control) !important;
       border: none !important;
       position: relative;
       overflow: hidden;
@@ -5586,7 +5597,7 @@
       border-radius: var(--md-sys-shape-corner-full) !important;
       flex-shrink: 0;
       letter-spacing: 0.2px;
-      background: var(--md-sys-color-surface-container-highest) !important;
+      background: var(--ms-bar-control) !important;
       border: none !important;
     }
     .topbar-btn {
@@ -5597,7 +5608,7 @@
       border-radius: var(--md-sys-shape-corner-full) !important;
       flex-shrink: 0;
       letter-spacing: 0.2px;
-      background: var(--md-sys-color-surface-container-highest) !important;
+      background: var(--ms-bar-control) !important;
       border: none !important;
     }
     .filter-left, .filter-right { flex-shrink: 0; }
@@ -5653,7 +5664,7 @@
       background: #373638 !important;
     }
     thead th:first-child {
-      background: #2b2930 !important;
+      background: #2e2c2e !important;
       z-index: 3 !important;
     }
     /* Border on sticky token column edge — rows only */
@@ -6020,7 +6031,7 @@
   .ens-sidebar-name {
     grid-column: 2;
     font-size: 11px;
-    color: #4A9EFF;
+    color: #4a4fd8;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -6048,7 +6059,7 @@
   .ens-input-wrap {
     display: flex;
     align-items: center;
-    background: var(--md-sys-color-surface-container-highest);
+    background: var(--ms-bar-control);
     border-radius: 14px;
     padding: 0 16px;
     border: none;
@@ -6158,7 +6169,7 @@
     align-items: center;
     justify-content: space-between;
     padding: 14px 16px;
-    background: var(--md-sys-color-surface-container-highest);
+    background: var(--ms-bar-control);
     border-radius: 12px;
     cursor: pointer;
     transition: background 0.2s;
@@ -6305,7 +6316,7 @@
 
   .ms-nav-text {
     grid-column: 2;
-    font-size: 13px;
+    font-size: 14px;
     white-space: nowrap;
     opacity: 0;
     transition: opacity var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard) 0.05s;
@@ -6459,14 +6470,14 @@
     font-size: 12px;
     font-weight: 600;
     color: var(--text-secondary);
-    background: var(--md-sys-color-surface-container-highest);
+    background: var(--ms-bar-control);
     padding: 4px 10px;
     border-radius: var(--md-sys-shape-corner-full);
   }
   .wl-share-btn {
     margin-left: auto;
     width: 32px; height: 32px;
-    background: var(--md-sys-color-surface-container-highest);
+    background: var(--ms-bar-control);
     border: none; border-radius: 50%;
     color: var(--text-secondary);
     cursor: pointer;
@@ -6503,7 +6514,7 @@
   .wl-share-option svg { flex-shrink: 0; }
   .wl-modal-close {
     width: 32px; height: 32px;
-    background: var(--md-sys-color-surface-container-highest);
+    background: var(--ms-bar-control);
     border: none; border-radius: 50%;
     color: var(--text-secondary);
     cursor: pointer;
@@ -6698,7 +6709,7 @@
     transition: opacity 0.15s, border-color 0.15s;
   }
   .ms-flag:hover { opacity: 1; border-color: rgba(74,158,255,0.5); }
-  .ms-flag.active { opacity: 1; border-color: #4A9EFF; }
+  .ms-flag.active { opacity: 1; border-color: #4a4fd8; }
   .ms-flag img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block; }
 
   .ms-theme-toggle {
@@ -6766,7 +6777,7 @@
   .ms-mobile-btn:hover {
     background: rgba(74,158,255,0.12);
     border-color: rgba(74,158,255,0.3);
-    color: #4A9EFF;
+    color: #4a4fd8;
   }
 
   .top-header-right-group {
@@ -6781,7 +6792,7 @@
     align-items: center;
     gap: 7px;
     padding: 10px 18px;
-    background: var(--md-sys-color-surface-container-highest);
+    background: var(--ms-bar-control);
     border: none;
     border-radius: var(--md-sys-shape-corner-full);
     cursor: pointer;
@@ -6795,7 +6806,7 @@
   }
   .ms-header-connect svg { flex-shrink: 0; opacity: 0.7; color: var(--text-secondary); }
   .ms-header-connect:hover {
-    background: #37353e;
+    background: var(--ms-bar-control-hover);
   }
   .ms-header-connect:hover svg { color: var(--phantom-purple); opacity: 1; }
   .ms-header-connect:active { background-image: linear-gradient(rgba(255,255,255,0.12), rgba(255,255,255,0.12)); }
@@ -6806,7 +6817,7 @@
     justify-content: center;
     width: 40px;
     height: 40px;
-    background: var(--md-sys-color-surface-container-highest);
+    background: var(--ms-bar-control);
     border: none;
     border-radius: 50%;
     cursor: pointer;
@@ -6815,7 +6826,7 @@
     -webkit-tap-highlight-color: transparent;
   }
   .ms-header-ens-btn img { height: 24px; width: 24px; }
-  .ms-header-ens-btn:hover { background: #37353e; }
+  .ms-header-ens-btn:hover { background: var(--ms-bar-control-hover); }
   .ms-header-ens-btn:active { background-image: linear-gradient(rgba(255,255,255,0.12), rgba(255,255,255,0.12)); }
 
   .ms-header-connect-wrap {
@@ -6832,13 +6843,13 @@
     overflow: hidden;
     flex-shrink: 0;
     cursor: pointer;
-    background: var(--md-sys-color-surface-container-highest);
+    background: var(--ms-bar-control);
     transition: background 0.25s ease;
     border: none;
     outline: none;
   }
   .ms-header-connect-split:hover {
-    background: #37353e;
+    background: var(--ms-bar-control-hover);
   }
   .ms-header-connect-split:active {
     background-image: linear-gradient(rgba(255,255,255,0.12), rgba(255,255,255,0.12));
@@ -6877,7 +6888,7 @@
     justify-content: center;
     min-width: 38px;
     padding: 0;
-    background: var(--md-sys-color-surface-container-highest);
+    background: var(--ms-bar-control);
     border: none;
     cursor: pointer;
     color: var(--text-secondary);
@@ -6885,7 +6896,7 @@
     transition: background 0.25s ease, color 0.25s ease, transform 0.2s ease;
   }
   .connect-split-chevron:hover {
-    background: #3a383a;
+    background: var(--ms-bar-control-hover);
     color: var(--text-primary);
   }
   .connect-split-chevron:active {
@@ -7513,7 +7524,7 @@
     transition: all var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard);
   }
   .embed-popup-btn.copy {
-    background: #4A9EFF;
+    background: #4a4fd8;
     color: var(--text-primary);
   }
   .embed-popup-btn.copy:hover { background: #e04400; }
@@ -7937,7 +7948,7 @@
   .bf-chip {
     padding: 8px 16px;
     border-radius: var(--md-sys-shape-corner-full);
-    background: var(--md-sys-color-surface-container-highest);
+    background: var(--ms-bar-control);
     border: none;
     color: var(--md-sys-color-on-surface-variant);
     font-family: 'Inter', sans-serif;
@@ -7948,7 +7959,7 @@
     white-space: nowrap;
   }
   .bf-chip:hover {
-    background: #2e2c2e;
+    background: var(--ms-bar-control-hover);
     color: var(--md-sys-color-on-surface);
   }
   .bf-chip.active {
@@ -8101,7 +8112,7 @@
     color: var(--md-sys-color-on-surface);
   }
   .bf-live-pin {
-    color: #4A9EFF;
+    color: #4a4fd8;
     font-size: 18px;
     line-height: 1;
   }
@@ -8125,7 +8136,7 @@
     background: rgba(74,158,255,0.1);
   }
   #bfLiveCount {
-    color: #4A9EFF;
+    color: #4a4fd8;
     font-feature-settings: 'tnum';
     font-weight: 700;
     margin-right: 2px;
@@ -8344,7 +8355,7 @@
   }
   .mc-confirm-yes { background: #e53935; color: #fff; }
   .mc-confirm-yes:hover { background: #c62828; }
-  .mc-confirm-no { background: var(--md-sys-color-surface-container-highest); color: var(--text-primary); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.12); }
+  .mc-confirm-no { background: var(--ms-bar-control); color: var(--text-primary); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.12); }
   .mc-confirm-no:hover { background: rgba(255,255,255,0.08); }
 
   .mc-overlay {
@@ -8369,7 +8380,7 @@
     height: 58px;
     box-sizing: border-box;
     padding: 10px 24px 10px 24px;
-    background: #2b2930;
+    background: #2e2c2e;
     margin: 0 8px;
     border-top: none;
     border-radius: 0;
@@ -8397,7 +8408,7 @@
     gap: 4px;
     height: 36px;
     padding: 0 6px;
-    background: var(--md-sys-color-surface-container-highest);
+    background: var(--ms-bar-control);
     border-radius: var(--md-sys-shape-corner-full);
   }
   .mc-ctrl-label {
@@ -8450,7 +8461,7 @@
     display: none;
     position: fixed;
     min-width: 190px;
-    background: var(--md-sys-color-surface-container-highest);
+    background: var(--ms-bar-control);
     border: 1px solid rgba(255,255,255,0.08);
     border-radius: 16px;
     padding: 6px;
@@ -8552,22 +8563,21 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 36px;
-    height: 36px;
-    background: var(--md-sys-color-surface-container-highest);
+    width: 32px;
+    height: 32px;
+    background: var(--ms-bar-control);
     border: none;
     color: var(--md-sys-color-on-surface-variant);
     cursor: pointer;
     border-radius: var(--md-sys-shape-corner-full);
-    transition: background 160ms ease, color 160ms ease, transform 160ms ease;
+    transition: background 150ms ease, color 150ms ease;
   }
-  .mc-combo-close svg { transition: transform 200ms cubic-bezier(0.2,0,0,1); }
+  .mc-combo-close svg { width: 18px; height: 18px; }
   .mc-combo-close:hover {
-    background: #37353e;
+    background: rgba(255,255,255,0.08);
     color: var(--md-sys-color-on-surface);
   }
-  .mc-combo-close:hover svg { transform: rotate(90deg); }
-  .mc-combo-close:active { transform: scale(0.92); }
+  .mc-combo-close:active { background: rgba(255,255,255,0.12); }
   .mc-exit:hover { background: #55515e; color: var(--text-primary); }
 
   /* ---- Card grid — cards float directly on overlay ---- */
@@ -8605,7 +8615,7 @@
     font-weight: 600;
     letter-spacing: 0.2px;
     color: #fff;
-    background: var(--md-sys-color-surface-container-highest);
+    background: var(--ms-bar-control);
     border: none;
     border-radius: var(--md-sys-shape-corner-full);
     padding: 9px 20px;
@@ -8761,7 +8771,7 @@
     max-height: 75vh;
     flex-direction: column;
     z-index: 3100;
-    background: var(--md-sys-color-surface-container-highest);
+    background: var(--ms-bar-control);
     border-radius: 28px;
     box-shadow: 0 8px 32px rgba(0,0,0,0.4);
     overflow: hidden;
@@ -8825,7 +8835,7 @@
   .mc-search::placeholder { color: var(--text-secondary); font-weight: 400; opacity: 0.7; }
   .mc-search-close {
     width: 32px; height: 32px;
-    background: var(--md-sys-color-surface-container-highest);
+    background: var(--ms-bar-control);
     border: none;
     color: var(--text-secondary);
     cursor: pointer;
@@ -8875,7 +8885,7 @@
   }
   .mc-result-mcap { font-size: 12px; color: var(--text-secondary); font-weight: 500; }
   .mc-result-pct { font-size: 12px; font-weight: 600; min-width: 55px; text-align: right; }
-  .mc-result-add { font-size: 12px; font-weight: 600; color: #4A9EFF; min-width: 40px; text-align: right; }
+  .mc-result-add { font-size: 12px; font-weight: 600; color: #4a4fd8; min-width: 40px; text-align: right; }
   .mc-result-check { font-size: 12px; font-weight: 500; color: var(--text-secondary); min-width: 40px; text-align: right; }
 
   /* ---- Mobile ---- */
@@ -9153,7 +9163,7 @@
     }
     .mobile-bottom-nav.search-open {
       height: calc(100% - 28px);
-      background: linear-gradient(rgba(0,0,0,0.25), rgba(0,0,0,0.25)), #44404c;
+      background: #2e2c2e;
       border-radius: 28px 28px 0 0;
       border-top: none;
       box-shadow: 0 -4px 30px rgba(0,0,0,0.4);
