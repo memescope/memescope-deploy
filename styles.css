@@ -6303,12 +6303,14 @@
     height: 24px;
     border-radius: 50%;
     object-fit: cover;
+    background: rgba(255,255,255,0.05); /* placeholder dot if a logo fails to load (no alt-text fallback) */
   }
   .ms-nav-leaf-icon {
     border-radius: 0;
     object-fit: contain;
     width: 25px;
     height: 25px;
+    background: none;
   }
   .ms-nav > .ms-nav-sep:first-child {
     margin-top: 17px;

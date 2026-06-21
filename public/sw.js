@@ -1,4 +1,4 @@
-var CACHE_NAME = 'memescope-v2.5.207';
+var CACHE_NAME = 'memescope-v2.5.208';
 // On localhost the service worker is disabled entirely so development always
 // sees fresh files (no stale-cache confusion). Production keeps full caching.
 var IS_DEV = /^localhost$|^127\.|^192\.168\.|^10\.|^172\.(1[6-9]|2[0-9]|3[01])\./.test(self.location.hostname);
@@ -67,6 +67,27 @@ self.addEventListener('activate', function(e) {
 self.addEventListener('fetch', function(e) {
   if (IS_DEV) return;  // dev: always go to network, never serve from cache
   var url = new URL(e.request.url);
+
+  // Chain logo images (dexscreener CDN) — CACHE-FIRST so they survive an idle
+  // tab. Otherwise the cold-network refetch is slow/fails and the <img> falls
+  // back to its alt text (the chain name) in the collapsed sidebar rail.
+  if (url.hostname.indexOf('dexscreener') !== -1 && url.pathname.indexOf('/chains/') !== -1) {
+    e.respondWith((async function() {
+      var hit = await caches.match(e.request);
+      if (hit) return hit;
+      try {
+        var resp = await fetch(e.request);
+        if (resp && (resp.ok || resp.type === 'opaque')) {
+          var copy = resp.clone();
+          caches.open(CACHE_NAME).then(function(c) { c.put(e.request, copy); });
+        }
+        return resp;
+      } catch (err) {
+        return hit || Response.error();
+      }
+    })());
+    return;
+  }
 
   // API calls — always network, no cache
   if (url.pathname.startsWith('/api/') ||
