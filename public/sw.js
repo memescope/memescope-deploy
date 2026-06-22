@@ -1,4 +1,4 @@
-var CACHE_NAME = 'memescope-v2.5.208';
+var CACHE_NAME = 'memescope-v2.5.209';
 // On localhost the service worker is disabled entirely so development always
 // sees fresh files (no stale-cache confusion). Production keeps full caching.
 var IS_DEV = /^localhost$|^127\.|^192\.168\.|^10\.|^172\.(1[6-9]|2[0-9]|3[01])\./.test(self.location.hostname);
@@ -25,7 +25,35 @@ var STATIC_ASSETS = [
   '/img/okx_logo.png',
   '/img/chain_solana.png',
   '/img/chain_eth.png',
-  '/img/chain_bsc.png'
+  '/img/chain_bsc.png',
+  // Sidebar chain-rail icons — precached at install so they paint instantly and
+  // never wait on a cold network after an idle tab (the recurring empty-circle bug).
+  '/img/chains/aptos.svg',
+  '/img/chains/arbitrum.svg',
+  '/img/chains/avalanche.svg',
+  '/img/chains/bsc.svg',
+  '/img/chains/cronos.svg',
+  '/img/chains/ethereum.svg',
+  '/img/chains/fantom.svg',
+  '/img/chains/hyperliquid.svg',
+  '/img/chains/linea.svg',
+  '/img/chains/mantle.svg',
+  '/img/chains/optimism.svg',
+  '/img/chains/polygon.svg',
+  '/img/chains/solana.svg',
+  '/img/chains/sui.svg',
+  '/img/chains/zksync.svg',
+  '/img/chains/berachain.webp',
+  '/img/chains/blast.webp',
+  '/img/chains/manta.webp',
+  '/img/chains/monad.webp',
+  '/img/chains/pulsechain.webp',
+  '/img/chains/scroll.webp',
+  '/img/chains/seiv2.webp',
+  '/img/chains/sonic.webp',
+  '/img/chains/starknet.webp',
+  '/img/chains/ton.webp',
+  '/img/chains/tron.webp'
 ];
 
 // Install — cache static assets (skipped in dev)
@@ -34,7 +62,11 @@ self.addEventListener('install', function(e) {
   if (IS_DEV) return;
   e.waitUntil(
     caches.open(CACHE_NAME).then(function(cache) {
-      return cache.addAll(STATIC_ASSETS);
+      // Resilient precache: add each individually so one missing/failing asset
+      // doesn't reject the whole batch (cache.addAll is all-or-nothing).
+      return Promise.all(STATIC_ASSETS.map(function(u) {
+        return cache.add(u).catch(function() {});
+      }));
     })
   );
 });
@@ -99,6 +131,27 @@ self.addEventListener('fetch', function(e) {
 
   // External resources (fonts, analytics) — let browser handle
   if (url.origin !== self.location.origin) {
+    return;
+  }
+
+  // Static images/icons (/img/) — CACHE-FIRST. They never change, so paint them
+  // instantly from cache. (Network-first made even local icons like the sidebar
+  // leaf wait on a cold network after an idle tab; cache-first removes that wait.)
+  if (url.origin === self.location.origin && url.pathname.indexOf('/img/') === 0) {
+    e.respondWith((async function() {
+      var hit = await caches.match(e.request);
+      if (hit) return hit;
+      try {
+        var resp = await fetch(e.request);
+        if (resp && resp.ok) {
+          var copy = resp.clone();
+          caches.open(CACHE_NAME).then(function(c) { c.put(e.request, copy); });
+        }
+        return resp;
+      } catch (err) {
+        return hit || Response.error();
+      }
+    })());
     return;
   }
 

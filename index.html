@@ -19,7 +19,7 @@
 window._earlyTokens = fetch('/api/tokens').then(function(r){return r.json()}).catch(function(){return null});
 </script>
 <meta charset="UTF-8">
-<meta name="version" content="2.5.208">
+<meta name="version" content="2.5.209">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -61,7 +61,7 @@ window._earlyTokens = fetch('/api/tokens').then(function(r){return r.json()}).ca
 <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
 <link rel="preload" href="/saira-stencil.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/styles.css?v=2.5.208">
+<link rel="stylesheet" href="/styles.css?v=2.5.209">
 </head>
 <body>
 <h1 style="position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0">Memescopes — Live Meme Coin Bubble Map &amp; Scanner for Solana, Ethereum, Base &amp; BSC</h1>
@@ -138,11 +138,11 @@ window._earlyTokens = fetch('/api/tokens').then(function(r){return r.json()}).ca
       <span class="ms-nav-text">All Chains</span>
     </a>
     <a class="ms-nav-link" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'solana');" title="Solana">
-      <img src="https://dd.dexscreener.com/ds-data/chains/solana.png" alt="" class="ms-nav-chain-icon">
+      <img src="/img/chains/solana.svg" alt="" class="ms-nav-chain-icon">
       <span class="ms-nav-text">Solana</span>
     </a>
     <a class="ms-nav-link" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'eth');" title="Ethereum">
-      <img src="https://dd.dexscreener.com/ds-data/chains/ethereum.png" alt="" class="ms-nav-chain-icon">
+      <img src="/img/chains/ethereum.svg" alt="" class="ms-nav-chain-icon">
       <span class="ms-nav-text">Ethereum</span>
     </a>
     <a class="ms-nav-link" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'base');" title="Base">
@@ -150,99 +150,99 @@ window._earlyTokens = fetch('/api/tokens').then(function(r){return r.json()}).ca
       <span class="ms-nav-text">Base</span>
     </a>
     <a class="ms-nav-link" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'sui');" title="Sui">
-      <img src="https://dd.dexscreener.com/ds-data/chains/sui.png" alt="" class="ms-nav-chain-icon">
+      <img src="/img/chains/sui.svg" alt="" class="ms-nav-chain-icon">
       <span class="ms-nav-text">Sui</span>
     </a>
     <a class="ms-nav-link" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'bsc');" title="BSC">
-      <img src="https://dd.dexscreener.com/ds-data/chains/bsc.png" alt="" class="ms-nav-chain-icon">
+      <img src="/img/chains/bsc.svg" alt="" class="ms-nav-chain-icon">
       <span class="ms-nav-text">BSC</span>
     </a>
     <a class="ms-nav-link" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'tron');" title="Tron">
-      <img src="https://dd.dexscreener.com/ds-data/chains/tron.png" alt="" class="ms-nav-chain-icon">
+      <img src="/img/chains/tron.webp" alt="" class="ms-nav-chain-icon">
       <span class="ms-nav-text">Tron</span>
     </a>
     <a class="ms-nav-link" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'arbitrum');" title="Arbitrum">
-      <img src="https://dd.dexscreener.com/ds-data/chains/arbitrum.png" alt="" class="ms-nav-chain-icon">
+      <img src="/img/chains/arbitrum.svg" alt="" class="ms-nav-chain-icon">
       <span class="ms-nav-text">Arbitrum</span>
     </a>
     <a class="ms-nav-link" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'avalanche');" title="Avalanche">
-      <img src="https://dd.dexscreener.com/ds-data/chains/avalanche.png" alt="" class="ms-nav-chain-icon">
+      <img src="/img/chains/avalanche.svg" alt="" class="ms-nav-chain-icon">
       <span class="ms-nav-text">Avalanche</span>
     </a>
     <a class="ms-nav-link" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'polygon');" title="Polygon">
-      <img src="https://dd.dexscreener.com/ds-data/chains/polygon.png" alt="" class="ms-nav-chain-icon">
+      <img src="/img/chains/polygon.svg" alt="" class="ms-nav-chain-icon">
       <span class="ms-nav-text">Polygon</span>
     </a>
     <a class="ms-nav-link" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'optimism');" title="Optimism">
-      <img src="https://dd.dexscreener.com/ds-data/chains/optimism.png" alt="" class="ms-nav-chain-icon">
+      <img src="/img/chains/optimism.svg" alt="" class="ms-nav-chain-icon">
       <span class="ms-nav-text">Optimism</span>
     </a>
     <a class="ms-nav-link" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'blast');" title="Blast">
-      <img src="https://dd.dexscreener.com/ds-data/chains/blast.png" alt="" class="ms-nav-chain-icon">
+      <img src="/img/chains/blast.webp" alt="" class="ms-nav-chain-icon">
       <span class="ms-nav-text">Blast</span>
     </a>
     <a class="ms-nav-link" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'ton');" title="TON">
-      <img src="https://dd.dexscreener.com/ds-data/chains/ton.png" alt="" class="ms-nav-chain-icon">
+      <img src="/img/chains/ton.webp" alt="" class="ms-nav-chain-icon">
       <span class="ms-nav-text">TON</span>
     </a>
     <a class="ms-nav-link" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'pulsechain');" title="Pulsechain">
-      <img src="https://dd.dexscreener.com/ds-data/chains/pulsechain.png" alt="" class="ms-nav-chain-icon">
+      <img src="/img/chains/pulsechain.webp" alt="" class="ms-nav-chain-icon">
       <span class="ms-nav-text">Pulsechain</span>
     </a>
     <a class="ms-nav-link" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'seiv2');" title="Sei">
-      <img src="https://dd.dexscreener.com/ds-data/chains/seiv2.png" alt="" class="ms-nav-chain-icon">
+      <img src="/img/chains/seiv2.webp" alt="" class="ms-nav-chain-icon">
       <span class="ms-nav-text">Sei</span>
     </a>
     <a class="ms-nav-link" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'sonic');" title="Sonic">
-      <img src="https://dd.dexscreener.com/ds-data/chains/sonic.png" alt="" class="ms-nav-chain-icon">
+      <img src="/img/chains/sonic.webp" alt="" class="ms-nav-chain-icon">
       <span class="ms-nav-text">Sonic</span>
     </a>
     <a class="ms-nav-link" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'hyperliquid');" title="Hyperliquid">
-      <img src="https://dd.dexscreener.com/ds-data/chains/hyperliquid.png" alt="" class="ms-nav-chain-icon">
+      <img src="/img/chains/hyperliquid.svg" alt="" class="ms-nav-chain-icon">
       <span class="ms-nav-text">Hyperliquid</span>
     </a>
     <a class="ms-nav-link" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'berachain');" title="Berachain">
-      <img src="https://dd.dexscreener.com/ds-data/chains/berachain.png" alt="" class="ms-nav-chain-icon">
+      <img src="/img/chains/berachain.webp" alt="" class="ms-nav-chain-icon">
       <span class="ms-nav-text">Berachain</span>
     </a>
     <a class="ms-nav-link" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'monad');" title="Monad">
-      <img src="https://dd.dexscreener.com/ds-data/chains/monad.png" alt="" class="ms-nav-chain-icon">
+      <img src="/img/chains/monad.webp" alt="" class="ms-nav-chain-icon">
       <span class="ms-nav-text">Monad</span>
     </a>
     <a class="ms-nav-link" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'cronos');" title="Cronos">
-      <img src="https://dd.dexscreener.com/ds-data/chains/cronos.png" alt="" class="ms-nav-chain-icon">
+      <img src="/img/chains/cronos.svg" alt="" class="ms-nav-chain-icon">
       <span class="ms-nav-text">Cronos</span>
     </a>
     <a class="ms-nav-link" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'aptos');" title="Aptos">
-      <img src="https://dd.dexscreener.com/ds-data/chains/aptos.png" alt="" class="ms-nav-chain-icon">
+      <img src="/img/chains/aptos.svg" alt="" class="ms-nav-chain-icon">
       <span class="ms-nav-text">Aptos</span>
     </a>
     <a class="ms-nav-link" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'linea');" title="Linea">
-      <img src="https://dd.dexscreener.com/ds-data/chains/linea.png" alt="" class="ms-nav-chain-icon">
+      <img src="/img/chains/linea.svg" alt="" class="ms-nav-chain-icon">
       <span class="ms-nav-text">Linea</span>
     </a>
     <a class="ms-nav-link" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'zksync');" title="zkSync">
-      <img src="https://dd.dexscreener.com/ds-data/chains/zksync.png" alt="" class="ms-nav-chain-icon">
+      <img src="/img/chains/zksync.svg" alt="" class="ms-nav-chain-icon">
       <span class="ms-nav-text">zkSync</span>
     </a>
     <a class="ms-nav-link" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'fantom');" title="Fantom">
-      <img src="https://dd.dexscreener.com/ds-data/chains/fantom.png" alt="" class="ms-nav-chain-icon">
+      <img src="/img/chains/fantom.svg" alt="" class="ms-nav-chain-icon">
       <span class="ms-nav-text">Fantom</span>
     </a>
     <a class="ms-nav-link" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'mantle');" title="Mantle">
-      <img src="https://dd.dexscreener.com/ds-data/chains/mantle.png" alt="" class="ms-nav-chain-icon">
+      <img src="/img/chains/mantle.svg" alt="" class="ms-nav-chain-icon">
       <span class="ms-nav-text">Mantle</span>
     </a>
     <a class="ms-nav-link" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'scroll');" title="Scroll">
-      <img src="https://dd.dexscreener.com/ds-data/chains/scroll.png" alt="" class="ms-nav-chain-icon">
+      <img src="/img/chains/scroll.webp" alt="" class="ms-nav-chain-icon">
       <span class="ms-nav-text">Scroll</span>
     </a>
     <a class="ms-nav-link" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'manta');" title="Manta">
-      <img src="https://dd.dexscreener.com/ds-data/chains/manta.png" alt="" class="ms-nav-chain-icon">
+      <img src="/img/chains/manta.webp" alt="" class="ms-nav-chain-icon">
       <span class="ms-nav-text">Manta</span>
     </a>
     <a class="ms-nav-link" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'starknet');" title="Starknet">
-      <img src="https://dd.dexscreener.com/ds-data/chains/starknet.png" alt="" class="ms-nav-chain-icon">
+      <img src="/img/chains/starknet.webp" alt="" class="ms-nav-chain-icon">
       <span class="ms-nav-text">Starknet</span>
     </a>
     </div>
@@ -393,11 +393,11 @@ window._earlyTokens = fetch('/api/tokens').then(function(r){return r.json()}).ca
       <span>New Pairs</span>
     </a>
     <a class="ms-mobile-item" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'solana'); closeMsMenu();">
-      <img src="https://dd.dexscreener.com/ds-data/chains/solana.png" alt="" class="ms-mobile-chain-icon">
+      <img src="/img/chains/solana.svg" alt="" class="ms-mobile-chain-icon">
       <span>Solana</span>
     </a>
     <a class="ms-mobile-item" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'eth'); closeMsMenu();">
-      <img src="https://dd.dexscreener.com/ds-data/chains/ethereum.png" alt="" class="ms-mobile-chain-icon">
+      <img src="/img/chains/ethereum.svg" alt="" class="ms-mobile-chain-icon">
       <span>Ethereum</span>
     </a>
     <a class="ms-mobile-item" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'base'); closeMsMenu();">
@@ -405,99 +405,99 @@ window._earlyTokens = fetch('/api/tokens').then(function(r){return r.json()}).ca
       <span>Base</span>
     </a>
     <a class="ms-mobile-item" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'sui'); closeMsMenu();">
-      <img src="https://dd.dexscreener.com/ds-data/chains/sui.png" alt="" class="ms-mobile-chain-icon">
+      <img src="/img/chains/sui.svg" alt="" class="ms-mobile-chain-icon">
       <span>Sui</span>
     </a>
     <a class="ms-mobile-item" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'bsc'); closeMsMenu();">
-      <img src="https://dd.dexscreener.com/ds-data/chains/bsc.png" alt="" class="ms-mobile-chain-icon">
+      <img src="/img/chains/bsc.svg" alt="" class="ms-mobile-chain-icon">
       <span>BSC</span>
     </a>
     <a class="ms-mobile-item" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'tron'); closeMsMenu();">
-      <img src="https://dd.dexscreener.com/ds-data/chains/tron.png" alt="" class="ms-mobile-chain-icon">
+      <img src="/img/chains/tron.webp" alt="" class="ms-mobile-chain-icon">
       <span>Tron</span>
     </a>
     <a class="ms-mobile-item" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'arbitrum'); closeMsMenu();">
-      <img src="https://dd.dexscreener.com/ds-data/chains/arbitrum.png" alt="" class="ms-mobile-chain-icon">
+      <img src="/img/chains/arbitrum.svg" alt="" class="ms-mobile-chain-icon">
       <span>Arbitrum</span>
     </a>
     <a class="ms-mobile-item" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'avalanche'); closeMsMenu();">
-      <img src="https://dd.dexscreener.com/ds-data/chains/avalanche.png" alt="" class="ms-mobile-chain-icon">
+      <img src="/img/chains/avalanche.svg" alt="" class="ms-mobile-chain-icon">
       <span>Avalanche</span>
     </a>
     <a class="ms-mobile-item" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'polygon'); closeMsMenu();">
-      <img src="https://dd.dexscreener.com/ds-data/chains/polygon.png" alt="" class="ms-mobile-chain-icon">
+      <img src="/img/chains/polygon.svg" alt="" class="ms-mobile-chain-icon">
       <span>Polygon</span>
     </a>
     <a class="ms-mobile-item" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'optimism'); closeMsMenu();">
-      <img src="https://dd.dexscreener.com/ds-data/chains/optimism.png" alt="" class="ms-mobile-chain-icon">
+      <img src="/img/chains/optimism.svg" alt="" class="ms-mobile-chain-icon">
       <span>Optimism</span>
     </a>
     <a class="ms-mobile-item" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'blast'); closeMsMenu();">
-      <img src="https://dd.dexscreener.com/ds-data/chains/blast.png" alt="" class="ms-mobile-chain-icon">
+      <img src="/img/chains/blast.webp" alt="" class="ms-mobile-chain-icon">
       <span>Blast</span>
     </a>
     <a class="ms-mobile-item" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'ton'); closeMsMenu();">
-      <img src="https://dd.dexscreener.com/ds-data/chains/ton.png" alt="" class="ms-mobile-chain-icon">
+      <img src="/img/chains/ton.webp" alt="" class="ms-mobile-chain-icon">
       <span>TON</span>
     </a>
     <a class="ms-mobile-item" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'pulsechain'); closeMsMenu();">
-      <img src="https://dd.dexscreener.com/ds-data/chains/pulsechain.png" alt="" class="ms-mobile-chain-icon">
+      <img src="/img/chains/pulsechain.webp" alt="" class="ms-mobile-chain-icon">
       <span>Pulsechain</span>
     </a>
     <a class="ms-mobile-item" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'seiv2'); closeMsMenu();">
-      <img src="https://dd.dexscreener.com/ds-data/chains/seiv2.png" alt="" class="ms-mobile-chain-icon">
+      <img src="/img/chains/seiv2.webp" alt="" class="ms-mobile-chain-icon">
       <span>Sei</span>
     </a>
     <a class="ms-mobile-item" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'sonic'); closeMsMenu();">
-      <img src="https://dd.dexscreener.com/ds-data/chains/sonic.png" alt="" class="ms-mobile-chain-icon">
+      <img src="/img/chains/sonic.webp" alt="" class="ms-mobile-chain-icon">
       <span>Sonic</span>
     </a>
     <a class="ms-mobile-item" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'hyperliquid'); closeMsMenu();">
-      <img src="https://dd.dexscreener.com/ds-data/chains/hyperliquid.png" alt="" class="ms-mobile-chain-icon">
+      <img src="/img/chains/hyperliquid.svg" alt="" class="ms-mobile-chain-icon">
       <span>Hyperliquid</span>
     </a>
     <a class="ms-mobile-item" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'berachain'); closeMsMenu();">
-      <img src="https://dd.dexscreener.com/ds-data/chains/berachain.png" alt="" class="ms-mobile-chain-icon">
+      <img src="/img/chains/berachain.webp" alt="" class="ms-mobile-chain-icon">
       <span>Berachain</span>
     </a>
     <a class="ms-mobile-item" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'monad'); closeMsMenu();">
-      <img src="https://dd.dexscreener.com/ds-data/chains/monad.png" alt="" class="ms-mobile-chain-icon">
+      <img src="/img/chains/monad.webp" alt="" class="ms-mobile-chain-icon">
       <span>Monad</span>
     </a>
     <a class="ms-mobile-item" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'cronos'); closeMsMenu();">
-      <img src="https://dd.dexscreener.com/ds-data/chains/cronos.png" alt="" class="ms-mobile-chain-icon">
+      <img src="/img/chains/cronos.svg" alt="" class="ms-mobile-chain-icon">
       <span>Cronos</span>
     </a>
     <a class="ms-mobile-item" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'aptos'); closeMsMenu();">
-      <img src="https://dd.dexscreener.com/ds-data/chains/aptos.png" alt="" class="ms-mobile-chain-icon">
+      <img src="/img/chains/aptos.svg" alt="" class="ms-mobile-chain-icon">
       <span>Aptos</span>
     </a>
     <a class="ms-mobile-item" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'linea'); closeMsMenu();">
-      <img src="https://dd.dexscreener.com/ds-data/chains/linea.png" alt="" class="ms-mobile-chain-icon">
+      <img src="/img/chains/linea.svg" alt="" class="ms-mobile-chain-icon">
       <span>Linea</span>
     </a>
     <a class="ms-mobile-item" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'zksync'); closeMsMenu();">
-      <img src="https://dd.dexscreener.com/ds-data/chains/zksync.png" alt="" class="ms-mobile-chain-icon">
+      <img src="/img/chains/zksync.svg" alt="" class="ms-mobile-chain-icon">
       <span>zkSync</span>
     </a>
     <a class="ms-mobile-item" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'fantom'); closeMsMenu();">
-      <img src="https://dd.dexscreener.com/ds-data/chains/fantom.png" alt="" class="ms-mobile-chain-icon">
+      <img src="/img/chains/fantom.svg" alt="" class="ms-mobile-chain-icon">
       <span>Fantom</span>
     </a>
     <a class="ms-mobile-item" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'mantle'); closeMsMenu();">
-      <img src="https://dd.dexscreener.com/ds-data/chains/mantle.png" alt="" class="ms-mobile-chain-icon">
+      <img src="/img/chains/mantle.svg" alt="" class="ms-mobile-chain-icon">
       <span>Mantle</span>
     </a>
     <a class="ms-mobile-item" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'scroll'); closeMsMenu();">
-      <img src="https://dd.dexscreener.com/ds-data/chains/scroll.png" alt="" class="ms-mobile-chain-icon">
+      <img src="/img/chains/scroll.webp" alt="" class="ms-mobile-chain-icon">
       <span>Scroll</span>
     </a>
     <a class="ms-mobile-item" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'manta'); closeMsMenu();">
-      <img src="https://dd.dexscreener.com/ds-data/chains/manta.png" alt="" class="ms-mobile-chain-icon">
+      <img src="/img/chains/manta.webp" alt="" class="ms-mobile-chain-icon">
       <span>Manta</span>
     </a>
     <a class="ms-mobile-item" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'starknet'); closeMsMenu();">
-      <img src="https://dd.dexscreener.com/ds-data/chains/starknet.png" alt="" class="ms-mobile-chain-icon">
+      <img src="/img/chains/starknet.webp" alt="" class="ms-mobile-chain-icon">
       <span>Starknet</span>
     </a>
     <div class="ms-mobile-divider"></div>
@@ -549,7 +549,7 @@ window._earlyTokens = fetch('/api/tokens').then(function(r){return r.json()}).ca
       <div class="top-header-search" id="headerSearchBar" onclick="openSearchModal()">
         <svg width="22" height="22" viewBox="0 0 32 32" fill="currentColor" class="search-mag-icon" style="opacity:1"><path d="M16.906 20.188l5.5 5.5-2.25 2.281-5.75-5.781c-1.406 0.781-3.031 1.219-4.719 1.219-5.344 0-9.688-4.344-9.688-9.688s4.344-9.688 9.688-9.688 9.719 4.344 9.719 9.688c0 2.5-0.969 4.781-2.5 6.469zM3.219 13.719c0 3.594 2.875 6.469 6.469 6.469s6.469-2.875 6.469-6.469-2.875-6.469-6.469-6.469-6.469 2.875-6.469 6.469z"/></svg>
         <input type="text" id="headerSearchInput" placeholder="Search by token name, symbol or address" />
-        <kbd>/</kbd>
+        <span class="search-ai-pill" title="AI Search"><svg viewBox="0 0 28 28" fill="currentColor"><defs><linearGradient id="saiGrad" x1="0" y1="0.5" x2="1" y2="0.5"><stop offset="0" stop-color="#4a4fd8"/><stop offset=".5" stop-color="#8b5cf6"/><stop offset="1" stop-color="#d946ef"/></linearGradient></defs><path class="sai-glass" d="M11.5 3a8.5 8.5 0 0 1 2.738.45l-.149.05a1.57 1.57 0 0 0-.79.59a1.58 1.58 0 0 0-.29 1.086a6.5 6.5 0 1 0 4.933 5.449q.06.056.127.104a1.64 1.64 0 0 0 1.86 0l.034-.028q.037.395.037.799a8.46 8.46 0 0 1-1.824 5.262l6.531 6.53a1 1 0 0 1-1.414 1.415l-6.531-6.531A8.5 8.5 0 1 1 11.5 3"/><path class="sai-spark" d="M17.171 6.829a3.16 3.16 0 0 1 .761 1.238l.498 1.53a.605.605 0 0 0 1.14 0l.498-1.53a3.15 3.15 0 0 1 1.998-1.996l1.53-.497a.605.605 0 0 0 0-1.14l-.03-.008l-1.531-.497a3.15 3.15 0 0 1-1.998-1.996L19.54.403a.604.604 0 0 0-1.14 0l-.498 1.53l-.013.038a3.15 3.15 0 0 1-1.955 1.958l-1.53.497a.605.605 0 0 0 0 1.14l1.53.497c.467.156.89.418 1.237.766m8.65 3.529l.918.298l.019.004a.362.362 0 0 1 0 .684l-.919.299a1.9 1.9 0 0 0-1.198 1.197l-.299.918a.363.363 0 0 1-.684 0l-.299-.918a1.89 1.89 0 0 0-1.198-1.202l-.919-.298a.362.362 0 0 1 0-.684l.919-.299a1.9 1.9 0 0 0 1.18-1.197l.299-.918a.363.363 0 0 1 .684 0l.298.918a1.89 1.89 0 0 0 1.199 1.197"/></svg><span class="search-ai-label">AI Search</span></span>
       </div>
       <div class="top-header-right-group">
         <button class="ms-header-ens-btn" onclick="openEnsModal()" title="Claim your .memescope.eth name">
@@ -604,11 +604,11 @@ window._earlyTokens = fetch('/api/tokens').then(function(r){return r.json()}).ca
           <button class="topbar-btn" onclick="toggleChainFilter()"><svg width="14" height="14" viewBox="0 0 100 100" fill="currentColor" style="vertical-align:-2px;margin-right:4px"><path d="M34.971 61.094l-11.303 11.303c-1.087 1.087-2.85 1.087-3.937 0l-4.497-4.497c-1.087-1.087-1.087-2.85 0-3.937l24.364-24.364c1.087-1.087 2.85-1.087 3.937 0l14.709 14.71c3.874-5.72 3.283-13.583-1.779-18.646l-4.497-4.497c-5.735-5.735-15.067-5.735-20.803 0L6.802 55.53c-5.735 5.735-5.735 15.067 0 20.803l4.497 4.497c5.735 5.735 15.067 5.735 20.803 0l10.027-10.027-2.53-2.53c-2.09-2.09-3.638-4.546-4.627-7.18z"/><path d="M93.198 23.668l-4.497-4.497c-5.735-5.735-15.067-5.735-20.803 0L57.872 29.197l2.53 2.53c2.09 2.09 3.637 4.547 4.627 7.18l11.303-11.303c1.087-1.087 2.85-1.087 3.937 0l4.497 4.497c1.087 1.087 1.087 2.85 0 3.937L60.402 60.401c-1.087 1.087-2.85 1.087-3.937 0l-14.709-14.71c-3.874 5.72-3.284 13.583 1.779 18.646l4.497 4.497c5.735 5.735 15.068 5.735 20.803 0l24.364-24.364c5.735-5.735 5.735-15.067 0-20.803z"/></svg>Hot Chains ▾</button>
           <div class="filter-dropdown-menu" id="chain-dropdown-menu">
             <button class="dropdown-item active" onclick="toggleChain(this,'all')">All Chains</button>
-            <button class="dropdown-item" onclick="toggleChain(this,'solana')"><img src="https://dd.dexscreener.com/ds-data/chains/solana.png" width="16" height="16" style="border-radius:50%"> Solana</button>
-            <button class="dropdown-item" onclick="toggleChain(this,'eth')"><img src="https://dd.dexscreener.com/ds-data/chains/ethereum.png" width="16" height="16" style="border-radius:50%"> Ethereum</button>
+            <button class="dropdown-item" onclick="toggleChain(this,'solana')"><img src="/img/chains/solana.svg" width="16" height="16" style="border-radius:50%"> Solana</button>
+            <button class="dropdown-item" onclick="toggleChain(this,'eth')"><img src="/img/chains/ethereum.svg" width="16" height="16" style="border-radius:50%"> Ethereum</button>
             <button class="dropdown-item" onclick="toggleChain(this,'base')"><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='264' height='264' viewBox='0 0 264 264' fill='none'%3E%3Cpath d='M131.706 263.876C204.705 263.876 263.876 204.81 263.876 131.938C263.876 59.066 204.705 0 131.706 0C62.4541 0 5.64694 53.1764 0 120.845H174.697V143.032H0C5.64694 210.7 62.4541 263.876 131.706 263.876Z' fill='%230052FF'/%3E%3C/svg%3E" width="16" height="16" style="border-radius:50%"> Base</button>
-            <button class="dropdown-item" onclick="toggleChain(this,'bsc')"><img src="https://dd.dexscreener.com/ds-data/chains/bsc.png" width="16" height="16" style="border-radius:50%"> BSC</button>
-            <button class="dropdown-item" onclick="toggleChain(this,'sui')"><img src="https://dd.dexscreener.com/ds-data/chains/sui.png" width="16" height="16" style="border-radius:50%"> Sui</button>
+            <button class="dropdown-item" onclick="toggleChain(this,'bsc')"><img src="/img/chains/bsc.svg" width="16" height="16" style="border-radius:50%"> BSC</button>
+            <button class="dropdown-item" onclick="toggleChain(this,'sui')"><img src="/img/chains/sui.svg" width="16" height="16" style="border-radius:50%"> Sui</button>
           </div>
         </div>
 
@@ -695,7 +695,7 @@ window._earlyTokens = fetch('/api/tokens').then(function(r){return r.json()}).ca
     </div>
 
   <div style="text-align:center;padding:24px 16px 32px;border-top:1px solid rgba(255,255,255,0.04);margin-top:28px">
-    <div style="font-size:11px;color:rgba(255,255,255,0.25);font-family:'Inter',sans-serif;margin-bottom:6px">memescope.eth &middot; <span data-version>v2.5.208</span></div>
+    <div style="font-size:11px;color:rgba(255,255,255,0.25);font-family:'Inter',sans-serif;margin-bottom:6px">memescope.eth &middot; <span data-version>v2.5.209</span></div>
     <div style="font-size:11px;color:rgba(255,255,255,0.2);font-family:'Inter',sans-serif">&copy; 2026 Memescopes. All rights reserved.</div>
   </div>
 
@@ -1035,11 +1035,11 @@ window._earlyTokens = fetch('/api/tokens').then(function(r){return r.json()}).ca
         <div class="bf-section-title">Chain</div>
         <div class="bf-chip-group">
           <button class="bf-chip bf-chain active" onclick="toggleBFChip(this,'chain','all')" data-value="all">All</button>
-          <button class="bf-chip bf-chain" onclick="toggleBFChip(this,'chain','solana')" data-value="solana"><img src="https://dd.dexscreener.com/ds-data/chains/solana.png" width="14" height="14" style="border-radius:50%;vertical-align:-2px;margin-right:4px">Solana</button>
-          <button class="bf-chip bf-chain" onclick="toggleBFChip(this,'chain','eth')" data-value="eth"><img src="https://dd.dexscreener.com/ds-data/chains/ethereum.png" width="14" height="14" style="border-radius:50%;vertical-align:-2px;margin-right:4px">Ethereum</button>
+          <button class="bf-chip bf-chain" onclick="toggleBFChip(this,'chain','solana')" data-value="solana"><img src="/img/chains/solana.svg" width="14" height="14" style="border-radius:50%;vertical-align:-2px;margin-right:4px">Solana</button>
+          <button class="bf-chip bf-chain" onclick="toggleBFChip(this,'chain','eth')" data-value="eth"><img src="/img/chains/ethereum.svg" width="14" height="14" style="border-radius:50%;vertical-align:-2px;margin-right:4px">Ethereum</button>
           <button class="bf-chip bf-chain" onclick="toggleBFChip(this,'chain','base')" data-value="base"><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='264' height='264' viewBox='0 0 264 264' fill='none'%3E%3Cpath d='M131.706 263.876C204.705 263.876 263.876 204.81 263.876 131.938C263.876 59.066 204.705 0 131.706 0C62.4541 0 5.64694 53.1764 0 120.845H174.697V143.032H0C5.64694 210.7 62.4541 263.876 131.706 263.876Z' fill='%230052FF'/%3E%3C/svg%3E" width="14" height="14" style="border-radius:50%;vertical-align:-2px;margin-right:4px">Base</button>
-          <button class="bf-chip bf-chain" onclick="toggleBFChip(this,'chain','bsc')" data-value="bsc"><img src="https://dd.dexscreener.com/ds-data/chains/bsc.png" width="14" height="14" style="border-radius:50%;vertical-align:-2px;margin-right:4px">BSC</button>
-          <button class="bf-chip bf-chain" onclick="toggleBFChip(this,'chain','sui')" data-value="sui"><img src="https://dd.dexscreener.com/ds-data/chains/sui.png" width="14" height="14" style="border-radius:50%;vertical-align:-2px;margin-right:4px">Sui</button>
+          <button class="bf-chip bf-chain" onclick="toggleBFChip(this,'chain','bsc')" data-value="bsc"><img src="/img/chains/bsc.svg" width="14" height="14" style="border-radius:50%;vertical-align:-2px;margin-right:4px">BSC</button>
+          <button class="bf-chip bf-chain" onclick="toggleBFChip(this,'chain','sui')" data-value="sui"><img src="/img/chains/sui.svg" width="14" height="14" style="border-radius:50%;vertical-align:-2px;margin-right:4px">Sui</button>
         </div>
       </div>
 
@@ -1454,13 +1454,13 @@ window._earlyTokens = fetch('/api/tokens').then(function(r){return r.json()}).ca
 
 
 <script>if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js')})}</script>
-<script src="/embed.js?v=2.5.208" defer></script>
-<script src="/app.js?v=2.5.208" defer></script>
-<script src="/wallet.js?v=2.5.208" defer></script>
-<script src="/boost.js?v=2.5.208" defer></script>
-<script src="/extras.js?v=2.5.208" defer></script>
-<script src="/multichart.js?v=2.5.208" defer></script>
-<script src="/ens.js?v=2.5.208" defer></script>
+<script src="/embed.js?v=2.5.209" defer></script>
+<script src="/app.js?v=2.5.209" defer></script>
+<script src="/wallet.js?v=2.5.209" defer></script>
+<script src="/boost.js?v=2.5.209" defer></script>
+<script src="/extras.js?v=2.5.209" defer></script>
+<script src="/multichart.js?v=2.5.209" defer></script>
+<script src="/ens.js?v=2.5.209" defer></script>
 <div class="wl-share-menu" id="wlShareMenu">
   <a class="wl-share-option" onclick="shareWatchlist('x')"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg> X (Twitter)</a>
   <a class="wl-share-option" onclick="shareWatchlist('telegram')"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.161c-.18 1.897-.962 6.502-1.359 8.627-.168.9-.5 1.201-.82 1.23-.697.064-1.226-.461-1.901-.903-1.056-.692-1.653-1.123-2.678-1.799-1.185-.781-.417-1.21.258-1.911.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.139-5.062 3.345-.479.329-.913.489-1.302.481-.428-.009-1.252-.242-1.865-.441-.751-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.831-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635.099-.002.321.023.465.141.12.098.153.229.168.327.016.098.036.322.02.496z"/></svg> Telegram</a>
@@ -1605,33 +1605,33 @@ window._earlyTokens = fetch('/api/tokens').then(function(r){return r.json()}).ca
       <div class="mob-menu-chains-section">
       <span class="mob-menu-section-title">Chains</span>
       <div class="mob-menu-chains-grid">
-        <a class="mob-menu-chain" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'solana'); closeMobMenu();"><span class="mob-menu-chain-icon"><img src="https://dd.dexscreener.com/ds-data/chains/solana.png" alt=""></span><span class="mob-menu-circle-label">Solana</span></a>
-        <a class="mob-menu-chain" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'eth'); closeMobMenu();"><span class="mob-menu-chain-icon"><img src="https://dd.dexscreener.com/ds-data/chains/ethereum.png" alt=""></span><span class="mob-menu-circle-label">Ethereum</span></a>
+        <a class="mob-menu-chain" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'solana'); closeMobMenu();"><span class="mob-menu-chain-icon"><img src="/img/chains/solana.svg" alt=""></span><span class="mob-menu-circle-label">Solana</span></a>
+        <a class="mob-menu-chain" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'eth'); closeMobMenu();"><span class="mob-menu-chain-icon"><img src="/img/chains/ethereum.svg" alt=""></span><span class="mob-menu-circle-label">Ethereum</span></a>
         <a class="mob-menu-chain" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'base'); closeMobMenu();"><span class="mob-menu-chain-icon"><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='264' height='264' viewBox='0 0 264 264' fill='none'%3E%3Cpath d='M131.706 263.876C204.705 263.876 263.876 204.81 263.876 131.938C263.876 59.066 204.705 0 131.706 0C62.4541 0 5.64694 53.1764 0 120.845H174.697V143.032H0C5.64694 210.7 62.4541 263.876 131.706 263.876Z' fill='%230052FF'/%3E%3C/svg%3E" alt=""></span><span class="mob-menu-circle-label">Base</span></a>
-        <a class="mob-menu-chain" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'sui'); closeMobMenu();"><span class="mob-menu-chain-icon"><img src="https://dd.dexscreener.com/ds-data/chains/sui.png" alt=""></span><span class="mob-menu-circle-label">Sui</span></a>
-        <a class="mob-menu-chain" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'bsc'); closeMobMenu();"><span class="mob-menu-chain-icon"><img src="https://dd.dexscreener.com/ds-data/chains/bsc.png" alt=""></span><span class="mob-menu-circle-label">BSC</span></a>
-        <a class="mob-menu-chain" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'tron'); closeMobMenu();"><span class="mob-menu-chain-icon"><img src="https://dd.dexscreener.com/ds-data/chains/tron.png" alt=""></span><span class="mob-menu-circle-label">Tron</span></a>
-        <a class="mob-menu-chain" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'arbitrum'); closeMobMenu();"><span class="mob-menu-chain-icon"><img src="https://dd.dexscreener.com/ds-data/chains/arbitrum.png" alt=""></span><span class="mob-menu-circle-label">Arbitrum</span></a>
-        <a class="mob-menu-chain" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'avalanche'); closeMobMenu();"><span class="mob-menu-chain-icon"><img src="https://dd.dexscreener.com/ds-data/chains/avalanche.png" alt=""></span><span class="mob-menu-circle-label">Avalanche</span></a>
-        <a class="mob-menu-chain" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'polygon'); closeMobMenu();"><span class="mob-menu-chain-icon"><img src="https://dd.dexscreener.com/ds-data/chains/polygon.png" alt=""></span><span class="mob-menu-circle-label">Polygon</span></a>
-        <a class="mob-menu-chain" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'optimism'); closeMobMenu();"><span class="mob-menu-chain-icon"><img src="https://dd.dexscreener.com/ds-data/chains/optimism.png" alt=""></span><span class="mob-menu-circle-label">Optimism</span></a>
-        <a class="mob-menu-chain" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'blast'); closeMobMenu();"><span class="mob-menu-chain-icon"><img src="https://dd.dexscreener.com/ds-data/chains/blast.png" alt=""></span><span class="mob-menu-circle-label">Blast</span></a>
-        <a class="mob-menu-chain" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'ton'); closeMobMenu();"><span class="mob-menu-chain-icon"><img src="https://dd.dexscreener.com/ds-data/chains/ton.png" alt=""></span><span class="mob-menu-circle-label">TON</span></a>
-        <a class="mob-menu-chain" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'pulsechain'); closeMobMenu();"><span class="mob-menu-chain-icon"><img src="https://dd.dexscreener.com/ds-data/chains/pulsechain.png" alt=""></span><span class="mob-menu-circle-label">Pulsechain</span></a>
-        <a class="mob-menu-chain" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'seiv2'); closeMobMenu();"><span class="mob-menu-chain-icon"><img src="https://dd.dexscreener.com/ds-data/chains/seiv2.png" alt=""></span><span class="mob-menu-circle-label">Sei</span></a>
-        <a class="mob-menu-chain" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'sonic'); closeMobMenu();"><span class="mob-menu-chain-icon"><img src="https://dd.dexscreener.com/ds-data/chains/sonic.png" alt=""></span><span class="mob-menu-circle-label">Sonic</span></a>
-        <a class="mob-menu-chain" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'hyperliquid'); closeMobMenu();"><span class="mob-menu-chain-icon"><img src="https://dd.dexscreener.com/ds-data/chains/hyperliquid.png" alt=""></span><span class="mob-menu-circle-label">Hyperliquid</span></a>
-        <a class="mob-menu-chain" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'berachain'); closeMobMenu();"><span class="mob-menu-chain-icon"><img src="https://dd.dexscreener.com/ds-data/chains/berachain.png" alt=""></span><span class="mob-menu-circle-label">Berachain</span></a>
-        <a class="mob-menu-chain" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'monad'); closeMobMenu();"><span class="mob-menu-chain-icon"><img src="https://dd.dexscreener.com/ds-data/chains/monad.png" alt=""></span><span class="mob-menu-circle-label">Monad</span></a>
-        <a class="mob-menu-chain" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'cronos'); closeMobMenu();"><span class="mob-menu-chain-icon"><img src="https://dd.dexscreener.com/ds-data/chains/cronos.png" alt=""></span><span class="mob-menu-circle-label">Cronos</span></a>
-        <a class="mob-menu-chain" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'aptos'); closeMobMenu();"><span class="mob-menu-chain-icon"><img src="https://dd.dexscreener.com/ds-data/chains/aptos.png" alt=""></span><span class="mob-menu-circle-label">Aptos</span></a>
-        <a class="mob-menu-chain" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'linea'); closeMobMenu();"><span class="mob-menu-chain-icon"><img src="https://dd.dexscreener.com/ds-data/chains/linea.png" alt=""></span><span class="mob-menu-circle-label">Linea</span></a>
-        <a class="mob-menu-chain" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'zksync'); closeMobMenu();"><span class="mob-menu-chain-icon"><img src="https://dd.dexscreener.com/ds-data/chains/zksync.png" alt=""></span><span class="mob-menu-circle-label">zkSync</span></a>
-        <a class="mob-menu-chain" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'fantom'); closeMobMenu();"><span class="mob-menu-chain-icon"><img src="https://dd.dexscreener.com/ds-data/chains/fantom.png" alt=""></span><span class="mob-menu-circle-label">Fantom</span></a>
-        <a class="mob-menu-chain" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'mantle'); closeMobMenu();"><span class="mob-menu-chain-icon"><img src="https://dd.dexscreener.com/ds-data/chains/mantle.png" alt=""></span><span class="mob-menu-circle-label">Mantle</span></a>
-        <a class="mob-menu-chain" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'scroll'); closeMobMenu();"><span class="mob-menu-chain-icon"><img src="https://dd.dexscreener.com/ds-data/chains/scroll.png" alt=""></span><span class="mob-menu-circle-label">Scroll</span></a>
-        <a class="mob-menu-chain" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'manta'); closeMobMenu();"><span class="mob-menu-chain-icon"><img src="https://dd.dexscreener.com/ds-data/chains/manta.png" alt=""></span><span class="mob-menu-circle-label">Manta</span></a>
-        <a class="mob-menu-chain" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'starknet'); closeMobMenu();"><span class="mob-menu-chain-icon"><img src="https://dd.dexscreener.com/ds-data/chains/starknet.png" alt=""></span><span class="mob-menu-circle-label">Starknet</span></a>
+        <a class="mob-menu-chain" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'sui'); closeMobMenu();"><span class="mob-menu-chain-icon"><img src="/img/chains/sui.svg" alt=""></span><span class="mob-menu-circle-label">Sui</span></a>
+        <a class="mob-menu-chain" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'bsc'); closeMobMenu();"><span class="mob-menu-chain-icon"><img src="/img/chains/bsc.svg" alt=""></span><span class="mob-menu-circle-label">BSC</span></a>
+        <a class="mob-menu-chain" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'tron'); closeMobMenu();"><span class="mob-menu-chain-icon"><img src="/img/chains/tron.webp" alt=""></span><span class="mob-menu-circle-label">Tron</span></a>
+        <a class="mob-menu-chain" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'arbitrum'); closeMobMenu();"><span class="mob-menu-chain-icon"><img src="/img/chains/arbitrum.svg" alt=""></span><span class="mob-menu-circle-label">Arbitrum</span></a>
+        <a class="mob-menu-chain" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'avalanche'); closeMobMenu();"><span class="mob-menu-chain-icon"><img src="/img/chains/avalanche.svg" alt=""></span><span class="mob-menu-circle-label">Avalanche</span></a>
+        <a class="mob-menu-chain" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'polygon'); closeMobMenu();"><span class="mob-menu-chain-icon"><img src="/img/chains/polygon.svg" alt=""></span><span class="mob-menu-circle-label">Polygon</span></a>
+        <a class="mob-menu-chain" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'optimism'); closeMobMenu();"><span class="mob-menu-chain-icon"><img src="/img/chains/optimism.svg" alt=""></span><span class="mob-menu-circle-label">Optimism</span></a>
+        <a class="mob-menu-chain" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'blast'); closeMobMenu();"><span class="mob-menu-chain-icon"><img src="/img/chains/blast.webp" alt=""></span><span class="mob-menu-circle-label">Blast</span></a>
+        <a class="mob-menu-chain" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'ton'); closeMobMenu();"><span class="mob-menu-chain-icon"><img src="/img/chains/ton.webp" alt=""></span><span class="mob-menu-circle-label">TON</span></a>
+        <a class="mob-menu-chain" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'pulsechain'); closeMobMenu();"><span class="mob-menu-chain-icon"><img src="/img/chains/pulsechain.webp" alt=""></span><span class="mob-menu-circle-label">Pulsechain</span></a>
+        <a class="mob-menu-chain" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'seiv2'); closeMobMenu();"><span class="mob-menu-chain-icon"><img src="/img/chains/seiv2.webp" alt=""></span><span class="mob-menu-circle-label">Sei</span></a>
+        <a class="mob-menu-chain" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'sonic'); closeMobMenu();"><span class="mob-menu-chain-icon"><img src="/img/chains/sonic.webp" alt=""></span><span class="mob-menu-circle-label">Sonic</span></a>
+        <a class="mob-menu-chain" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'hyperliquid'); closeMobMenu();"><span class="mob-menu-chain-icon"><img src="/img/chains/hyperliquid.svg" alt=""></span><span class="mob-menu-circle-label">Hyperliquid</span></a>
+        <a class="mob-menu-chain" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'berachain'); closeMobMenu();"><span class="mob-menu-chain-icon"><img src="/img/chains/berachain.webp" alt=""></span><span class="mob-menu-circle-label">Berachain</span></a>
+        <a class="mob-menu-chain" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'monad'); closeMobMenu();"><span class="mob-menu-chain-icon"><img src="/img/chains/monad.webp" alt=""></span><span class="mob-menu-circle-label">Monad</span></a>
+        <a class="mob-menu-chain" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'cronos'); closeMobMenu();"><span class="mob-menu-chain-icon"><img src="/img/chains/cronos.svg" alt=""></span><span class="mob-menu-circle-label">Cronos</span></a>
+        <a class="mob-menu-chain" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'aptos'); closeMobMenu();"><span class="mob-menu-chain-icon"><img src="/img/chains/aptos.svg" alt=""></span><span class="mob-menu-circle-label">Aptos</span></a>
+        <a class="mob-menu-chain" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'linea'); closeMobMenu();"><span class="mob-menu-chain-icon"><img src="/img/chains/linea.svg" alt=""></span><span class="mob-menu-circle-label">Linea</span></a>
+        <a class="mob-menu-chain" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'zksync'); closeMobMenu();"><span class="mob-menu-chain-icon"><img src="/img/chains/zksync.svg" alt=""></span><span class="mob-menu-circle-label">zkSync</span></a>
+        <a class="mob-menu-chain" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'fantom'); closeMobMenu();"><span class="mob-menu-chain-icon"><img src="/img/chains/fantom.svg" alt=""></span><span class="mob-menu-circle-label">Fantom</span></a>
+        <a class="mob-menu-chain" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'mantle'); closeMobMenu();"><span class="mob-menu-chain-icon"><img src="/img/chains/mantle.svg" alt=""></span><span class="mob-menu-circle-label">Mantle</span></a>
+        <a class="mob-menu-chain" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'scroll'); closeMobMenu();"><span class="mob-menu-chain-icon"><img src="/img/chains/scroll.webp" alt=""></span><span class="mob-menu-circle-label">Scroll</span></a>
+        <a class="mob-menu-chain" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'manta'); closeMobMenu();"><span class="mob-menu-chain-icon"><img src="/img/chains/manta.webp" alt=""></span><span class="mob-menu-circle-label">Manta</span></a>
+        <a class="mob-menu-chain" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'starknet'); closeMobMenu();"><span class="mob-menu-chain-icon"><img src="/img/chains/starknet.webp" alt=""></span><span class="mob-menu-circle-label">Starknet</span></a>
       </div>
       </div>
       <div class="mob-menu-footer-circles">
