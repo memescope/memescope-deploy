@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.211';
+var APP_VERSION = '2.5.212';
 
 // Image proxy — shrinks token images so they load fast even on bad wifi.
 // DexScreener's CDN (98%+ of token images) natively resizes via query params,
@@ -3110,6 +3110,10 @@ function openSearchModal() {
 }
 
 function closeSearchModal() {
+  window._aiMode = false;
+  var _cr = document.getElementById('searchChainRow'); if (_cr) _cr.style.display = '';
+  var _ab = document.getElementById('searchAiBadge'); if (_ab) _ab.style.display = 'none';
+  var _ar = document.getElementById('search-ai-result'); if (_ar) _ar.style.display = 'none';
   document.getElementById('search-overlay').classList.remove('open');
   if (window.innerWidth <= 768) unlockScroll();
   else document.body.style.overflow = '';
@@ -3271,6 +3275,13 @@ function renderRecentSearches() {
 }
 
 function showSearchDefault() {
+  var _aip = document.getElementById('search-ai-panel');
+  if (window._aiMode) {
+    ['search-trending','search-recent','search-boosted','search-results','search-ai-result'].forEach(function(id){ var e=document.getElementById(id); if(e) e.style.display='none'; });
+    if (_aip) _aip.style.display = '';
+    return;
+  }
+  if (_aip) _aip.style.display = 'none';
   // Show trending tokens
   var trending = LIVE_TOKENS.slice().sort(function(a,b){ return Math.abs(b.p24h) - Math.abs(a.p24h); }).slice(0, 6);
   var list = document.getElementById('search-trending-list');
@@ -3361,11 +3372,21 @@ function setSearchChain(chain) {
 
 function handleSearchInput(query) {
   var q = query.trim().toLowerCase();
+  var _abPill = document.querySelector('#searchAiBadge .search-ai-badge-pill');
+  if (_abPill) _abPill.classList.toggle('active', !!q);
+  if (window._aiMode && !window._aiRun) {
+    // AI mode: typing keeps the suggested prompts up — nothing searches until the
+    // user clicks the AI Search pill (runAiSearch flips _aiRun on for one pass).
+    var _aip0 = document.getElementById('search-ai-panel'); if (_aip0) _aip0.style.display = '';
+    ['search-trending','search-recent','search-boosted','search-results','search-ai-result'].forEach(function(id){ var e = document.getElementById(id); if (e) e.style.display = 'none'; });
+    return;
+  }
   if (!q) {
     showSearchDefault();
     searchHighlightIdx = -1;
     return;
   }
+  var _aip = document.getElementById('search-ai-panel'); if (_aip) _aip.style.display = 'none';
 
   // Filter loaded tokens first
   var localResults = LIVE_TOKENS.filter(function(t) {
@@ -3681,6 +3702,139 @@ openSearchModal = function() {
   if (tabX) tabX.classList.remove('active');
   if (xRes) xRes.style.display = 'none';
 };
+
+// ===== AI Search (natural-language prompt panel, opened via the AI pill) =====
+function openAiSearch() {
+  window._aiMode = true;
+  openSearchModal();
+  var cr = document.getElementById('searchChainRow'); if (cr) cr.style.display = 'none';
+  var ab = document.getElementById('searchAiBadge'); if (ab) { ab.style.display = ''; var abp = ab.querySelector('.search-ai-badge-pill'); if (abp) abp.classList.remove('active'); }
+  var input = document.getElementById('search-modal-input');
+  if (input) { input.value = ''; input.placeholder = 'Ask anything about meme coins…'; }
+}
+function aiPromptFill(text) {
+  var input = document.getElementById('search-modal-input');
+  if (!input) return;
+  input.value = text;
+  input.focus();
+  try { input.setSelectionRange(text.length, text.length); } catch (e) {}
+  var _abPill = document.querySelector('#searchAiBadge .search-ai-badge-pill');
+  if (_abPill) _abPill.classList.add('active');
+  // Next step: send this prompt to the AI backend and render a guided answer.
+}
+window.openAiSearch = openAiSearch;
+window.aiPromptFill = aiPromptFill;
+// Clicking the AI Search pill sends the query to the worker (/api/ai-search),
+// which uses Claude to turn it into structured filters; we apply those to the
+// live token list locally. On any error we fall back to the keyword search.
+function runAiSearch() {
+  var input = document.getElementById('search-modal-input');
+  if (!input || !input.value.trim()) return;
+  var query = input.value.trim();
+  _showAiSearching();
+  fetch('/api/ai-search', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ query: query })
+  }).then(function(r) { return r.ok ? r.json() : Promise.reject(r.status); })
+    .then(function(data) { _renderAiResults(data, query); })
+    .catch(function() {
+      // Fallback: run the normal keyword search so the user still gets results.
+      window._aiRun = true; handleSearchInput(query); window._aiRun = false;
+    });
+}
+function _hideForAi() {
+  ['search-trending','search-recent','search-boosted','search-results','search-ai-panel'].forEach(function(id){ var e=document.getElementById(id); if(e) e.style.display='none'; });
+}
+function _showAiSearching() {
+  _hideForAi();
+  var sum = document.getElementById('searchAiResultSummary'); if (sum) sum.textContent = '';
+  var list = document.getElementById('search-ai-result-list');
+  if (list) list.innerHTML = '<div class="search-modal-empty"><span class="loading-spinner" style="width:18px;height:18px;display:inline-block;vertical-align:middle"></span></div>';
+  var sec = document.getElementById('search-ai-result'); if (sec) sec.style.display = '';
+}
+async function _renderAiResults(data, query) {
+  _hideForAi();
+  var sec = document.getElementById('search-ai-result'); if (sec) sec.style.display = '';
+  var sum = document.getElementById('searchAiResultSummary');
+  var list = document.getElementById('search-ai-result-list');
+  if (!data || data.is_coin_query === false) {
+    if (sum) sum.textContent = (data && data.summary) || 'I can only help you search coins — try a chain, a market cap, or a theme like “dog”.';
+    if (list) list.innerHTML = '';
+    return;
+  }
+  if (sum) sum.textContent = data.summary || '';
+  var keywords = (data.keywords && data.keywords.length) ? data.keywords : (data.keyword ? [data.keyword] : []);
+  var candidates;
+  try {
+    if (keywords.length) {
+      // Search the full DexScreener database for each term, then merge — this is
+      // what makes themes work (dog -> doge/shiba/floki, not just literal "dog").
+      var arrays = await Promise.all(keywords.slice(0, 6).map(_dexSearch));
+      candidates = _mergeTokens(arrays);
+    } else {
+      candidates = (typeof LIVE_TOKENS !== 'undefined' && LIVE_TOKENS) ? LIVE_TOKENS.slice() : [];
+    }
+  } catch (e) {
+    candidates = (typeof LIVE_TOKENS !== 'undefined' && LIVE_TOKENS) ? LIVE_TOKENS.slice() : [];
+  }
+  var results = _applyAiFilters(candidates, data);
+  if (list) list.innerHTML = results.length ? results.map(buildSearchItem).join('') : '<div class="search-modal-empty">No coins matched that search.</div>';
+}
+// Search the full DexScreener database for one term and parse into token objects
+// (same shape/source as the normal search bar).
+function _dexSearch(keyword) {
+  var url = 'https://api.dexscreener.com/latest/dex/search?q=' + encodeURIComponent(keyword);
+  return fetch(url).then(function(r){ return r.ok ? r.json() : { pairs: [] }; }).then(function(d){
+    var chainMap = {solana:'solana',ethereum:'eth',base:'base',bsc:'bsc',sui:'sui',tron:'tron',arbitrum:'arbitrum',avalanche:'avalanche',polygon:'polygon',optimism:'optimism',blast:'blast',ton:'ton',seiv2:'seiv2',pulsechain:'pulsechain'};
+    var pairs = d.pairs || [], out = [];
+    for (var i = 0; i < Math.min(pairs.length, 30); i++) {
+      var p = pairs[i]; if (!p.baseToken) continue;
+      var pc = p.priceChange || {};
+      out.push({
+        sym: (p.baseToken.symbol||'').toUpperCase(), name: p.baseToken.name || p.baseToken.symbol || '',
+        img: (p.info && p.info.imageUrl) ? p.info.imageUrl : '',
+        price: p.priceUsd ? parseFloat(p.priceUsd) : 0,
+        p24h: pc.h24 ? parseFloat(pc.h24) : 0, p1h: pc.h1 ? parseFloat(pc.h1) : 0,
+        net: chainMap[p.chainId] || p.chainId || 'solana', ca: p.baseToken.address || '',
+        mcap: p.marketCap || p.fdv || 0, vol: p.volume ? (p.volume.h24||0) : 0,
+        liq: p.liquidity ? (p.liquidity.usd||0) : 0,
+        age: p.pairCreatedAt ? _calcAge(p.pairCreatedAt) : '?', _created: p.pairCreatedAt || 0,
+        boosted: false, _liveResult: true, pairAddress: p.pairAddress || ''
+      });
+    }
+    return out;
+  }).catch(function(){ return []; });
+}
+function _mergeTokens(arrays) {
+  var all = [].concat.apply([], arrays), seen = {}, out = [];
+  for (var i = 0; i < all.length; i++) {
+    var t = all[i], key = (t.ca||'') + (t.net||'');
+    if (!key) { out.push(t); continue; }
+    if (seen[key] !== undefined) { if (!out[seen[key]].img && t.img) out[seen[key]].img = t.img; continue; }
+    seen[key] = out.length; out.push(t);
+  }
+  return out;
+}
+function _applyAiFilters(list, f) {
+  var out = list.filter(function(t) {
+    if (f.chain && f.chain !== 'all' && t.net !== f.chain) return false;
+    if (f.min_market_cap != null && (t.mcap||0) < f.min_market_cap) return false;
+    if (f.max_market_cap != null && (t.mcap||0) > f.max_market_cap) return false;
+    if (f.min_volume != null && (t.vol||0) < f.min_volume) return false;
+    if (f.min_change_24h != null && (t.p24h||0) < f.min_change_24h) return false;
+    return true;
+  });
+  var fieldMap = { market_cap:'mcap', volume:'vol', change_24h:'p24h' };
+  var dir = f.direction === 'asc' ? 1 : -1;
+  if (f.sort_by === 'trending') out.sort(function(a,b){ return Math.abs(b.p24h||0) - Math.abs(a.p24h||0); });
+  else if (f.sort_by === 'age') out.sort(function(a,b){ return (b._created||0) - (a._created||0); });
+  else if (fieldMap[f.sort_by]) { var fld = fieldMap[f.sort_by]; out.sort(function(a,b){ return dir * ((a[fld]||0) - (b[fld]||0)); }); }
+  else out.sort(function(a,b){ return (b.mcap||0) - (a.mcap||0); });
+  var lim = (f.limit && f.limit > 0) ? Math.min(f.limit, 50) : 25;
+  return out.slice(0, lim);
+}
+window.runAiSearch = runAiSearch;
 
 
 

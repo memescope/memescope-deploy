@@ -35,7 +35,7 @@ const DEXSCREENER_API = 'https://api.dexscreener.com/latest/dex/tokens/';
 
 // Bumped on every deploy (with package.json/app.js/sw.js). Edge-cache keys for HTML
 // include this, so a new deploy = new key = old cached HTML is ignored instantly.
-const CACHE_VERSION = '2.5.211';
+const CACHE_VERSION = '2.5.212';
 
 const VALID_CHAINS = new Set([
   'solana', 'eth', 'ethereum', 'base', 'bsc', 'sui', 'tron',
@@ -532,6 +532,36 @@ function addSecurityHeaders(headers) {
   return headers;
 }
 
+// ===== AI Search (natural-language → coin filters via Claude) =====
+const AI_SEARCH_CHAINS = ['solana','eth','base','sui','bsc','tron','arbitrum','avalanche','polygon','optimism','blast','ton','pulsechain','seiv2','sonic','hyperliquid','berachain','monad','cronos','aptos','linea','zksync','fantom','mantle','scroll','manta','starknet'];
+const AI_FILTER_TOOL = {
+  name: 'filter_coins',
+  description: 'Convert a user request about meme coins into structured filters applied to the live coin list. Always call this tool.',
+  input_schema: {
+    type: 'object',
+    properties: {
+      is_coin_query: { type: 'boolean', description: 'true if the request is about finding/filtering crypto or meme coins; false for anything off-topic (general questions, advice, jokes, unrelated topics).' },
+      summary: { type: 'string', description: "One short human-readable line describing the SEARCH (the filters applied), e.g. 'Dog-themed coins under $500K market cap, sorted by trending'. Describe the filters only — never claim anything about specific coins, prices, or whether to buy/sell." },
+      keywords: { type: 'array', items: { type: 'string' }, description: "Search terms used to find matching coins in the full database: the theme word PLUS well-known related coin names and tickers. E.g. 'dog coins' -> ['dog','doge','shiba','shib','inu','floki','bonk','wif']; 'frog coins' -> ['frog','pepe','wojak']; a specific coin -> just its name. Use 2-8 terms. Omit ONLY for pure numeric/sort requests with no theme (e.g. 'top gainers')." },
+      chain: { type: 'string', enum: AI_SEARCH_CHAINS, description: 'Restrict to a single chain. Omit for all chains.' },
+      min_market_cap: { type: 'number', description: 'Minimum market cap in USD.' },
+      max_market_cap: { type: 'number', description: 'Maximum market cap in USD.' },
+      min_volume: { type: 'number', description: 'Minimum 24h volume in USD.' },
+      min_change_24h: { type: 'number', description: 'Minimum 24h price change in percent (e.g. 50 means +50%).' },
+      sort_by: { type: 'string', enum: ['market_cap','volume','change_24h','trending','age'], description: "Sort field. 'trending' = biggest movers; 'age' = newest first." },
+      direction: { type: 'string', enum: ['asc','desc'], description: 'Sort direction; default desc (highest first).' },
+      limit: { type: 'integer', description: 'Max coins to return (1-50). Default 25.' },
+    },
+    required: ['is_coin_query','summary'],
+  },
+};
+const AI_SYSTEM_PROMPT =
+  "You are the search assistant for Memescopes, a meme-coin scanner. Convert the user's request into filters by calling the filter_coins tool. You ONLY help find or filter coins. If the request is off-topic (general questions, advice, jokes, anything not about finding coins), set is_coin_query=false and make the summary a brief note that you can only search coins. Never invent coins, prices, or recommendations. Keep the summary to one short line describing the filters. " +
+  "When the request names a THEME (dogs, cats, frogs, AI, Trump, etc.), fill 'keywords' with several search terms — the theme word plus well-known related coin names and tickers (dogs -> dog, doge, shiba, shib, inu, floki, bonk, wif; frogs -> frog, pepe, wojak) — so coins that don't literally contain the theme word are still found. For a specific coin name, just use that name. " +
+  "Supported chains: " +
+  AI_SEARCH_CHAINS.join(', ') +
+  ". For 'newest' or 'just launched' use sort_by=age. For 'trending', 'top gainers', or 'pumping' use sort_by=trending or change_24h.";
+
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
@@ -903,6 +933,57 @@ export default {
 
     // ─── Token API Proxy (same-origin + edge cache + KV fallback) ───
     // Avoids extra DNS+TLS handshake to scraper subdomain
+    // AI Search — natural-language query → structured coin filters (via Claude).
+    // The model only returns filter params; the browser filters the real token
+    // list. Key stays server-side (env.ANTHROPIC_API_KEY); never sent to client.
+    if (pathname === '/api/ai-search' && request.method === 'POST') {
+      const jsonHeaders = { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' };
+      try {
+        const bodyIn = await request.json().catch(() => ({}));
+        const query = (typeof bodyIn.query === 'string' ? bodyIn.query : '').trim();
+        if (!query || query.length > 200) {
+          return new Response(JSON.stringify({ error: 'bad_query' }), { status: 400, headers: jsonHeaders });
+        }
+        if (!env.ANTHROPIC_API_KEY) {
+          return new Response(JSON.stringify({ error: 'not_configured' }), { status: 503, headers: jsonHeaders });
+        }
+        // Lightweight per-IP rate limit (cost guard): ~30 searches/min/IP.
+        const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
+        const rlKey = 'rl:ai:' + ip;
+        const cnt = parseInt((await env.BOOSTS.get(rlKey)) || '0', 10);
+        if (cnt >= 30) {
+          return new Response(JSON.stringify({ error: 'rate_limited' }), { status: 429, headers: jsonHeaders });
+        }
+        ctx.waitUntil(env.BOOSTS.put(rlKey, String(cnt + 1), { expirationTtl: 60 }));
+
+        const ai = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: {
+            'x-api-key': env.ANTHROPIC_API_KEY,
+            'anthropic-version': '2023-06-01',
+            'content-type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: 'claude-haiku-4-5',
+            max_tokens: 512,
+            system: AI_SYSTEM_PROMPT,
+            tools: [AI_FILTER_TOOL],
+            tool_choice: { type: 'tool', name: 'filter_coins' },
+            messages: [{ role: 'user', content: query }],
+          }),
+        });
+        if (!ai.ok) {
+          return new Response(JSON.stringify({ error: 'ai_error' }), { status: 502, headers: jsonHeaders });
+        }
+        const data = await ai.json();
+        const toolUse = (data.content || []).find((b) => b.type === 'tool_use');
+        const params = (toolUse && toolUse.input) || { is_coin_query: false, summary: 'I can only search coins.' };
+        return new Response(JSON.stringify(params), { headers: jsonHeaders });
+      } catch (e) {
+        return new Response(JSON.stringify({ error: 'server_error' }), { status: 500, headers: jsonHeaders });
+      }
+    }
+
     if (pathname === '/api/tokens') {
       const corsJson = {
         'Content-Type': 'application/json',
