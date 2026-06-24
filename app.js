@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.212';
+var APP_VERSION = '2.5.213';
 
 // Image proxy — shrinks token images so they load fast even on bad wifi.
 // DexScreener's CDN (98%+ of token images) natively resizes via query params,
@@ -3720,7 +3720,7 @@ function aiPromptFill(text) {
   try { input.setSelectionRange(text.length, text.length); } catch (e) {}
   var _abPill = document.querySelector('#searchAiBadge .search-ai-badge-pill');
   if (_abPill) _abPill.classList.add('active');
-  // Next step: send this prompt to the AI backend and render a guided answer.
+  runAiSearch(); // clicking a suggested prompt kicks off the search immediately
 }
 window.openAiSearch = openAiSearch;
 window.aiPromptFill = aiPromptFill;
