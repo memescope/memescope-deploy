@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.215';
+var APP_VERSION = '2.5.216';
 
 // Image proxy — shrinks token images so they load fast even on bad wifi.
 // DexScreener's CDN (98%+ of token images) natively resizes via query params,
@@ -3100,6 +3100,7 @@ function openSearchModal() {
   overlay.classList.add('open');
   var input = document.getElementById('search-modal-input');
   input.value = '';
+  input.placeholder = 'Search by CA, token name, pairs...';  // reset; openAiSearch overrides this to the AI prompt
   if (!isMobile) input.focus();
   else setTimeout(function() { input.focus(); }, 300);
   searchHighlightIdx = -1;
