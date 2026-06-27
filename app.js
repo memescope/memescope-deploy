@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.217';
+var APP_VERSION = '2.5.218';
 
 // Image proxy — shrinks token images so they load fast even on bad wifi.
 // DexScreener's CDN (98%+ of token images) natively resizes via query params,
@@ -283,7 +283,7 @@ function _fetchServerBoosts() {
     })
     .catch(function(e) {
       _boostsFetched = true;   // don't let a failed boost fetch hang the bubble build
-      console.log('MemeScope: Boost fetch error', e);
+      console.log('Memescopes: Boost fetch error', e);
       return _serverBoosts;
     });
 }
@@ -343,7 +343,7 @@ function _injectMissingBoostedTokens() {
         return token;
       })
       .catch(function(e) {
-        console.log('MemeScope: Failed to fetch boosted token', b.ca, e);
+        console.log('Memescopes: Failed to fetch boosted token', b.ca, e);
         return null;
       });
   });
@@ -357,7 +357,7 @@ function _injectMissingBoostedTokens() {
       }
     }
     if (injected > 0) {
-      console.log('MemeScope: Injected ' + injected + ' boosted token(s)');
+      console.log('Memescopes: Injected ' + injected + ' boosted token(s)');
       if (typeof loadData === 'function') loadData();
       if (typeof init === 'function') init();
     }
@@ -1982,7 +1982,7 @@ function toggleWatchlist(sym, btnEl) {
 function toggleWlShareMenu(btn) {
   // On mobile, use native share API (works on HTTPS)
   if (window.innerWidth <= 768 && navigator.share) {
-    var text = '🔭 My MemeScope Watchlist:\n\n';
+    var text = '🔭 My Memescopes Watchlist:\n\n';
     if (typeof watchlist !== 'undefined' && watchlist && watchlist.length > 0) {
       watchlist.forEach(function(sym) {
         var token = (typeof LIVE_TOKENS !== 'undefined') ? LIVE_TOKENS.find(function(t) { return t.sym === sym; }) : null;
@@ -1996,7 +1996,7 @@ function toggleWlShareMenu(btn) {
       });
     }
     text += '\nTrack yours at memescopes.com';
-    navigator.share({ title: 'My MemeScope Watchlist', text: text, url: 'https://memescopes.com' }).catch(function(){});
+    navigator.share({ title: 'My Memescopes Watchlist', text: text, url: 'https://memescopes.com' }).catch(function(){});
     return;
   }
   // Desktop or fallback: use dropdown menu
@@ -2016,7 +2016,7 @@ function shareWatchlist(platform) {
   document.getElementById('wlShareMenu').classList.remove('open');
   if (!watchlist || watchlist.length === 0) { alert('Your watchlist is empty!'); return; }
 
-  var text = '🔭 My MemeScope Watchlist:\n\n';
+  var text = '🔭 My Memescopes Watchlist:\n\n';
   watchlist.forEach(function(sym) {
     var token = (typeof LIVE_TOKENS !== 'undefined') ? LIVE_TOKENS.find(function(t) { return t.sym === sym; }) : null;
     if (token) {
@@ -2046,7 +2046,7 @@ function shareWatchlist(platform) {
       url = 'sms:?body=' + encoded;
       break;
     case 'email':
-      url = 'mailto:?subject=' + encodeURIComponent('My MemeScope Watchlist') + '&body=' + encoded;
+      url = 'mailto:?subject=' + encodeURIComponent('My Memescopes Watchlist') + '&body=' + encoded;
       break;
   }
   if (url) window.open(url, '_blank');
@@ -5517,7 +5517,7 @@ function closeBubbleModal() {
     m3CloseOverlay(ov);
   }
   unlockScroll();
-  document.title = 'MemeScope — The Meme Coin Scope & Scanner';
+  document.title = 'Memescopes — The Meme Coin Scope & Scanner';
   if (document.body.classList.contains('modal-scroll-lock')) {
     document.body.classList.remove('modal-scroll-lock');
     document.body.style.top = '';
@@ -5801,7 +5801,7 @@ function _initModalChart(t) {
             // Update browser tab title with mcap
             var _mc = _pair.marketCap || _pair.fdv || 0;
             var _bmOv = document.getElementById('bubbleModalOverlay');
-            if (window._modalToken && _bmOv && _bmOv.classList.contains('open')) document.title = fmt(_mc) + ' | ' + (window._modalToken.sym || '') + ' — MemeScope';
+            if (window._modalToken && _bmOv && _bmOv.classList.contains('open')) document.title = fmt(_mc) + ' | ' + (window._modalToken.sym || '') + ' — Memescopes';
             // Header glow
             var hdr = document.querySelector('.bm-header');
             if (hdr && window._bmGlowArmed && prevPrice && _price !== prevPrice) {
@@ -6201,7 +6201,7 @@ function openTokenPage(t) {
 function closeTokenPage() {
   var tp = document.getElementById('tokenPage');
   if (tp) tp.style.display = 'none';
-  document.title = 'MemeScope — The Meme Coin Scope & Scanner';
+  document.title = 'Memescopes — The Meme Coin Scope & Scanner';
   // Restore all hidden content
   var els = ['.filter-bar', '.refresh-progress-wrap', '#bubbleHero', '.table-container', '.pagination-bar', '.disclaimer-footer', '.top-header-bar'];
   els.forEach(function(sel) {
@@ -6475,7 +6475,7 @@ function initTokenPageChart(t) {
             // Update browser tab title with mcap
             var _mc = _pr.marketCap || _pr.fdv || 0;
             var _tpEl = document.getElementById('tokenPage');
-            if (_tpToken && _tpEl && _tpEl.style.display !== 'none') document.title = fmt(_mc) + ' | ' + (_tpToken.sym || '') + ' — MemeScope';
+            if (_tpToken && _tpEl && _tpEl.style.display !== 'none') document.title = fmt(_mc) + ' | ' + (_tpToken.sym || '') + ' — Memescopes';
           }, 300);
         } catch(e) {}
       }
@@ -6598,7 +6598,7 @@ function tpToggleWatchlist() {
 
 function tpShare() {
   if (navigator.share && _tpToken) {
-    navigator.share({ title: _tpToken.sym + ' on MemeScope', url: window.location.href });
+    navigator.share({ title: _tpToken.sym + ' on Memescopes', url: window.location.href });
   } else {
     navigator.clipboard.writeText(window.location.href);
   }
@@ -6891,12 +6891,12 @@ async function verifyTopTokens(skipBubbleRender) {
       if (pair.quoteToken) t.quoteSymbol = pair.quoteToken.symbol.toUpperCase();
     }
 
-    console.log('MemeScope: Verified', Object.keys(pairByCa).length, 'tokens, removed', removed, 'rugged, blacklist size:', Object.keys(_ruggedCas).length);
+    console.log('Memescopes: Verified', Object.keys(pairByCa).length, 'tokens, removed', removed, 'rugged, blacklist size:', Object.keys(_ruggedCas).length);
     _applyAdminBoosts(LIVE_TOKENS);
     loadData();
     if (!skipBubbleRender && typeof updateBubblesSmooth === 'function') updateBubblesSmooth();
   } catch (e) {
-    console.log('MemeScope: Verify error', e);
+    console.log('Memescopes: Verify error', e);
   }
   _verifyInProgress = false;
 }
@@ -6913,7 +6913,7 @@ async function fetchLiveTokens() {
         if (ls) { ls.style.opacity = '0'; setTimeout(function() { ls.remove(); }, 400); }
       }
     }
-    console.log('MemeScope: Fetching...');
+    console.log('Memescopes: Fetching...');
     showFetchingProgress();
     
     // If API is configured, use it (fast, 500+ tokens)
@@ -7067,20 +7067,20 @@ async function fetchLiveTokens() {
               // Inject any boosted tokens not in the scraper results
               _injectMissingBoostedTokens();
             }
-            console.log('MemeScope: Live via API!', LIVE_TOKENS.length, 'tokens', data.cached ? '(cached)' : '(fresh)', isFirstLoad ? '(first load)' : '(merged)');
+            console.log('Memescopes: Live via API!', LIVE_TOKENS.length, 'tokens', data.cached ? '(cached)' : '(fresh)', isFirstLoad ? '(first load)' : '(merged)');
             resetRefreshProgress();
             return;
           }
         }
-      } catch(apiErr) { console.log('MemeScope: API error', apiErr); }
+      } catch(apiErr) { console.log('Memescopes: API error', apiErr); }
     }
     
     // No fallback - API is the only source. If it fails, dismiss loader and keep showing whatever was loaded before.
-    console.log('MemeScope: No data loaded from API');
+    console.log('Memescopes: No data loaded from API');
     var loader = document.getElementById('loadingScreen');
     if (loader) { loader.style.opacity = '0'; setTimeout(function() { loader.remove(); }, 400); }
   } catch(e) {
-    console.error('MemeScope error:', e);
+    console.error('Memescopes error:', e);
     var loader = document.getElementById('loadingScreen');
     if (loader) { loader.style.opacity = '0'; setTimeout(function() { loader.remove(); }, 400); }
   }

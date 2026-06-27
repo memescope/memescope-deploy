@@ -1,5 +1,5 @@
 /**
- * MemeScope Card Image Worker
+ * Memescopes Card Image Worker
  * Intercepts bot/crawler requests to /{chain}/{ca} and serves dynamic OG meta tags.
  * Generates branded 1200x628 PNG card images at /card-image/{chain}/{ca}.png
  *
@@ -35,7 +35,7 @@ const DEXSCREENER_API = 'https://api.dexscreener.com/latest/dex/tokens/';
 
 // Bumped on every deploy (with package.json/app.js/sw.js). Edge-cache keys for HTML
 // include this, so a new deploy = new key = old cached HTML is ignored instantly.
-const CACHE_VERSION = '2.5.217';
+const CACHE_VERSION = '2.5.218';
 
 const VALID_CHAINS = new Set([
   'solana', 'eth', 'ethereum', 'base', 'bsc', 'sui', 'tron',
@@ -393,9 +393,9 @@ function buildCardSvg(token) {
 // ── Bot HTML Page ───────────────────────────────────────────────────────────
 
 function buildBotHtml(token, chain, ca) {
-  const title = `${token.name} ($${token.ticker}) — MemeScope`;
+  const title = `${token.name} ($${token.ticker}) — Memescopes`;
   const mcap = fmtNum(token.mcap);
-  const desc = `$${token.ticker} on ${CHAIN_DISPLAY[chain] || chain} | MCap: $${mcap.value}${mcap.unit} | Scoped on MemeScope`;
+  const desc = `$${token.ticker} on ${CHAIN_DISPLAY[chain] || chain} | MCap: $${mcap.value}${mcap.unit} | Scoped on Memescopes`;
   const imageUrl = `https://memescopes.com/card-image/${encodeURIComponent(chain)}/${encodeURIComponent(ca)}.png`;
   const pageUrl = `https://memescopes.com/${encodeURIComponent(chain)}/${encodeURIComponent(ca)}`;
 
@@ -415,7 +415,7 @@ function buildBotHtml(token, chain, ca) {
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="628">
 <meta property="og:url" content="${escXml(pageUrl)}">
-<meta property="og:site_name" content="MemeScope">
+<meta property="og:site_name" content="Memescopes">
 
 <!-- Twitter Card -->
 <meta name="twitter:card" content="summary_large_image">
@@ -429,7 +429,7 @@ function buildBotHtml(token, chain, ca) {
 <script>window.location.replace("${pageUrl}");</script>
 </head>
 <body>
-<p>Loading <a href="${escXml(pageUrl)}">${escXml(token.name)}</a> on MemeScope...</p>
+<p>Loading <a href="${escXml(pageUrl)}">${escXml(token.name)}</a> on Memescopes...</p>
 </body>
 </html>`;
 }
