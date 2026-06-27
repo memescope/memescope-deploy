@@ -2611,7 +2611,7 @@
     align-items: center;
     gap: 6px;
     padding: 5px 10px 5px 5px;
-    background: var(--md-sys-color-surface-container-highest);
+    background: #444044;  /* de-purpled (was surface-container-highest #44404c) */
     border: none;
     border-radius: var(--md-sys-shape-corner-full);
     cursor: pointer;
@@ -2649,7 +2649,7 @@
     align-items: center;
     gap: 6px;
     padding: 5px 10px 5px 5px;
-    background: var(--md-sys-color-surface-container-highest);
+    background: #444044;  /* de-purpled (was surface-container-highest #44404c) */
     border: none;
     border-radius: var(--md-sys-shape-corner-full);
     cursor: pointer;
@@ -5712,7 +5712,7 @@
       left: auto !important;
       z-index: auto;
       flex-direction: row !important;
-      background: var(--md-sys-color-surface-container-highest) !important;
+      background: #444044 !important;  /* de-purpled (was surface-container-highest #44404c) */
       border: none !important;
       border-radius: var(--md-sys-shape-corner-full) !important;
       padding: 0 !important;
