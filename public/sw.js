@@ -1,4 +1,4 @@
-var CACHE_NAME = 'memescope-v2.5.218';
+var CACHE_NAME = 'memescope-v2.5.219';
 // On localhost the service worker is disabled entirely so development always
 // sees fresh files (no stale-cache confusion). Production keeps full caching.
 var IS_DEV = /^localhost$|^127\.|^192\.168\.|^10\.|^172\.(1[6-9]|2[0-9]|3[01])\./.test(self.location.hostname);
@@ -15,6 +15,12 @@ var STATIC_ASSETS = [
   '/manifest.json',
   '/favicon.png',
   '/icon-192.png',
+  // Self-hosted fonts (no fonts.gstatic.com) — precache so first paint has them.
+  '/saira-stencil.woff2',
+  '/inter-400.woff2',
+  '/inter-500.woff2',
+  '/inter-600.woff2',
+  '/inter-700.woff2',
   '/img/wordmark.png',
   '/img/globe-chains.svg',
   '/img/leaf.svg',
@@ -132,6 +138,26 @@ self.addEventListener('fetch', function(e) {
 
   // External resources (fonts, analytics) — let browser handle
   if (url.origin !== self.location.origin) {
+    return;
+  }
+
+  // Self-hosted fonts (woff2/woff) — immutable, so CACHE-FIRST: paint instantly
+  // from cache and never re-fetch over the network.
+  if (url.origin === self.location.origin && /\.woff2?$/.test(url.pathname)) {
+    e.respondWith((async function() {
+      var hit = await caches.match(e.request);
+      if (hit) return hit;
+      try {
+        var resp = await fetch(e.request);
+        if (resp && resp.ok) {
+          var copy = resp.clone();
+          caches.open(CACHE_NAME).then(function(c) { c.put(e.request, copy); });
+        }
+        return resp;
+      } catch (err) {
+        return hit || Response.error();
+      }
+    })());
     return;
   }
 
