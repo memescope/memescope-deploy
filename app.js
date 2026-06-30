@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.219';
+var APP_VERSION = '2.5.220';
 
 // Image proxy — shrinks token images so they load fast even on bad wifi.
 // DexScreener's CDN (98%+ of token images) natively resizes via query params,
@@ -7331,7 +7331,7 @@ function _bfValueToPos(group, value) {
   return ((Math.log10(value) - Math.log10(s.min)) / (Math.log10(s.max) - Math.log10(s.min))) * 100;
 }
 
-function updateBFRange(group) {
+function updateBFRange(group, skipApply) {
   var cap = group.charAt(0).toUpperCase() + group.slice(1);
   var minEl = document.getElementById('bf' + cap + 'Min');
   var maxEl = document.getElementById('bf' + cap + 'Max');
@@ -7356,14 +7356,18 @@ function updateBFRange(group) {
   if (typeof bubbleFilters !== 'undefined') {
     bubbleFilters[group + 'Range'] = { min: minVal, max: maxVal };
   }
-  _bfScheduleApply();
+  // skipApply: on initial load we only paint the slider fills — it must NOT schedule
+  // a re-render. That scheduled init() ~180ms in, mid-entrance, so the bubbles
+  // replayed their intro ("come out half way, then again fully"). Real slider changes
+  // (no skipApply) still re-render as before.
+  if (!skipApply) _bfScheduleApply();
 }
 
 // Initialize range fills + live count on page load.
 window.addEventListener('DOMContentLoaded', function () {
   ['mcap', 'volume', 'age', 'liq'].forEach(function (g) {
     var cap = g.charAt(0).toUpperCase() + g.slice(1);
-    if (document.getElementById('bf' + cap + 'Min')) updateBFRange(g);
+    if (document.getElementById('bf' + cap + 'Min')) updateBFRange(g, true);
   });
   _bfUpdateLiveCount();
 });
