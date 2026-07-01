@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.220';
+var APP_VERSION = '2.5.221';
 
 // Image proxy — shrinks token images so they load fast even on bad wifi.
 // DexScreener's CDN (98%+ of token images) natively resizes via query params,
@@ -4219,6 +4219,17 @@ var bubs = [];
     H = hero.offsetHeight;
     if(W < 10 || H < 10){ setTimeout(init, 100); return; }
 
+    // Measure the live-indicator's COLLAPSED circle (relative to the hero/world) so bubbles
+    // pack and bounce EXACTLY to its border instead of a guessed box. Fallback if unmeasurable.
+    var _lb = { cx: W / 2, cy: 32, hw: 18, hh: 18 };
+    (function(){
+      var _le = document.querySelector('.bubble-live');
+      if(_le){
+        var _er = _le.getBoundingClientRect(), _hr = hero.getBoundingClientRect();
+        if(_er.width > 2){ _lb = { cx: (_er.left + _er.right) / 2 - _hr.left, cy: (_er.top + _er.bottom) / 2 - _hr.top, hw: _er.width / 2, hh: _er.height / 2 }; }
+      }
+    })();
+
     // Run ALL filtering BEFORE clearing the world so the shrug never flashes
     var tokens = (typeof getFilteredTokens === 'function') ? getFilteredTokens().slice(0, 200) : ((typeof LIVE_TOKENS !== 'undefined') ? LIVE_TOKENS.slice(0, 200) : []);
 
@@ -4303,6 +4314,9 @@ var bubs = [];
           var glowPad = (W < 500) ? 4 : 12;
           var x = r + glowPad + Math.random() * (W - r * 2 - glowPad * 2);
           var y = r + glowPad + Math.random() * (H - r * 2 - glowPad * 2);
+          // Keep bubbles off the live indicator: reject spots where the bubble would
+          // overlap the measured pill, so packed bubbles sit right up against its border.
+          if(Math.abs(x - _lb.cx) < _lb.hw + r && Math.abs(y - _lb.cy) < _lb.hh + r){ continue; }
           var ok = true;
           for(var j = 0; j < placed.length; j++){
             if(Math.hypot(placed[j].x - x, placed[j].y - y) < placed[j].packR + r + gap){
@@ -4407,6 +4421,18 @@ var bubs = [];
         if(b.x + edgeR > W - padX){ b.x = W - edgeR - padX; b.vx = -Math.abs(b.vx); }
         if(b.y - edgeR < padY){ b.y = edgeR + padY; b.vy = Math.abs(b.vy); }
         if(b.y + edgeR > H - padY){ b.y = H - edgeR - padY; b.vy = -Math.abs(b.vy); }
+        // Live indicator (top-center pill) is a fixed obstacle: keep each bubble's
+        // CENTER out of its footprint, ejecting out the nearest edge. A bubble can
+        // still graze the edge (a little), but never sits completely behind it.
+        var _ix = _lb.cx, _iy = _lb.cy, _ehw = _lb.hw + edgeR, _ehh = _lb.hh + edgeR;
+        var _dxr = b.x - _ix, _dyr = b.y - _iy;
+        if(Math.abs(_dxr) < _ehw && Math.abs(_dyr) < _ehh){
+          if(_ehw - Math.abs(_dxr) < _ehh - Math.abs(_dyr)){
+            var _sx = _dxr < 0 ? -1 : 1; b.x = _ix + _sx * _ehw; b.vx = _sx * (Math.abs(b.vx) + 0.2);
+          } else {
+            var _sy = _dyr < 0 ? -1 : 1; b.y = _iy + _sy * _ehh; b.vy = _sy * (Math.abs(b.vy) + 0.2);
+          }
+        }
       }
       // Overlap-resolution passes — 2 is enough since bubbles start packed and
       // drift gently; this halves the heaviest per-frame O(n^2) work.
