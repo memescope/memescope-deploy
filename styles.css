@@ -4144,57 +4144,6 @@
     border-radius: 0 0 var(--md-sys-shape-corner-extra-large) var(--md-sys-shape-corner-extra-large);
     margin: 0 8px 0 8px;
   }
-  /* Live indicator — glassmorphic broadcast pulse, top-center of the bubble box.
-     Passive (pointer-events:none) so it never blocks bubble interaction. */
-  .bubble-live {
-    position: absolute;
-    top: 14px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 5;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    box-sizing: border-box;
-    width: 36px;
-    height: 36px;
-    padding: 0;
-    border-radius: 999px;
-    background: rgba(68,66,68,.46);
-    -webkit-backdrop-filter: blur(11px) saturate(150%);
-    backdrop-filter: blur(11px) saturate(150%);
-    border: 1px solid rgba(255,255,255,.16);
-    box-shadow: 0 6px 22px rgba(0,0,0,.28);
-    gap: 0;
-    cursor: default;
-    pointer-events: auto;
-    transition: width var(--md-sys-motion-duration-medium4) var(--md-sys-motion-easing-emphasized-decelerate),
-                gap var(--md-sys-motion-duration-medium4) var(--md-sys-motion-easing-emphasized-decelerate);
-  }
-  /* Icon box is cropped to the symbol (no built-in margin) so padding stays symmetric. */
-  .bubble-live svg { width: 18px; height: 14px; display: block; overflow: visible; flex-shrink: 0; }
-  /* Collapsed = a 36px circle; hover morphs it out to a pill and reveals the "Live"
-     label with M3 emphasized-decelerate motion. The bubbles don't move: the physics
-     obstacle uses the COLLAPSED circle size, so the expanded pill floats over whatever
-     sits beside it. */
-  .bubble-live .bl-text {
-    max-width: 0; opacity: 0; transform: translateX(-7px); overflow: hidden; white-space: nowrap;
-    color: #fff; font-size: 14px; font-weight: 600; letter-spacing: .2px;
-    transition: max-width var(--md-sys-motion-duration-medium4) var(--md-sys-motion-easing-emphasized-decelerate),
-                transform var(--md-sys-motion-duration-medium4) var(--md-sys-motion-easing-emphasized-decelerate),
-                opacity var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
-  }
-  .bubble-live:hover { width: 74px; gap: 6px; }
-  .bubble-live:hover .bl-text { max-width: 60px; opacity: 1; transform: translateX(0); }
-  .bubble-live .bl-arc { stroke: #fff; stroke-width: 2.8; fill: none; stroke-linecap: round; }
-  .bubble-live .bl-dot { fill: #fff; }
-  /* Sweep outward (dot → inner → outer), then hold the whole ring lit ~3s before
-     fading. 5.4s cycle: ~0.5s sweep-in, 3s hold, ~0.7s fade, ~0.8s rest. */
-  @keyframes blBcast { 0% { opacity: 0; } 10% { opacity: 1; } 72% { opacity: 1; } 85% { opacity: 0; } 100% { opacity: 0; } }
-  @keyframes blDot { 0%, 100% { opacity: .9; } 50% { opacity: 1; } }
-  .bubble-live .bl-in { animation: blBcast 5.4s ease-in-out infinite .2s; }
-  .bubble-live .bl-out { animation: blBcast 5.4s ease-in-out infinite .55s; }
-  .bubble-live .bl-dot { animation: blDot 5.4s ease-in-out infinite; }
   .bubble-world {
     position: absolute;
     top: 0;
@@ -5647,10 +5596,6 @@
       margin: 0 8px !important;
       border-radius: 0 0 var(--md-sys-shape-corner-extra-large) var(--md-sys-shape-corner-extra-large) !important;
     }
-    /* Live indicator — a touch smaller on mobile (bubbles auto-space to it via getBoundingClientRect). */
-    .bubble-live { width: 32px; height: 32px; }
-    .bubble-live svg { width: 16px; height: 12.5px; }
-    .bubble-live:hover { width: 68px; }
 
     /* === HEADER — clean minimal === */
     .sticky-nav-wrap {

@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.221';
+var APP_VERSION = '2.5.222';
 
 // Image proxy — shrinks token images so they load fast even on bad wifi.
 // DexScreener's CDN (98%+ of token images) natively resizes via query params,
@@ -315,7 +315,7 @@ function _injectMissingBoostedTokens() {
         var pair = _pickConsensusPair(pairs);
         var pc = pair.priceChange || {};
         var vol = pair.volume || {};
-        var netMap = { solana: 'solana', ethereum: 'eth', base: 'base', bsc: 'bsc', sui: 'sui', tron: 'tron', arbitrum: 'arbitrum', avalanche: 'avalanche', polygon: 'polygon', optimism: 'optimism', blast: 'blast', ton: 'ton', seiv2: 'seiv2', pulsechain: 'pulsechain', sonic: 'sonic', hyperliquid: 'hyperliquid', berachain: 'berachain', monad: 'monad', cronos: 'cronos', aptos: 'aptos', linea: 'linea', zksync: 'zksync', fantom: 'fantom', mantle: 'mantle', scroll: 'scroll', manta: 'manta', starknet: 'starknet' };
+        var netMap = { solana: 'solana', ethereum: 'eth', base: 'base', bsc: 'bsc', sui: 'sui', tron: 'tron', arbitrum: 'arbitrum', avalanche: 'avalanche', polygon: 'polygon', optimism: 'optimism', blast: 'blast', ton: 'ton', seiv2: 'seiv2', pulsechain: 'pulsechain', sonic: 'sonic', hyperliquid: 'hyperliquid', robinhood: 'robinhood', berachain: 'berachain', monad: 'monad', cronos: 'cronos', aptos: 'aptos', linea: 'linea', zksync: 'zksync', fantom: 'fantom', mantle: 'mantle', scroll: 'scroll', manta: 'manta', starknet: 'starknet' };
         var token = {
           sym: pair.baseToken ? pair.baseToken.symbol : (b.sym || ''),
           name: pair.baseToken ? pair.baseToken.name : '',
@@ -474,6 +474,7 @@ const CHAIN_ICONS = {
   'scroll': 'https://dd.dexscreener.com/ds-data/chains/scroll.png',
   'manta': 'https://dd.dexscreener.com/ds-data/chains/manta.png',
   'starknet': 'https://dd.dexscreener.com/ds-data/chains/starknet.png',
+  'robinhood': 'https://dd.dexscreener.com/ds-data/chains/robinhood.png',
 };
 const CHAIN_COLORS = {
   'solana': '#3dc0bc',
@@ -492,6 +493,7 @@ const CHAIN_COLORS = {
   'seiv2': '#9c1d18',
   'sonic': '#1db1f5',
   'hyperliquid': '#00e676',
+  'robinhood': '#00C805',
   'berachain': '#d4a24e',
   'monad': '#836EF9',
   'cronos': '#002D74',
@@ -738,9 +740,9 @@ function toggleChainFilter() {
       if (t.net) activeChains[t.net] = (activeChains[t.net] || 0) + 1;
     });
   }
-  var chainOrder = ['solana','eth','base','bsc','sui','tron','arbitrum','avalanche','polygon','optimism','blast','ton','pulsechain','seiv2','sonic','hyperliquid','berachain','monad','cronos','aptos','linea','zksync','fantom','mantle','scroll','manta','starknet'];
-  var chainNames = {'solana':'Solana','eth':'Ethereum','base':'Base','bsc':'BSC','sui':'Sui','tron':'Tron','arbitrum':'Arbitrum','avalanche':'Avalanche','polygon':'Polygon','optimism':'Optimism','blast':'Blast','ton':'TON','pulsechain':'Pulsechain','seiv2':'Sei','sonic':'Sonic','hyperliquid':'Hyperliquid','berachain':'Berachain','monad':'Monad','cronos':'Cronos','aptos':'Aptos','linea':'Linea','zksync':'zkSync','fantom':'Fantom','mantle':'Mantle','scroll':'Scroll','manta':'Manta','starknet':'Starknet'};
-  var chainDexImg = {'solana':'solana','eth':'ethereum','base':'base','bsc':'bsc','sui':'sui','tron':'tron','arbitrum':'arbitrum','avalanche':'avalanche','polygon':'polygon','optimism':'optimism','blast':'blast','ton':'ton','pulsechain':'pulsechain','seiv2':'seiv2','sonic':'sonic','hyperliquid':'hyperliquid','berachain':'berachain','monad':'monad','cronos':'cronos','aptos':'aptos','linea':'linea','zksync':'zksync','fantom':'fantom','mantle':'mantle','scroll':'scroll','manta':'manta','starknet':'starknet'};
+  var chainOrder = ['solana','eth','base','robinhood','bsc','sui','tron','arbitrum','avalanche','polygon','optimism','blast','ton','pulsechain','seiv2','sonic','hyperliquid','berachain','monad','cronos','aptos','linea','zksync','fantom','mantle','scroll','manta','starknet'];
+  var chainNames = {'solana':'Solana','eth':'Ethereum','base':'Base','bsc':'BSC','sui':'Sui','tron':'Tron','arbitrum':'Arbitrum','avalanche':'Avalanche','polygon':'Polygon','optimism':'Optimism','blast':'Blast','ton':'TON','pulsechain':'Pulsechain','seiv2':'Sei','sonic':'Sonic','hyperliquid':'Hyperliquid','robinhood':'Robinhood','berachain':'Berachain','monad':'Monad','cronos':'Cronos','aptos':'Aptos','linea':'Linea','zksync':'zkSync','fantom':'Fantom','mantle':'Mantle','scroll':'Scroll','manta':'Manta','starknet':'Starknet'};
+  var chainDexImg = {'solana':'solana','eth':'ethereum','base':'base','bsc':'bsc','sui':'sui','tron':'tron','arbitrum':'arbitrum','avalanche':'avalanche','polygon':'polygon','optimism':'optimism','blast':'blast','ton':'ton','pulsechain':'pulsechain','seiv2':'seiv2','sonic':'sonic','hyperliquid':'hyperliquid','robinhood':'robinhood','berachain':'berachain','monad':'monad','cronos':'cronos','aptos':'aptos','linea':'linea','zksync':'zksync','fantom':'fantom','mantle':'mantle','scroll':'scroll','manta':'manta','starknet':'starknet'};
   var html = '<button class="dropdown-item' + (currentChain === 'all' ? ' active' : '') + '" onclick="toggleChain(this,\'all\')">All Chains</button>';
   var baseLogoSvg = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='264' height='264' viewBox='0 0 264 264' fill='none'%3E%3Cpath d='M131.706 263.876C204.705 263.876 263.876 204.81 263.876 131.938C263.876 59.066 204.705 0 131.706 0C62.4541 0 5.64694 53.1764 0 120.845H174.697V143.032H0C5.64694 210.7 62.4541 263.876 131.706 263.876Z' fill='%230052FF'/%3E%3C/svg%3E";
   chainOrder.forEach(function(c) {
@@ -774,9 +776,9 @@ if (window.innerWidth <= 768) {
         if (typeof LIVE_TOKENS !== 'undefined') {
           LIVE_TOKENS.forEach(function(t) { if (t.net) activeChains[t.net] = (activeChains[t.net] || 0) + 1; });
         }
-        var chainOrder = ['solana','eth','base','bsc','sui','tron','arbitrum','avalanche','polygon','optimism','blast','ton','pulsechain','seiv2','sonic','hyperliquid','berachain','monad','cronos','aptos','linea','zksync','fantom','mantle','scroll','manta','starknet'];
-        var chainNames = {'solana':'Solana','eth':'Ethereum','base':'Base','bsc':'BSC','sui':'Sui','tron':'Tron','arbitrum':'Arbitrum','avalanche':'Avalanche','polygon':'Polygon','optimism':'Optimism','blast':'Blast','ton':'TON','pulsechain':'Pulsechain','seiv2':'Sei','sonic':'Sonic','hyperliquid':'Hyperliquid','berachain':'Berachain','monad':'Monad','cronos':'Cronos','aptos':'Aptos','linea':'Linea','zksync':'zkSync','fantom':'Fantom','mantle':'Mantle','scroll':'Scroll','manta':'Manta','starknet':'Starknet'};
-        var chainDexImg = {'solana':'solana','eth':'ethereum','base':'base','bsc':'bsc','sui':'sui','tron':'tron','arbitrum':'arbitrum','avalanche':'avalanche','polygon':'polygon','optimism':'optimism','blast':'blast','ton':'ton','pulsechain':'pulsechain','seiv2':'seiv2','sonic':'sonic','hyperliquid':'hyperliquid','berachain':'berachain','monad':'monad','cronos':'cronos','aptos':'aptos','linea':'linea','zksync':'zksync','fantom':'fantom','mantle':'mantle','scroll':'scroll','manta':'manta','starknet':'starknet'};
+        var chainOrder = ['solana','eth','base','robinhood','bsc','sui','tron','arbitrum','avalanche','polygon','optimism','blast','ton','pulsechain','seiv2','sonic','hyperliquid','berachain','monad','cronos','aptos','linea','zksync','fantom','mantle','scroll','manta','starknet'];
+        var chainNames = {'solana':'Solana','eth':'Ethereum','base':'Base','bsc':'BSC','sui':'Sui','tron':'Tron','arbitrum':'Arbitrum','avalanche':'Avalanche','polygon':'Polygon','optimism':'Optimism','blast':'Blast','ton':'TON','pulsechain':'Pulsechain','seiv2':'Sei','sonic':'Sonic','hyperliquid':'Hyperliquid','robinhood':'Robinhood','berachain':'Berachain','monad':'Monad','cronos':'Cronos','aptos':'Aptos','linea':'Linea','zksync':'zkSync','fantom':'Fantom','mantle':'Mantle','scroll':'Scroll','manta':'Manta','starknet':'Starknet'};
+        var chainDexImg = {'solana':'solana','eth':'ethereum','base':'base','bsc':'bsc','sui':'sui','tron':'tron','arbitrum':'arbitrum','avalanche':'avalanche','polygon':'polygon','optimism':'optimism','blast':'blast','ton':'ton','pulsechain':'pulsechain','seiv2':'seiv2','sonic':'sonic','hyperliquid':'hyperliquid','robinhood':'robinhood','berachain':'berachain','monad':'monad','cronos':'cronos','aptos':'aptos','linea':'linea','zksync':'zksync','fantom':'fantom','mantle':'mantle','scroll':'scroll','manta':'manta','starknet':'starknet'};
         var baseLogoSvg = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='264' height='264' viewBox='0 0 264 264' fill='none'%3E%3Cpath d='M131.706 263.876C204.705 263.876 263.876 204.81 263.876 131.938C263.876 59.066 204.705 0 131.706 0C62.4541 0 5.64694 53.1764 0 120.845H174.697V143.032H0C5.64694 210.7 62.4541 263.876 131.706 263.876Z' fill='%230052FF'/%3E%3C/svg%3E";
         var html = '<button class="dropdown-item' + (currentChain === 'all' ? ' active' : '') + '" onclick="toggleChain(this,\'all\')">All Chains</button>';
         chainOrder.forEach(function(c) {
@@ -850,7 +852,7 @@ function toggleChain(el, chain, skipPush) {
   ddEl.classList.remove('open');
   ddEl.style.display = '';
   // Update button label to show selected chain with logo
-  var chainNames = {'all':'Hot Chains','solana':'Solana','eth':'Ethereum','base':'Base','bsc':'BSC','sui':'Sui','arbitrum':'Arbitrum','avalanche':'Avalanche','polygon':'Polygon','optimism':'Optimism','blast':'Blast','ton':'TON','tron':'Tron','pulsechain':'Pulsechain','seiv2':'Sei','sonic':'Sonic','hyperliquid':'Hyperliquid','berachain':'Berachain','monad':'Monad','cronos':'Cronos','aptos':'Aptos','linea':'Linea','zksync':'zkSync','fantom':'Fantom','mantle':'Mantle','scroll':'Scroll','manta':'Manta','starknet':'Starknet'};
+  var chainNames = {'all':'Hot Chains','solana':'Solana','eth':'Ethereum','base':'Base','bsc':'BSC','sui':'Sui','arbitrum':'Arbitrum','avalanche':'Avalanche','polygon':'Polygon','optimism':'Optimism','blast':'Blast','ton':'TON','tron':'Tron','pulsechain':'Pulsechain','seiv2':'Sei','sonic':'Sonic','hyperliquid':'Hyperliquid','robinhood':'Robinhood','berachain':'Berachain','monad':'Monad','cronos':'Cronos','aptos':'Aptos','linea':'Linea','zksync':'zkSync','fantom':'Fantom','mantle':'Mantle','scroll':'Scroll','manta':'Manta','starknet':'Starknet'};
   var _clogo = function(c){ return '<img src="https://dd.dexscreener.com/ds-data/chains/'+c+'.png" width="14" height="14" style="border-radius:50%;vertical-align:-2px;margin-right:4px">'; };
   var chainLogos = {
     'solana':_clogo('solana'),'eth':_clogo('ethereum'),'base':'<img src="data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'264\' height=\'264\' viewBox=\'0 0 264 264\' fill=\'none\'%3E%3Cpath d=\'M131.706 263.876C204.705 263.876 263.876 204.81 263.876 131.938C263.876 59.066 204.705 0 131.706 0C62.4541 0 5.64694 53.1764 0 120.845H174.697V143.032H0C5.64694 210.7 62.4541 263.876 131.706 263.876Z\' fill=\'%230052FF\'/%3E%3C/svg%3E" width="14" height="14" style="border-radius:50%;vertical-align:-2px;margin-right:4px">',
@@ -859,7 +861,7 @@ function toggleChain(el, chain, skipPush) {
     'polygon':_clogo('polygon'),'optimism':_clogo('optimism'),
     'blast':_clogo('blast'),'ton':_clogo('ton'),
     'tron':_clogo('tron'),'pulsechain':_clogo('pulsechain'),'seiv2':_clogo('seiv2'),
-    'sonic':_clogo('sonic'),'hyperliquid':_clogo('hyperliquid'),'berachain':_clogo('berachain'),
+    'sonic':_clogo('sonic'),'hyperliquid':_clogo('hyperliquid'),'robinhood':_clogo('robinhood'),'berachain':_clogo('berachain'),
     'monad':_clogo('monad'),'cronos':_clogo('cronos'),'aptos':_clogo('aptos'),
     'linea':_clogo('linea'),'zksync':_clogo('zksync'),'fantom':_clogo('fantom'),
     'mantle':_clogo('mantle'),'scroll':_clogo('scroll'),'manta':_clogo('manta'),'starknet':_clogo('starknet')
@@ -1269,7 +1271,7 @@ function calcBubbleSizes(items, W, H, tfField, getToken) {
 }
 
 
-var _CHAIN_LABELS = {'all':'this filter','solana':'Solana','eth':'Ethereum','base':'Base','bsc':'BSC','sui':'Sui','tron':'Tron','arbitrum':'Arbitrum','avalanche':'Avalanche','polygon':'Polygon','optimism':'Optimism','blast':'Blast','ton':'TON','pulsechain':'Pulsechain','seiv2':'Sei','sonic':'Sonic','hyperliquid':'Hyperliquid','berachain':'Berachain','monad':'Monad','cronos':'Cronos','aptos':'Aptos','linea':'Linea','zksync':'zkSync','fantom':'Fantom','mantle':'Mantle','scroll':'Scroll','manta':'Manta','starknet':'Starknet'};
+var _CHAIN_LABELS = {'all':'this filter','solana':'Solana','eth':'Ethereum','base':'Base','bsc':'BSC','sui':'Sui','tron':'Tron','arbitrum':'Arbitrum','avalanche':'Avalanche','polygon':'Polygon','optimism':'Optimism','blast':'Blast','ton':'TON','pulsechain':'Pulsechain','seiv2':'Sei','sonic':'Sonic','hyperliquid':'Hyperliquid','robinhood':'Robinhood','berachain':'Berachain','monad':'Monad','cronos':'Cronos','aptos':'Aptos','linea':'Linea','zksync':'zkSync','fantom':'Fantom','mantle':'Mantle','scroll':'Scroll','manta':'Manta','starknet':'Starknet'};
 function showEmptyBubbleState() {
   var world = document.getElementById('bubbleWorld');
   if (!world) return;
@@ -1309,6 +1311,7 @@ var SCANNER_URLS = {
   'seiv2': 'https://seitrace.com/token/',
   'sonic': 'https://sonicscan.org/token/',
   'hyperliquid': 'https://hyperscan.xyz/token/',
+  'robinhood': 'https://robinhoodchain.blockscout.com/token/',
   'berachain': 'https://berascan.com/token/',
   'monad': 'https://monadscan.com/token/',
   'cronos': 'https://cronoscan.com/token/',
@@ -1577,7 +1580,7 @@ function loadData() {
       }
       var pairEl = tr.querySelector('.token-pair');
       if (pairEl) {
-        var pairText = '/' + (t.pair||t.quoteSymbol||({solana:'SOL',eth:'WETH',base:'WETH',bsc:'BNB',sui:'SUI',tron:'TRX',arbitrum:'WETH',avalanche:'WAVAX',polygon:'WMATIC',optimism:'WETH',blast:'WETH',ton:'TON',sonic:'S',hyperliquid:'WHYPE',berachain:'WBERA',monad:'MON',cronos:'WCRO',aptos:'APT',linea:'WETH',zksync:'WETH',fantom:'WFTM',mantle:'WMNT',scroll:'WETH',manta:'WETH',starknet:'ETH'}[t.net])||'SOL');
+        var pairText = '/' + (t.pair||t.quoteSymbol||({solana:'SOL',eth:'WETH',base:'WETH',bsc:'BNB',sui:'SUI',tron:'TRX',arbitrum:'WETH',avalanche:'WAVAX',polygon:'WMATIC',optimism:'WETH',blast:'WETH',ton:'TON',sonic:'S',hyperliquid:'WHYPE',robinhood:'WETH',berachain:'WBERA',monad:'MON',cronos:'WCRO',aptos:'APT',linea:'WETH',zksync:'WETH',fantom:'WFTM',mantle:'WMNT',scroll:'WETH',manta:'WETH',starknet:'ETH'}[t.net])||'SOL');
         if (pairEl.textContent !== pairText) pairEl.textContent = pairText;
       }
       var badgeImg = tr.querySelector('.token-badge-icon');
@@ -1644,7 +1647,7 @@ function loadData() {
       var aChainColor = CHAIN_COLORS[at.net] || CHAIN_COLORS['solana'];
       var aCa = (at.ca || '').replace(/'/g, "\\'");
       var aRowNum = aIdx + 1;
-      var aRow = '<tr' + (at.boosted ? ' class="boosted-row"' : '') + ' style="cursor:pointer" onclick="openTokenModal(\'' + aCa + '\')"><td' + (at.boosted ? ' class="boosted-cell"' : '') + '><div class="token-cell"><span class="row-num">' + aRowNum + '</span><div class="token-badges"><img class="token-badge-icon" src="' + aChainImg + '"></div><div class="token-avatar-wrap' + (at.boosted ? ' boosted-avatar' : '') + '"><img class="token-avatar-img" style="outline:1px solid ' + aChainColor + '" loading="lazy" decoding="async" src="' + imgProxy(at.img, 56, 56) + '" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'"><div class="token-avatar" style="display:' + (at.img ? 'none' : 'flex') + ';background:linear-gradient(135deg,' + aGrad + ')">' + aLetter + '</div></div><div class="token-info"><div class="token-top-row"><span class="token-symbol">' + at.sym + '</span><span class="token-pair" style="color:rgba(255,255,255,0.3);font-size:14px;font-weight:400">/' + (at.pair||at.quoteSymbol||({solana:'SOL',eth:'WETH',base:'WETH',bsc:'BNB',sui:'SUI',tron:'TRX',arbitrum:'WETH',avalanche:'WAVAX',polygon:'WMATIC',optimism:'WETH',blast:'WETH',ton:'TON',sonic:'S',hyperliquid:'WHYPE',berachain:'WBERA',monad:'MON',cronos:'WCRO',aptos:'APT',linea:'WETH',zksync:'WETH',fantom:'WFTM',mantle:'WMNT',scroll:'WETH',manta:'WETH',starknet:'ETH'}[at.net])||'SOL') + '</span>' + (at.boosted ? '<span class="boost-badge"><svg class="boost-badge-icon" viewBox="0 0 500 500" fill="none" stroke-linecap="round" stroke-linejoin="round"><g class="boost-bob"><g transform="translate(312.32 204.14) rotate(45) translate(-116.42 -151.35)"><g transform="translate(116.78 283.83) translate(-54.13 -30)"><g class="boost-fire"><g transform="translate(54.13 64.96)"><path d="M24.13-10.83C24.13 2.5 0 34.96 0 34.96S-24.13 2.5-24.13-10.83C-24.13-24.15-13.33-34.96 0-34.96 13.33-34.96 24.13-24.15 24.13-10.83Z" stroke="#ffb627" stroke-width="12"/></g></g></g><g transform="translate(47.31 232.35)"><path d="M14.22-40.34L-17.31-18.18-14.58 40.34 17.31 18.66Z" stroke="#ffb627" stroke-width="12"/></g><g transform="translate(185.53 232.35)"><path d="M-14.22-40.34L17.31-18.18 14.58 40.34-17.31 18.66Z" stroke="#ffb627" stroke-width="12"/></g><g transform="translate(116.56 146.22)"><path d="M0-116.22C3.97-116.22 7.83-114.81 10.84-112.22 23.12-101.62 53.64-69.63 55.4-12.18 57.09 43.31 51.08 116.22 51.08 116.22H-51.08S-57.09 43.31-55.4-12.18C-53.64-69.63-23.12-101.62-10.84-112.22-7.83-114.81-3.97-116.22 0-116.22Z" stroke="#ffd539" stroke-width="12"/><path class="boost-shine" d="M0-116.22C3.97-116.22 7.83-114.81 10.84-112.22 23.12-101.62 53.64-69.63 55.4-12.18 57.09 43.31 51.08 116.22 51.08 116.22H-51.08S-57.09 43.31-55.4-12.18C-53.64-69.63-23.12-101.62-10.84-112.22-7.83-114.81-3.97-116.22 0-116.22Z"/><g transform="translate(0 -116.22)"><g class="boost-sparkle"><path d="M0,-22 L4,-4 L22,0 L4,4 L0,22 L-4,4 L-22,0 L-4,-4 Z" fill="#fff8d1"/><path d="M0,-12 L2,-2 L12,0 L2,2 L0,12 L-2,2 L-12,0 L-2,-2 Z" fill="#fff"/></g></g></g><g transform="translate(116.56 273.13)"><path d="M32.09 10.7H-32.09V-10.7H32.09Z" stroke="#ffd539" stroke-width="12"/></g><circle cx="116.56" cy="105.92" r="23.48" stroke="#ffb627" stroke-width="12"/></g></g></svg>' + (at.boostCount || '') + '</span>' : '') + '</div></div></div></div></div></td><td class="price-col">' + (window._priceColMode === 'mcap' ? fmt(at.mcap) : fmtPrice(at.price)) + '</td><td class="age-col">' + fmtAge(at.age) + '</td><td class="vol-col">' + fmt(at.vol) + '</td>' + pctTd(at.p5m) + pctTd(at.p1h) + pctTd(at.p6h) + pctTd(at.p24h) + '<td class="mcap-col">' + (window._priceColMode === 'mcap' ? fmtPrice(at.price) : fmt(at.mcap)) + '</td><td class="row-dots-col"><span class="token-dots" onclick="event.stopPropagation();showRowMenu(this, ' + aIdx + ')"><svg class="dots-outline" width="20" height="20" viewBox="0 -960 960 960" fill="currentColor"><path d="M322.5-437.5Q340-455 340-480t-17.5-42.5Q305-540 280-540t-42.5 17.5Q220-505 220-480t17.5 42.5Q255-420 280-420t42.5-17.5Zm200 0Q540-455 540-480t-17.5-42.5Q505-540 480-540t-42.5 17.5Q420-505 420-480t17.5 42.5Q455-420 480-420t42.5-17.5Zm200 0Q740-455 740-480t-17.5-42.5Q705-540 680-540t-42.5 17.5Q620-505 620-480t17.5 42.5Q655-420 680-420t42.5-17.5ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"/></svg><svg class="dots-filled" width="20" height="20" viewBox="0 -960 960 960" fill="currentColor"><path d="M322.5-437.5Q340-455 340-480t-17.5-42.5Q305-540 280-540t-42.5 17.5Q220-505 220-480t17.5 42.5Q255-420 280-420t42.5-17.5Zm200 0Q540-455 540-480t-17.5-42.5Q505-540 480-540t-42.5 17.5Q420-505 420-480t17.5 42.5Q455-420 480-420t42.5-17.5Zm200 0Q740-455 740-480t-17.5-42.5Q705-540 680-540t-42.5 17.5Q620-505 620-480t17.5 42.5Q655-420 680-420t42.5-17.5ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Z"/></svg></span></td></tr>';
+      var aRow = '<tr' + (at.boosted ? ' class="boosted-row"' : '') + ' style="cursor:pointer" onclick="openTokenModal(\'' + aCa + '\')"><td' + (at.boosted ? ' class="boosted-cell"' : '') + '><div class="token-cell"><span class="row-num">' + aRowNum + '</span><div class="token-badges"><img class="token-badge-icon" src="' + aChainImg + '"></div><div class="token-avatar-wrap' + (at.boosted ? ' boosted-avatar' : '') + '"><img class="token-avatar-img" style="outline:1px solid ' + aChainColor + '" loading="lazy" decoding="async" src="' + imgProxy(at.img, 56, 56) + '" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'"><div class="token-avatar" style="display:' + (at.img ? 'none' : 'flex') + ';background:linear-gradient(135deg,' + aGrad + ')">' + aLetter + '</div></div><div class="token-info"><div class="token-top-row"><span class="token-symbol">' + at.sym + '</span><span class="token-pair" style="color:rgba(255,255,255,0.3);font-size:14px;font-weight:400">/' + (at.pair||at.quoteSymbol||({solana:'SOL',eth:'WETH',base:'WETH',bsc:'BNB',sui:'SUI',tron:'TRX',arbitrum:'WETH',avalanche:'WAVAX',polygon:'WMATIC',optimism:'WETH',blast:'WETH',ton:'TON',sonic:'S',hyperliquid:'WHYPE',robinhood:'WETH',berachain:'WBERA',monad:'MON',cronos:'WCRO',aptos:'APT',linea:'WETH',zksync:'WETH',fantom:'WFTM',mantle:'WMNT',scroll:'WETH',manta:'WETH',starknet:'ETH'}[at.net])||'SOL') + '</span>' + (at.boosted ? '<span class="boost-badge"><svg class="boost-badge-icon" viewBox="0 0 500 500" fill="none" stroke-linecap="round" stroke-linejoin="round"><g class="boost-bob"><g transform="translate(312.32 204.14) rotate(45) translate(-116.42 -151.35)"><g transform="translate(116.78 283.83) translate(-54.13 -30)"><g class="boost-fire"><g transform="translate(54.13 64.96)"><path d="M24.13-10.83C24.13 2.5 0 34.96 0 34.96S-24.13 2.5-24.13-10.83C-24.13-24.15-13.33-34.96 0-34.96 13.33-34.96 24.13-24.15 24.13-10.83Z" stroke="#ffb627" stroke-width="12"/></g></g></g><g transform="translate(47.31 232.35)"><path d="M14.22-40.34L-17.31-18.18-14.58 40.34 17.31 18.66Z" stroke="#ffb627" stroke-width="12"/></g><g transform="translate(185.53 232.35)"><path d="M-14.22-40.34L17.31-18.18 14.58 40.34-17.31 18.66Z" stroke="#ffb627" stroke-width="12"/></g><g transform="translate(116.56 146.22)"><path d="M0-116.22C3.97-116.22 7.83-114.81 10.84-112.22 23.12-101.62 53.64-69.63 55.4-12.18 57.09 43.31 51.08 116.22 51.08 116.22H-51.08S-57.09 43.31-55.4-12.18C-53.64-69.63-23.12-101.62-10.84-112.22-7.83-114.81-3.97-116.22 0-116.22Z" stroke="#ffd539" stroke-width="12"/><path class="boost-shine" d="M0-116.22C3.97-116.22 7.83-114.81 10.84-112.22 23.12-101.62 53.64-69.63 55.4-12.18 57.09 43.31 51.08 116.22 51.08 116.22H-51.08S-57.09 43.31-55.4-12.18C-53.64-69.63-23.12-101.62-10.84-112.22-7.83-114.81-3.97-116.22 0-116.22Z"/><g transform="translate(0 -116.22)"><g class="boost-sparkle"><path d="M0,-22 L4,-4 L22,0 L4,4 L0,22 L-4,4 L-22,0 L-4,-4 Z" fill="#fff8d1"/><path d="M0,-12 L2,-2 L12,0 L2,2 L0,12 L-2,2 L-12,0 L-2,-2 Z" fill="#fff"/></g></g></g><g transform="translate(116.56 273.13)"><path d="M32.09 10.7H-32.09V-10.7H32.09Z" stroke="#ffd539" stroke-width="12"/></g><circle cx="116.56" cy="105.92" r="23.48" stroke="#ffb627" stroke-width="12"/></g></g></svg>' + (at.boostCount || '') + '</span>' : '') + '</div></div></div></div></div></td><td class="price-col">' + (window._priceColMode === 'mcap' ? fmt(at.mcap) : fmtPrice(at.price)) + '</td><td class="age-col">' + fmtAge(at.age) + '</td><td class="vol-col">' + fmt(at.vol) + '</td>' + pctTd(at.p5m) + pctTd(at.p1h) + pctTd(at.p6h) + pctTd(at.p24h) + '<td class="mcap-col">' + (window._priceColMode === 'mcap' ? fmtPrice(at.price) : fmt(at.mcap)) + '</td><td class="row-dots-col"><span class="token-dots" onclick="event.stopPropagation();showRowMenu(this, ' + aIdx + ')"><svg class="dots-outline" width="20" height="20" viewBox="0 -960 960 960" fill="currentColor"><path d="M322.5-437.5Q340-455 340-480t-17.5-42.5Q305-540 280-540t-42.5 17.5Q220-505 220-480t17.5 42.5Q255-420 280-420t42.5-17.5Zm200 0Q540-455 540-480t-17.5-42.5Q505-540 480-540t-42.5 17.5Q420-505 420-480t17.5 42.5Q455-420 480-420t42.5-17.5Zm200 0Q740-455 740-480t-17.5-42.5Q705-540 680-540t-42.5 17.5Q620-505 620-480t17.5 42.5Q655-420 680-420t42.5-17.5ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"/></svg><svg class="dots-filled" width="20" height="20" viewBox="0 -960 960 960" fill="currentColor"><path d="M322.5-437.5Q340-455 340-480t-17.5-42.5Q305-540 280-540t-42.5 17.5Q220-505 220-480t17.5 42.5Q255-420 280-420t42.5-17.5Zm200 0Q540-455 540-480t-17.5-42.5Q505-540 480-540t-42.5 17.5Q420-505 420-480t17.5 42.5Q455-420 480-420t42.5-17.5Zm200 0Q740-455 740-480t-17.5-42.5Q705-540 680-540t-42.5 17.5Q620-505 620-480t17.5 42.5Q655-420 680-420t42.5-17.5ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Z"/></svg></span></td></tr>';
       tbody.insertAdjacentHTML('beforeend', aRow);
     }
   } else {
@@ -1667,7 +1670,7 @@ function loadData() {
           <span class="row-num">${rowNum}</span>
           <div class="token-badges"><img class="token-badge-icon" src="${chainImg}"></div>
           <div class="token-avatar-wrap${t.boosted ? ' boosted-avatar' : ''}"><img class="token-avatar-img" style="outline:1px solid ${chainColor}" loading="lazy" decoding="async" src="${imgProxy(t.img, 56, 56)}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="token-avatar" style="display:${t.img ? 'none' : 'flex'};background:linear-gradient(135deg,${grad})">${letter}</div></div>
-          <div class="token-info"><div class="token-top-row"><span class="token-symbol">${t.sym}</span><span class="token-pair" style="color:rgba(255,255,255,0.3);font-size:14px;font-weight:400">/${t.pair||t.quoteSymbol||({solana:'SOL',eth:'WETH',base:'WETH',bsc:'BNB',sui:'SUI',tron:'TRX',arbitrum:'WETH',avalanche:'WAVAX',polygon:'WMATIC',optimism:'WETH',blast:'WETH',ton:'TON',sonic:'S',hyperliquid:'WHYPE',berachain:'WBERA',monad:'MON',cronos:'WCRO',aptos:'APT',linea:'WETH',zksync:'WETH',fantom:'WFTM',mantle:'WMNT',scroll:'WETH',manta:'WETH',starknet:'ETH'}[t.net])||'SOL'}</span>${t.boosted ? '<span class="boost-badge"><svg class="boost-badge-icon" viewBox="0 0 500 500" fill="none" stroke-linecap="round" stroke-linejoin="round"><g class="boost-bob"><g transform="translate(312.32 204.14) rotate(45) translate(-116.42 -151.35)"><g transform="translate(116.78 283.83) translate(-54.13 -30)"><g class="boost-fire"><g transform="translate(54.13 64.96)"><path d="M24.13-10.83C24.13 2.5 0 34.96 0 34.96S-24.13 2.5-24.13-10.83C-24.13-24.15-13.33-34.96 0-34.96 13.33-34.96 24.13-24.15 24.13-10.83Z" stroke="#ffb627" stroke-width="12"/></g></g></g><g transform="translate(47.31 232.35)"><path d="M14.22-40.34L-17.31-18.18-14.58 40.34 17.31 18.66Z" stroke="#ffb627" stroke-width="12"/></g><g transform="translate(185.53 232.35)"><path d="M-14.22-40.34L17.31-18.18 14.58 40.34-17.31 18.66Z" stroke="#ffb627" stroke-width="12"/></g><g transform="translate(116.56 146.22)"><path d="M0-116.22C3.97-116.22 7.83-114.81 10.84-112.22 23.12-101.62 53.64-69.63 55.4-12.18 57.09 43.31 51.08 116.22 51.08 116.22H-51.08S-57.09 43.31-55.4-12.18C-53.64-69.63-23.12-101.62-10.84-112.22-7.83-114.81-3.97-116.22 0-116.22Z" stroke="#ffd539" stroke-width="12"/><path class="boost-shine" d="M0-116.22C3.97-116.22 7.83-114.81 10.84-112.22 23.12-101.62 53.64-69.63 55.4-12.18 57.09 43.31 51.08 116.22 51.08 116.22H-51.08S-57.09 43.31-55.4-12.18C-53.64-69.63-23.12-101.62-10.84-112.22-7.83-114.81-3.97-116.22 0-116.22Z"/><g transform="translate(0 -116.22)"><g class="boost-sparkle"><path d="M0,-22 L4,-4 L22,0 L4,4 L0,22 L-4,4 L-22,0 L-4,-4 Z" fill="#fff8d1"/><path d="M0,-12 L2,-2 L12,0 L2,2 L0,12 L-2,2 L-12,0 L-2,-2 Z" fill="#fff"/></g></g></g><g transform="translate(116.56 273.13)"><path d="M32.09 10.7H-32.09V-10.7H32.09Z" stroke="#ffd539" stroke-width="12"/></g><circle cx="116.56" cy="105.92" r="23.48" stroke="#ffb627" stroke-width="12"/></g></g></svg>' + (t.boostCount || '') + '</span>' : ''}</div></div>
+          <div class="token-info"><div class="token-top-row"><span class="token-symbol">${t.sym}</span><span class="token-pair" style="color:rgba(255,255,255,0.3);font-size:14px;font-weight:400">/${t.pair||t.quoteSymbol||({solana:'SOL',eth:'WETH',base:'WETH',bsc:'BNB',sui:'SUI',tron:'TRX',arbitrum:'WETH',avalanche:'WAVAX',polygon:'WMATIC',optimism:'WETH',blast:'WETH',ton:'TON',sonic:'S',hyperliquid:'WHYPE',robinhood:'WETH',berachain:'WBERA',monad:'MON',cronos:'WCRO',aptos:'APT',linea:'WETH',zksync:'WETH',fantom:'WFTM',mantle:'WMNT',scroll:'WETH',manta:'WETH',starknet:'ETH'}[t.net])||'SOL'}</span>${t.boosted ? '<span class="boost-badge"><svg class="boost-badge-icon" viewBox="0 0 500 500" fill="none" stroke-linecap="round" stroke-linejoin="round"><g class="boost-bob"><g transform="translate(312.32 204.14) rotate(45) translate(-116.42 -151.35)"><g transform="translate(116.78 283.83) translate(-54.13 -30)"><g class="boost-fire"><g transform="translate(54.13 64.96)"><path d="M24.13-10.83C24.13 2.5 0 34.96 0 34.96S-24.13 2.5-24.13-10.83C-24.13-24.15-13.33-34.96 0-34.96 13.33-34.96 24.13-24.15 24.13-10.83Z" stroke="#ffb627" stroke-width="12"/></g></g></g><g transform="translate(47.31 232.35)"><path d="M14.22-40.34L-17.31-18.18-14.58 40.34 17.31 18.66Z" stroke="#ffb627" stroke-width="12"/></g><g transform="translate(185.53 232.35)"><path d="M-14.22-40.34L17.31-18.18 14.58 40.34-17.31 18.66Z" stroke="#ffb627" stroke-width="12"/></g><g transform="translate(116.56 146.22)"><path d="M0-116.22C3.97-116.22 7.83-114.81 10.84-112.22 23.12-101.62 53.64-69.63 55.4-12.18 57.09 43.31 51.08 116.22 51.08 116.22H-51.08S-57.09 43.31-55.4-12.18C-53.64-69.63-23.12-101.62-10.84-112.22-7.83-114.81-3.97-116.22 0-116.22Z" stroke="#ffd539" stroke-width="12"/><path class="boost-shine" d="M0-116.22C3.97-116.22 7.83-114.81 10.84-112.22 23.12-101.62 53.64-69.63 55.4-12.18 57.09 43.31 51.08 116.22 51.08 116.22H-51.08S-57.09 43.31-55.4-12.18C-53.64-69.63-23.12-101.62-10.84-112.22-7.83-114.81-3.97-116.22 0-116.22Z"/><g transform="translate(0 -116.22)"><g class="boost-sparkle"><path d="M0,-22 L4,-4 L22,0 L4,4 L0,22 L-4,4 L-22,0 L-4,-4 Z" fill="#fff8d1"/><path d="M0,-12 L2,-2 L12,0 L2,2 L0,12 L-2,2 L-12,0 L-2,-2 Z" fill="#fff"/></g></g></g><g transform="translate(116.56 273.13)"><path d="M32.09 10.7H-32.09V-10.7H32.09Z" stroke="#ffd539" stroke-width="12"/></g><circle cx="116.56" cy="105.92" r="23.48" stroke="#ffb627" stroke-width="12"/></g></g></svg>' + (t.boostCount || '') + '</span>' : ''}</div></div>
           </div></div>
         </td>
         <td class="price-col">${window._priceColMode === 'mcap' ? fmt(t.mcap) : fmtPrice(t.price)}</td>
@@ -3323,6 +3326,7 @@ var SEARCH_CHAINS = [
   { id: 'solana', label: 'Solana' },
   { id: 'eth', label: 'Ethereum' },
   { id: 'base', label: 'Base' },
+  { id: 'robinhood', label: 'Robinhood' },
   { id: 'sui', label: 'Sui' },
   { id: 'bsc', label: 'BSC' },
   { id: 'tron', label: 'Tron' },
@@ -3438,7 +3442,7 @@ async function liveSearchDexScreener(query, resultsList, localResults) {
     var data = await resp.json();
     
     var pairs = [];
-    var chainMap = {solana:'solana',ethereum:'eth',base:'base',bsc:'bsc',sui:'sui',tron:'tron',arbitrum:'arbitrum',avalanche:'avalanche',polygon:'polygon',optimism:'optimism',blast:'blast',ton:'ton',seiv2:'seiv2',pulsechain:'pulsechain'};
+    var chainMap = {solana:'solana',ethereum:'eth',base:'base',bsc:'bsc',sui:'sui',tron:'tron',arbitrum:'arbitrum',avalanche:'avalanche',polygon:'polygon',optimism:'optimism',blast:'blast',ton:'ton',seiv2:'seiv2',pulsechain:'pulsechain',robinhood:'robinhood'};
     
     // Add DexScreener/API results
     if(data.tokens) {
@@ -3582,7 +3586,7 @@ function selectSearchResult(ca, sym) {
         if(d && d.pairs && d.pairs.length > 0) {
           var p = _pickConsensusPair(d.pairs);
           var pc = p.priceChange || {};
-          var chainMap = {solana:'solana',ethereum:'eth',base:'base',bsc:'bsc',sui:'sui',tron:'tron',arbitrum:'arbitrum',avalanche:'avalanche',polygon:'polygon',optimism:'optimism',blast:'blast',ton:'ton',seiv2:'seiv2',pulsechain:'pulsechain'};
+          var chainMap = {solana:'solana',ethereum:'eth',base:'base',bsc:'bsc',sui:'sui',tron:'tron',arbitrum:'arbitrum',avalanche:'avalanche',polygon:'polygon',optimism:'optimism',blast:'blast',ton:'ton',seiv2:'seiv2',pulsechain:'pulsechain',robinhood:'robinhood'};
           var t = {
             sym: p.baseToken.symbol.toUpperCase(), name: p.baseToken.name,
             img: (p.info && p.info.imageUrl) ? p.info.imageUrl : '',
@@ -3787,7 +3791,7 @@ async function _renderAiResults(data, query) {
 function _dexSearch(keyword) {
   var url = 'https://api.dexscreener.com/latest/dex/search?q=' + encodeURIComponent(keyword);
   return fetch(url).then(function(r){ return r.ok ? r.json() : { pairs: [] }; }).then(function(d){
-    var chainMap = {solana:'solana',ethereum:'eth',base:'base',bsc:'bsc',sui:'sui',tron:'tron',arbitrum:'arbitrum',avalanche:'avalanche',polygon:'polygon',optimism:'optimism',blast:'blast',ton:'ton',seiv2:'seiv2',pulsechain:'pulsechain'};
+    var chainMap = {solana:'solana',ethereum:'eth',base:'base',bsc:'bsc',sui:'sui',tron:'tron',arbitrum:'arbitrum',avalanche:'avalanche',polygon:'polygon',optimism:'optimism',blast:'blast',ton:'ton',seiv2:'seiv2',pulsechain:'pulsechain',robinhood:'robinhood'};
     var pairs = d.pairs || [], out = [];
     for (var i = 0; i < Math.min(pairs.length, 30); i++) {
       var p = pairs[i]; if (!p.baseToken) continue;
@@ -4219,17 +4223,6 @@ var bubs = [];
     H = hero.offsetHeight;
     if(W < 10 || H < 10){ setTimeout(init, 100); return; }
 
-    // Measure the live-indicator's COLLAPSED circle (relative to the hero/world) so bubbles
-    // pack and bounce EXACTLY to its border instead of a guessed box. Fallback if unmeasurable.
-    var _lb = { cx: W / 2, cy: 32, hw: 18, hh: 18 };
-    (function(){
-      var _le = document.querySelector('.bubble-live');
-      if(_le){
-        var _er = _le.getBoundingClientRect(), _hr = hero.getBoundingClientRect();
-        if(_er.width > 2){ _lb = { cx: (_er.left + _er.right) / 2 - _hr.left, cy: (_er.top + _er.bottom) / 2 - _hr.top, hw: _er.width / 2, hh: _er.height / 2 }; }
-      }
-    })();
-
     // Run ALL filtering BEFORE clearing the world so the shrug never flashes
     var tokens = (typeof getFilteredTokens === 'function') ? getFilteredTokens().slice(0, 200) : ((typeof LIVE_TOKENS !== 'undefined') ? LIVE_TOKENS.slice(0, 200) : []);
 
@@ -4314,9 +4307,6 @@ var bubs = [];
           var glowPad = (W < 500) ? 4 : 12;
           var x = r + glowPad + Math.random() * (W - r * 2 - glowPad * 2);
           var y = r + glowPad + Math.random() * (H - r * 2 - glowPad * 2);
-          // Keep bubbles off the live indicator: reject spots where the bubble would
-          // overlap the measured pill, so packed bubbles sit right up against its border.
-          if(Math.abs(x - _lb.cx) < _lb.hw + r && Math.abs(y - _lb.cy) < _lb.hh + r){ continue; }
           var ok = true;
           for(var j = 0; j < placed.length; j++){
             if(Math.hypot(placed[j].x - x, placed[j].y - y) < placed[j].packR + r + gap){
@@ -4421,18 +4411,6 @@ var bubs = [];
         if(b.x + edgeR > W - padX){ b.x = W - edgeR - padX; b.vx = -Math.abs(b.vx); }
         if(b.y - edgeR < padY){ b.y = edgeR + padY; b.vy = Math.abs(b.vy); }
         if(b.y + edgeR > H - padY){ b.y = H - edgeR - padY; b.vy = -Math.abs(b.vy); }
-        // Live indicator (top-center pill) is a fixed obstacle: keep each bubble's
-        // CENTER out of its footprint, ejecting out the nearest edge. A bubble can
-        // still graze the edge (a little), but never sits completely behind it.
-        var _ix = _lb.cx, _iy = _lb.cy, _ehw = _lb.hw + edgeR, _ehh = _lb.hh + edgeR;
-        var _dxr = b.x - _ix, _dyr = b.y - _iy;
-        if(Math.abs(_dxr) < _ehw && Math.abs(_dyr) < _ehh){
-          if(_ehw - Math.abs(_dxr) < _ehh - Math.abs(_dyr)){
-            var _sx = _dxr < 0 ? -1 : 1; b.x = _ix + _sx * _ehw; b.vx = _sx * (Math.abs(b.vx) + 0.2);
-          } else {
-            var _sy = _dyr < 0 ? -1 : 1; b.y = _iy + _sy * _ehh; b.vy = _sy * (Math.abs(b.vy) + 0.2);
-          }
-        }
       }
       // Overlap-resolution passes — 2 is enough since bubbles start packed and
       // drift gently; this halves the heaviest per-frame O(n^2) work.
@@ -4723,6 +4701,7 @@ function showRowMenu(dotsEl, idx) {
     seiv2: { url:'https://seitrace.com/token/'+t.ca, name:'Seitrace' },
     sonic: { url:'https://sonicscan.org/token/'+t.ca, name:'Sonicscan' },
     hyperliquid: { url:'https://hyperscan.xyz/token/'+t.ca, name:'HyperScan' },
+    robinhood: { url:'https://robinhoodchain.blockscout.com/token/'+t.ca, name:'Robinhood Explorer' },
     berachain: { url:'https://berascan.com/token/'+t.ca, name:'Berascan' },
     monad: { url:'https://monadscan.com/token/'+t.ca, name:'MonadScan' },
     cronos: { url:'https://cronoscan.com/token/'+t.ca, name:'CronoScan' },
@@ -4841,7 +4820,7 @@ function dexPricePlain(p) {
 
 // --- Price currency toggle (USD / native) ---
 var _bmPriceCurrency = 'usd'; // 'usd' or 'native'
-var _nativeTokenMap = { 'solana': 'SOL', 'eth': 'ETH', 'ethereum': 'ETH', 'base': 'ETH', 'bsc': 'BNB', 'sui': 'SUI', 'tron': 'TRX', 'arbitrum': 'ETH', 'avalanche': 'AVAX', 'polygon': 'MATIC', 'optimism': 'ETH', 'blast': 'ETH', 'ton': 'TON' };
+var _nativeTokenMap = { 'solana': 'SOL', 'eth': 'ETH', 'ethereum': 'ETH', 'base': 'ETH', 'bsc': 'BNB', 'sui': 'SUI', 'tron': 'TRX', 'arbitrum': 'ETH', 'avalanche': 'AVAX', 'polygon': 'MATIC', 'optimism': 'ETH', 'blast': 'ETH', 'ton': 'TON', 'robinhood': 'ETH' };
 
 function nativePriceFmt(p, symbol) {
   if (!p || p <= 0) return '0 ' + symbol;
@@ -4983,7 +4962,7 @@ function openBubbleModal(t) {
     var sActive = watchlist.includes(t.sym);
     starBtn.classList.toggle('active', sActive);
   }
-  var pairTokenMap = { 'solana':'/SOL','eth':'/WETH','ethereum':'/WETH','base':'/WETH','bsc':'/BNB','sui':'/SUI','tron':'/TRX','arbitrum':'/WETH','avalanche':'/WAVAX','polygon':'/WMATIC','optimism':'/WETH','blast':'/WETH','ton':'/TON','pulsechain':'/PLS','seiv2':'/WSEI' };
+  var pairTokenMap = { 'solana':'/SOL','eth':'/WETH','ethereum':'/WETH','base':'/WETH','bsc':'/BNB','sui':'/SUI','tron':'/TRX','arbitrum':'/WETH','avalanche':'/WAVAX','polygon':'/WMATIC','optimism':'/WETH','blast':'/WETH','ton':'/TON','pulsechain':'/PLS','seiv2':'/WSEI','robinhood':'/WETH' };
   document.getElementById("bmChain").textContent = pairTokenMap[(t.net || 'solana').toLowerCase()] || '/SOL';
   var ageBadge = document.getElementById("bmAgeBadge");
   if (ageBadge) ageBadge.textContent = fmtAge(t.age) || '';
@@ -5091,7 +5070,7 @@ function openBubbleModal(t) {
     'polygon':'https://polygonscan.com/token/','optimism':'https://optimistic.etherscan.io/token/',
     'blast':'https://blastscan.io/token/','ton':'https://tonviewer.com/',
     'pulsechain':'https://scan.pulsechain.com/token/','seiv2':'https://seitrace.com/token/',
-    'sonic':'https://sonicscan.org/token/','hyperliquid':'https://hyperscan.xyz/token/',
+    'sonic':'https://sonicscan.org/token/','hyperliquid':'https://hyperscan.xyz/token/','robinhood':'https://robinhoodchain.blockscout.com/token/',
     'berachain':'https://berascan.com/token/','monad':'https://monadscan.com/token/',
     'cronos':'https://cronoscan.com/token/','aptos':'https://explorer.aptoslabs.com/account/',
     'linea':'https://lineascan.build/token/','zksync':'https://explorer.zksync.io/address/',
@@ -5102,7 +5081,7 @@ function openBubbleModal(t) {
   var solscanLink = document.getElementById("bmLinkSolscan");
   if (solscanLink) {
     solscanLink.href = (chainExplorer[t.net] || 'https://solscan.io/token/') + (t.ca || '');
-    var explorerNames = {'solana':'Solscan','eth':'Etherscan','base':'Basescan','bsc':'BscScan','arbitrum':'Arbiscan','avalanche':'Snowtrace','polygon':'Polygonscan','optimism':'OP Explorer','blast':'Blastscan','ton':'TON Viewer','pulsechain':'PulseScan','seiv2':'Seitrace','sonic':'Sonicscan','hyperliquid':'HyperScan','berachain':'Berascan','monad':'MonadScan','cronos':'CronoScan','aptos':'Aptos Explorer','linea':'LineaScan','zksync':'zkSync Explorer','fantom':'FTMScan','mantle':'Mantle Explorer','scroll':'ScrollScan','manta':'Manta Explorer','starknet':'Starkscan'};
+    var explorerNames = {'solana':'Solscan','eth':'Etherscan','base':'Basescan','bsc':'BscScan','arbitrum':'Arbiscan','avalanche':'Snowtrace','polygon':'Polygonscan','optimism':'OP Explorer','blast':'Blastscan','ton':'TON Viewer','pulsechain':'PulseScan','seiv2':'Seitrace','sonic':'Sonicscan','hyperliquid':'HyperScan','robinhood':'Robinhood Explorer','berachain':'Berascan','monad':'MonadScan','cronos':'CronoScan','aptos':'Aptos Explorer','linea':'LineaScan','zksync':'zkSync Explorer','fantom':'FTMScan','mantle':'Mantle Explorer','scroll':'ScrollScan','manta':'Manta Explorer','starknet':'Starkscan'};
     try {
       var scanIcon = document.getElementById('bmSolscanIcon');
       if (scanIcon && typeof SCANNER_ICONS !== 'undefined') scanIcon.src = SCANNER_ICONS[t.net] || SCANNER_ICONS['solana'];
@@ -5267,6 +5246,7 @@ function toggleModalMenu() {
     seiv2:{url:'https://seitrace.com/token/'+t.ca,name:'Seitrace'},
     sonic:{url:'https://sonicscan.org/token/'+t.ca,name:'Sonicscan'},
     hyperliquid:{url:'https://hyperscan.xyz/token/'+t.ca,name:'HyperScan'},
+    robinhood:{url:'https://robinhoodchain.blockscout.com/token/'+t.ca,name:'Robinhood Explorer'},
     berachain:{url:'https://berascan.com/token/'+t.ca,name:'Berascan'},
     monad:{url:'https://monadscan.com/token/'+t.ca,name:'MonadScan'},
     cronos:{url:'https://cronoscan.com/token/'+t.ca,name:'CronoScan'},
@@ -5615,8 +5595,8 @@ function _initModalChart(t) {
   if (chartLoad) { chartLoad.classList.remove('hidden'); chartLoad.style.display = ''; }
 
   var chain = (t.net || 'solana').toLowerCase();
-  var pairTokenMap2 = { solana:'SOL', eth:'WETH', base:'WETH', bsc:'BNB', sui:'SUI', tron:'TRX', arbitrum:'WETH', avalanche:'WAVAX', polygon:'WMATIC', optimism:'WETH', blast:'WETH', ton:'TON', pulsechain:'PLS', seiv2:'WSEI' };
-  var geckoChainMap = { solana:'solana', eth:'eth', base:'base', bsc:'bsc', sui:'sui-network', tron:'tron', arbitrum:'arbitrum', avalanche:'avax', polygon:'polygon_pos', optimism:'optimism', blast:'blast', ton:'ton', pulsechain:'pulsechain', seiv2:'sei-evm', sonic:'sonic', hyperliquid:'hyperliquid', berachain:'berachain', monad:'monad', cronos:'cro', aptos:'aptos', linea:'linea', zksync:'zksync', fantom:'ftm', mantle:'mantle', scroll:'scroll', manta:'manta-pacific', starknet:'starknet-alpha' };
+  var pairTokenMap2 = { solana:'SOL', eth:'WETH', base:'WETH', bsc:'BNB', sui:'SUI', tron:'TRX', arbitrum:'WETH', avalanche:'WAVAX', polygon:'WMATIC', optimism:'WETH', blast:'WETH', ton:'TON', pulsechain:'PLS', seiv2:'WSEI', robinhood:'WETH' };
+  var geckoChainMap = { solana:'solana', eth:'eth', base:'base', bsc:'bsc', sui:'sui-network', tron:'tron', arbitrum:'arbitrum', avalanche:'avax', polygon:'polygon_pos', optimism:'optimism', blast:'blast', ton:'ton', pulsechain:'pulsechain', seiv2:'sei-evm', sonic:'sonic', hyperliquid:'hyperliquid', robinhood:'robinhood', berachain:'berachain', monad:'monad', cronos:'cro', aptos:'aptos', linea:'linea', zksync:'zksync', fantom:'ftm', mantle:'mantle', scroll:'scroll', manta:'manta-pacific', starknet:'starknet-alpha' };
   var dexChainMap2 = { solana:'solana', eth:'ethereum', base:'base', bsc:'bsc', sui:'sui', tron:'tron', arbitrum:'arbitrum', avalanche:'avalanche', polygon:'polygon', optimism:'optimism', blast:'blast', ton:'ton', pulsechain:'pulsechain', seiv2:'seiv2' };
   var geckoNet = geckoChainMap[chain] || chain;
   var dexNet = dexChainMap2[chain] || chain;
@@ -6196,7 +6176,7 @@ function openTokenPage(t) {
   document.getElementById('tpRCa').textContent = t.ca || '—';
   document.getElementById('tpRPairAge').textContent = fmtAge(t.age) || '—';
   document.getElementById('tpRDex').textContent = t.dex || '—';
-  var pairTokenMap = { solana:'SOL', eth:'WETH', base:'WETH', bsc:'BNB', sui:'SUI', tron:'TRX', arbitrum:'WETH', avalanche:'WAVAX', polygon:'WMATIC', optimism:'WETH', blast:'WETH', ton:'TON', pulsechain:'PLS', seiv2:'WSEI' };
+  var pairTokenMap = { solana:'SOL', eth:'WETH', base:'WETH', bsc:'BNB', sui:'SUI', tron:'TRX', arbitrum:'WETH', avalanche:'WAVAX', polygon:'WMATIC', optimism:'WETH', blast:'WETH', ton:'TON', pulsechain:'PLS', seiv2:'WSEI', robinhood:'WETH' };
   document.getElementById('tpRPair').textContent = (t.sym || '???') + ' / ' + (pairTokenMap[t.net] || 'SOL');
 
   // Social links
@@ -6301,8 +6281,8 @@ function initTokenPageChart(t) {
   container.innerHTML = '';
 
   var chain = (t.net || 'solana').toLowerCase();
-  var pairTokenMap = { solana:'SOL', eth:'WETH', base:'WETH', bsc:'BNB', sui:'SUI', tron:'TRX', arbitrum:'WETH', avalanche:'WAVAX', polygon:'WMATIC', optimism:'WETH', blast:'WETH', ton:'TON', pulsechain:'PLS', seiv2:'WSEI' };
-  var geckoChainMap = { solana:'solana', eth:'eth', base:'base', bsc:'bsc', sui:'sui-network', tron:'tron', arbitrum:'arbitrum', avalanche:'avax', polygon:'polygon_pos', optimism:'optimism', blast:'blast', ton:'ton', pulsechain:'pulsechain', seiv2:'sei-evm', sonic:'sonic', hyperliquid:'hyperliquid', berachain:'berachain', monad:'monad', cronos:'cro', aptos:'aptos', linea:'linea', zksync:'zksync', fantom:'ftm', mantle:'mantle', scroll:'scroll', manta:'manta-pacific', starknet:'starknet-alpha' };
+  var pairTokenMap = { solana:'SOL', eth:'WETH', base:'WETH', bsc:'BNB', sui:'SUI', tron:'TRX', arbitrum:'WETH', avalanche:'WAVAX', polygon:'WMATIC', optimism:'WETH', blast:'WETH', ton:'TON', pulsechain:'PLS', seiv2:'WSEI', robinhood:'WETH' };
+  var geckoChainMap = { solana:'solana', eth:'eth', base:'base', bsc:'bsc', sui:'sui-network', tron:'tron', arbitrum:'arbitrum', avalanche:'avax', polygon:'polygon_pos', optimism:'optimism', blast:'blast', ton:'ton', pulsechain:'pulsechain', seiv2:'sei-evm', sonic:'sonic', hyperliquid:'hyperliquid', robinhood:'robinhood', berachain:'berachain', monad:'monad', cronos:'cro', aptos:'aptos', linea:'linea', zksync:'zksync', fantom:'ftm', mantle:'mantle', scroll:'scroll', manta:'manta-pacific', starknet:'starknet-alpha' };
   var dexChainMap2 = { solana:'solana', eth:'ethereum', base:'base', bsc:'bsc', sui:'sui', tron:'tron', arbitrum:'arbitrum', avalanche:'avalanche', polygon:'polygon', optimism:'optimism', blast:'blast', ton:'ton', pulsechain:'pulsechain', seiv2:'seiv2' };
   var geckoNet = geckoChainMap[chain] || chain;
   var dexNet = dexChainMap2[chain] || chain;
@@ -6658,7 +6638,7 @@ function _fetchAndRenderTxns(t) {
   var body = document.getElementById('tpTxnBody');
   if (!body) return;
   var chain = (t.net || 'solana').toLowerCase();
-  var geckoChainMap2 = { solana:'solana', eth:'eth', base:'base', bsc:'bsc', sui:'sui-network', tron:'tron', arbitrum:'arbitrum', avalanche:'avax', polygon:'polygon_pos', optimism:'optimism', blast:'blast', ton:'ton', pulsechain:'pulsechain', seiv2:'sei-evm', sonic:'sonic', hyperliquid:'hyperliquid', berachain:'berachain', monad:'monad', cronos:'cro', aptos:'aptos', linea:'linea', zksync:'zksync', fantom:'ftm', mantle:'mantle', scroll:'scroll', manta:'manta-pacific', starknet:'starknet-alpha' };
+  var geckoChainMap2 = { solana:'solana', eth:'eth', base:'base', bsc:'bsc', sui:'sui-network', tron:'tron', arbitrum:'arbitrum', avalanche:'avax', polygon:'polygon_pos', optimism:'optimism', blast:'blast', ton:'ton', pulsechain:'pulsechain', seiv2:'sei-evm', sonic:'sonic', hyperliquid:'hyperliquid', robinhood:'robinhood', berachain:'berachain', monad:'monad', cronos:'cro', aptos:'aptos', linea:'linea', zksync:'zksync', fantom:'ftm', mantle:'mantle', scroll:'scroll', manta:'manta-pacific', starknet:'starknet-alpha' };
   var dexChainMap3 = { solana:'solana', eth:'ethereum', base:'base', bsc:'bsc', sui:'sui', tron:'tron', arbitrum:'arbitrum', avalanche:'avalanche', polygon:'polygon', optimism:'optimism', blast:'blast', ton:'ton', pulsechain:'pulsechain', seiv2:'seiv2' };
   var gNet = geckoChainMap2[chain] || chain;
   var dNet = dexChainMap3[chain] || chain;
@@ -6670,6 +6650,7 @@ function _fetchAndRenderTxns(t) {
     bsc: 'https://bscscan.com/tx/',
     sui: 'https://suiscan.xyz/tx/',
     tron: 'https://tronscan.org/#/transaction/',
+    robinhood: 'https://robinhoodchain.blockscout.com/tx/',
   };
   var makerExplorerMap = {
     solana: 'https://solscan.io/account/',
@@ -6678,6 +6659,7 @@ function _fetchAndRenderTxns(t) {
     bsc: 'https://bscscan.com/address/',
     sui: 'https://suiscan.xyz/account/',
     tron: 'https://tronscan.org/#/address/',
+    robinhood: 'https://robinhoodchain.blockscout.com/address/',
   };
   var explorerBase = explorerMap[chain] || explorerMap.solana;
   var makerBase = makerExplorerMap[chain] || makerExplorerMap.solana;
@@ -7119,7 +7101,7 @@ function parseDexPair(p) {
     'arbitrum': 'arbitrum', 'avalanche': 'avalanche',
     'polygon': 'polygon', 'optimism': 'optimism',
     'blast': 'blast', 'ton': 'ton',
-    'pulsechain': 'pulsechain', 'seiv2': 'seiv2'
+    'pulsechain': 'pulsechain', 'seiv2': 'seiv2', 'robinhood': 'robinhood'
   };
   var net = chainMap[p.chainId] || 'solana';
   

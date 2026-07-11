@@ -17,7 +17,7 @@
 window._earlyTokens = fetch('/api/tokens').then(function(r){return r.json()}).catch(function(){return null});
 </script>
 <meta charset="UTF-8">
-<meta name="version" content="2.5.221">
+<meta name="version" content="2.5.222">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -58,7 +58,7 @@ window._earlyTokens = fetch('/api/tokens').then(function(r){return r.json()}).ca
 </script>
 <link rel="preload" href="/inter-400.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/saira-stencil.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/styles.css?v=2.5.221">
+<link rel="stylesheet" href="/styles.css?v=2.5.222">
 </head>
 <body>
 <h1 style="position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0">Memescopes — Live Meme Coin Bubble Map &amp; Scanner for Solana, Ethereum, Base &amp; BSC</h1>
@@ -145,6 +145,10 @@ window._earlyTokens = fetch('/api/tokens').then(function(r){return r.json()}).ca
     <a class="ms-nav-link" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'base');" title="Base">
       <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='264' height='264' viewBox='0 0 264 264' fill='none'%3E%3Cpath d='M131.706 263.876C204.705 263.876 263.876 204.81 263.876 131.938C263.876 59.066 204.705 0 131.706 0C62.4541 0 5.64694 53.1764 0 120.845H174.697V143.032H0C5.64694 210.7 62.4541 263.876 131.706 263.876Z' fill='%230052FF'/%3E%3C/svg%3E" alt="" class="ms-nav-chain-icon">
       <span class="ms-nav-text">Base</span>
+    </a>
+    <a class="ms-nav-link" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'robinhood');" title="Robinhood">
+      <img src="data:image/png;base64,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" alt="" class="ms-nav-chain-icon">
+      <span class="ms-nav-text">Robinhood</span>
     </a>
     <a class="ms-nav-link" href="#" onclick="event.preventDefault(); if(typeof toggleChain==='function') toggleChain(this,'sui');" title="Sui">
       <svg class="ms-nav-chain-icon" aria-hidden="true" preserveAspectRatio="xMidYMid slice" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="m94.013 53.384-.002.005a38.17 38.17 0 0 1 8.331 23.861c0 9.154-3.21 17.56-8.565 24.152l-.461.567-.122-.721a34.22 34.22 0 0 0-.368-1.857C90.145 87.6 81.414 77.488 67.042 69.3c-9.705-5.514-15.26-12.153-16.718-19.696-.942-4.878-.242-9.778 1.112-13.974s3.366-7.71 5.075-9.826l5.592-6.847a2.45 2.45 0 0 1 3.796 0l28.115 34.428zm8.843-6.84L65.385.657a1.79 1.79 0 0 0-2.77 0L25.143 46.542l-.121.154A49.77 49.77 0 0 0 14 78.009C14 105.618 36.385 128 64 128s50-22.382 50-49.991a49.77 49.77 0 0 0-11.022-31.313l-.122-.152zm-68.747 6.692 3.353-4.106.101.758c.08.6.178 1.204.293 1.81 2.169 11.395 9.916 20.896 22.868 28.255 11.258 6.417 17.814 13.796 19.702 21.889.788 3.377.929 6.7.587 9.605l-.021.18-.163.079a38.195 38.195 0 0 1-16.831 3.882c-21.175 0-38.342-17.163-38.342-38.336 0-9.09 3.165-17.443 8.453-24.014z" fill-rule="evenodd" fill="#4ca3ff"></path></svg>
@@ -625,17 +629,6 @@ window._earlyTokens = fetch('/api/tokens').then(function(r){return r.json()}).ca
 <!-- BUBBLE SECTION -->
     <div class="bubble-hero" id="bubbleHero">
       <div class="bubble-world" id="bubbleWorld"></div>
-      <!-- Live indicator — broadcast pulse so users know the bubble view is live (real-time). -->
-      <div class="bubble-live" aria-label="Live" title="Live">
-        <svg viewBox="17.6 8.6 28.8 22.8" aria-hidden="true">
-          <path class="bl-arc bl-out" d="M23.6 10 A 13 13 0 0 0 23.6 30"/>
-          <path class="bl-arc bl-out" d="M40.4 10 A 13 13 0 0 1 40.4 30"/>
-          <path class="bl-arc bl-in"  d="M26.9 13.9 A 8 8 0 0 0 26.9 26.1"/>
-          <path class="bl-arc bl-in"  d="M37.1 13.9 A 8 8 0 0 1 37.1 26.1"/>
-          <circle class="bl-dot" cx="32" cy="20" r="3.6"/>
-        </svg>
-        <span class="bl-text">Live</span>
-      </div>
 
     </div>
     
@@ -713,7 +706,7 @@ window._earlyTokens = fetch('/api/tokens').then(function(r){return r.json()}).ca
     </div>
 
   <div style="text-align:center;padding:24px 16px 32px;border-top:1px solid rgba(255,255,255,0.04);margin-top:28px">
-    <div style="font-size:11px;color:rgba(255,255,255,0.25);font-family:'Inter',sans-serif;margin-bottom:6px">memescope.eth &middot; <span data-version>v2.5.221</span></div>
+    <div style="font-size:11px;color:rgba(255,255,255,0.25);font-family:'Inter',sans-serif;margin-bottom:6px">memescope.eth &middot; <span data-version>v2.5.222</span></div>
     <div style="font-size:11px;color:rgba(255,255,255,0.2);font-family:'Inter',sans-serif">&copy; 2026 Memescopes. All rights reserved.</div>
   </div>
 
@@ -1499,13 +1492,13 @@ window._earlyTokens = fetch('/api/tokens').then(function(r){return r.json()}).ca
 
 
 <script>if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js')})}</script>
-<script src="/embed.js?v=2.5.221" defer></script>
-<script src="/app.js?v=2.5.221" defer></script>
-<script src="/wallet.js?v=2.5.221" defer></script>
-<script src="/boost.js?v=2.5.221" defer></script>
-<script src="/extras.js?v=2.5.221" defer></script>
-<script src="/multichart.js?v=2.5.221" defer></script>
-<script src="/ens.js?v=2.5.221" defer></script>
+<script src="/embed.js?v=2.5.222" defer></script>
+<script src="/app.js?v=2.5.222" defer></script>
+<script src="/wallet.js?v=2.5.222" defer></script>
+<script src="/boost.js?v=2.5.222" defer></script>
+<script src="/extras.js?v=2.5.222" defer></script>
+<script src="/multichart.js?v=2.5.222" defer></script>
+<script src="/ens.js?v=2.5.222" defer></script>
 <div class="wl-share-menu" id="wlShareMenu">
   <a class="wl-share-option" onclick="shareWatchlist('x')"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg> X (Twitter)</a>
   <a class="wl-share-option" onclick="shareWatchlist('telegram')"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.161c-.18 1.897-.962 6.502-1.359 8.627-.168.9-.5 1.201-.82 1.23-.697.064-1.226-.461-1.901-.903-1.056-.692-1.653-1.123-2.678-1.799-1.185-.781-.417-1.21.258-1.911.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.139-5.062 3.345-.479.329-.913.489-1.302.481-.428-.009-1.252-.242-1.865-.441-.751-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.831-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635.099-.002.321.023.465.141.12.098.153.229.168.327.016.098.036.322.02.496z"/></svg> Telegram</a>
