@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.222';
+var APP_VERSION = '2.5.223';
 
 // Image proxy — shrinks token images so they load fast even on bad wifi.
 // DexScreener's CDN (98%+ of token images) natively resizes via query params,
@@ -3356,6 +3356,20 @@ var SEARCH_CHAINS = [
 function _buildSearchChainRow() {
   var row = document.getElementById('searchChainRow');
   if (!row) return;
+  // Mouse wheels only emit VERTICAL deltas, so without this the row is only
+  // scrollable by trackpad. Map wheel-down/up to horizontal scroll (bound once;
+  // listeners on the row survive the innerHTML rebuilds below). Trackpad
+  // horizontal swipes still work natively (their deltaX dominates).
+  if (!row._wheelBound) {
+    row._wheelBound = true;
+    row.addEventListener('wheel', function(e) {
+      if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+        e.preventDefault();
+        // Firefox mouse wheels report deltaMode=1 (lines, ~3/notch) — scale to px.
+        row.scrollLeft += e.deltaY * (e.deltaMode === 1 ? 24 : 1);
+      }
+    }, { passive: false });
+  }
   row.innerHTML = SEARCH_CHAINS.map(function(c) {
     var icon = c.icon || CHAIN_ICONS[c.id] || '';
     var active = (_searchChain === c.id) ? ' active' : '';
