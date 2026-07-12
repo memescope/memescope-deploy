@@ -35,7 +35,7 @@ const DEXSCREENER_API = 'https://api.dexscreener.com/latest/dex/tokens/';
 
 // Bumped on every deploy (with package.json/app.js/sw.js). Edge-cache keys for HTML
 // include this, so a new deploy = new key = old cached HTML is ignored instantly.
-const CACHE_VERSION = '2.5.223';
+const CACHE_VERSION = '2.5.224';
 
 const VALID_CHAINS = new Set([
   'solana', 'eth', 'ethereum', 'base', 'bsc', 'sui', 'tron',
@@ -533,7 +533,7 @@ function addSecurityHeaders(headers) {
 }
 
 // ===== AI Search (natural-language → coin filters via Claude) =====
-const AI_SEARCH_CHAINS = ['solana','eth','base','sui','bsc','tron','arbitrum','avalanche','polygon','optimism','blast','ton','pulsechain','seiv2','sonic','hyperliquid','berachain','monad','cronos','aptos','linea','zksync','fantom','mantle','scroll','manta','starknet'];
+const AI_SEARCH_CHAINS = ['solana','eth','base','robinhood','sui','bsc','tron','arbitrum','avalanche','polygon','optimism','blast','ton','pulsechain','seiv2','sonic','hyperliquid','berachain','monad','cronos','aptos','linea','zksync','fantom','mantle','scroll','manta','starknet'];
 const AI_FILTER_TOOL = {
   name: 'filter_coins',
   description: 'Convert a user request about meme coins into structured filters applied to the live coin list. Always call this tool.',
@@ -548,7 +548,14 @@ const AI_FILTER_TOOL = {
       max_market_cap: { type: 'number', description: 'Maximum market cap in USD.' },
       min_volume: { type: 'number', description: 'Minimum 24h volume in USD.' },
       min_change_24h: { type: 'number', description: 'Minimum 24h price change in percent (e.g. 50 means +50%).' },
-      sort_by: { type: 'string', enum: ['market_cap','volume','change_24h','trending','age'], description: "Sort field. 'trending' = biggest movers; 'age' = newest first." },
+      min_change_1h: { type: 'number', description: 'Minimum 1h price change in percent — use for "last hour" requests.' },
+      min_change_5m: { type: 'number', description: 'Minimum 5-minute price change in percent — for "right now"/"this minute" momentum.' },
+      min_change_6h: { type: 'number', description: 'Minimum 6h price change in percent.' },
+      max_age_hours: { type: 'number', description: "Only coins whose trading pair was created within the last N hours. Use for 'new'/'just launched': 24 = today, 1 = last hour, 168 = this week." },
+      min_liquidity: { type: 'number', description: 'Minimum liquidity in USD. A $1,000 floor is applied by default to hide dust/rugs — set 0 explicitly ONLY if the user asks to include micro/dust coins.' },
+      min_txns: { type: 'integer', description: 'Minimum 24h transaction count (buys+sells) — use for "actively traded".' },
+      boosted_only: { type: 'boolean', description: 'true = only boosted/promoted coins.' },
+      sort_by: { type: 'string', enum: ['market_cap','volume','change_24h','change_1h','change_5m','change_6h','liquidity','txns','trending','age'], description: "Sort field. 'trending' = biggest movers; 'age' = newest first." },
       direction: { type: 'string', enum: ['asc','desc'], description: 'Sort direction; default desc (highest first).' },
       limit: { type: 'integer', description: 'Max coins to return (1-50). Default 25.' },
     },
@@ -560,7 +567,7 @@ const AI_SYSTEM_PROMPT =
   "When the request names a THEME (dogs, cats, frogs, AI, Trump, etc.), fill 'keywords' with several search terms — the theme word plus well-known related coin names and tickers (dogs -> dog, doge, shiba, shib, inu, floki, bonk, wif; frogs -> frog, pepe, wojak) — so coins that don't literally contain the theme word are still found. For a specific coin name, just use that name. " +
   "Supported chains: " +
   AI_SEARCH_CHAINS.join(', ') +
-  ". For 'newest' or 'just launched' use sort_by=age. For 'trending', 'top gainers', or 'pumping' use sort_by=trending or change_24h.";
+  ". For 'new', 'newest', 'just launched', or 'launched today' set max_age_hours (24 for today, 168 for this week) AND sort_by=age — never rely on sort alone to mean new. For 'trending', 'top gainers', or 'pumping' use sort_by=trending or change_24h; for gains 'in the last hour' use min_change_1h / sort_by=change_1h; for 'pumping RIGHT NOW' / 'this minute' use min_change_5m / sort_by=change_5m. A $1,000 liquidity floor is applied by default so results aren't dust — set min_liquidity=0 only when the user explicitly wants micro/dust coins, or higher when they ask for 'real liquidity'. 'Actively traded' -> min_txns (e.g. 500). 'Boosted' or 'promoted' -> boosted_only=true. There is NO holder-count or buy/sell-pressure data: if the user asks for those, apply the filters you CAN and add a short note in the summary that this data isn't available (e.g. 'holder counts not available').";
 
 export default {
   async fetch(request, env, ctx) {

@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.223';
+var APP_VERSION = '2.5.224';
 
 // Image proxy — shrinks token images so they load fast even on bad wifi.
 // DexScreener's CDN (98%+ of token images) natively resizes via query params,
@@ -3815,6 +3815,8 @@ function _dexSearch(keyword) {
         img: (p.info && p.info.imageUrl) ? p.info.imageUrl : '',
         price: p.priceUsd ? parseFloat(p.priceUsd) : 0,
         p24h: pc.h24 ? parseFloat(pc.h24) : 0, p1h: pc.h1 ? parseFloat(pc.h1) : 0,
+        p5m: pc.m5 ? parseFloat(pc.m5) : 0, p6h: pc.h6 ? parseFloat(pc.h6) : 0,
+        txn: (p.txns && p.txns.h24) ? ((p.txns.h24.buys||0) + (p.txns.h24.sells||0)) : 0,
         net: chainMap[p.chainId] || p.chainId || 'solana', ca: p.baseToken.address || '',
         mcap: p.marketCap || p.fdv || 0, vol: p.volume ? (p.volume.h24||0) : 0,
         liq: p.liquidity ? (p.liquidity.usd||0) : 0,
@@ -3835,6 +3837,15 @@ function _mergeTokens(arrays) {
   }
   return out;
 }
+// A token's age in ms — prefers the raw pair-creation timestamp (dex search results);
+// scanner tokens only carry an age STRING ('45m','10h','3d'), so parse that as fallback.
+// null = unknown. Without this, age filter/sort silently no-ops on the live list.
+function _aiAgeMs(t) {
+  if (t._created) return Date.now() - t._created;
+  var m = /^(\d+)([mhdy])$/.exec(t.age || '');
+  if (!m) return null;
+  return (+m[1]) * ({ m: 60e3, h: 3600e3, d: 86400e3, y: 31536e6 })[m[2]];
+}
 function _applyAiFilters(list, f) {
   var out = list.filter(function(t) {
     if (f.chain && f.chain !== 'all' && t.net !== f.chain) return false;
@@ -3842,12 +3853,28 @@ function _applyAiFilters(list, f) {
     if (f.max_market_cap != null && (t.mcap||0) > f.max_market_cap) return false;
     if (f.min_volume != null && (t.vol||0) < f.min_volume) return false;
     if (f.min_change_24h != null && (t.p24h||0) < f.min_change_24h) return false;
+    if (f.min_change_1h != null && (t.p1h||0) < f.min_change_1h) return false;
+    if (f.min_change_5m != null && (t.p5m||0) < f.min_change_5m) return false;
+    if (f.min_change_6h != null && (t.p6h||0) < f.min_change_6h) return false;
+    if (f.max_age_hours != null) {
+      var _ms = _aiAgeMs(t);
+      if (_ms == null || _ms > f.max_age_hours * 3600e3) return false;
+    }
+    // Junk floor: hide dust/rug pools by default. The AI sets min_liquidity=0
+    // explicitly when the user really wants micro/dust coins.
+    var _liqFloor = (f.min_liquidity != null) ? f.min_liquidity : 1000;
+    if (_liqFloor > 0 && (t.liq||0) < _liqFloor) return false;
+    if (f.min_txns != null && (t.txn||0) < f.min_txns) return false;
+    if (f.boosted_only && !t.boosted) return false;
     return true;
   });
-  var fieldMap = { market_cap:'mcap', volume:'vol', change_24h:'p24h' };
+  var fieldMap = { market_cap:'mcap', volume:'vol', change_24h:'p24h', change_1h:'p1h', change_5m:'p5m', change_6h:'p6h', liquidity:'liq', txns:'txn' };
   var dir = f.direction === 'asc' ? 1 : -1;
   if (f.sort_by === 'trending') out.sort(function(a,b){ return Math.abs(b.p24h||0) - Math.abs(a.p24h||0); });
-  else if (f.sort_by === 'age') out.sort(function(a,b){ return (b._created||0) - (a._created||0); });
+  else if (f.sort_by === 'age') out.sort(function(a,b){
+    var am = _aiAgeMs(a), bm = _aiAgeMs(b);
+    return (am == null ? Infinity : am) - (bm == null ? Infinity : bm); // newest first, unknown last
+  });
   else if (fieldMap[f.sort_by]) { var fld = fieldMap[f.sort_by]; out.sort(function(a,b){ return dir * ((a[fld]||0) - (b[fld]||0)); }); }
   else out.sort(function(a,b){ return (b.mcap||0) - (a.mcap||0); });
   var lim = (f.limit && f.limit > 0) ? Math.min(f.limit, 50) : 25;
