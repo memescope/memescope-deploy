@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.224';
+var APP_VERSION = '2.5.225';
 
 // Image proxy — shrinks token images so they load fast even on bad wifi.
 // DexScreener's CDN (98%+ of token images) natively resizes via query params,
@@ -1272,9 +1272,19 @@ function calcBubbleSizes(items, W, H, tfField, getToken) {
 
 
 var _CHAIN_LABELS = {'all':'this filter','solana':'Solana','eth':'Ethereum','base':'Base','bsc':'BSC','sui':'Sui','tron':'Tron','arbitrum':'Arbitrum','avalanche':'Avalanche','polygon':'Polygon','optimism':'Optimism','blast':'Blast','ton':'TON','pulsechain':'Pulsechain','seiv2':'Sei','sonic':'Sonic','hyperliquid':'Hyperliquid','robinhood':'Robinhood','berachain':'Berachain','monad':'Monad','cronos':'Cronos','aptos':'Aptos','linea':'Linea','zksync':'zkSync','fantom':'Fantom','mantle':'Mantle','scroll':'Scroll','manta':'Manta','starknet':'Starknet'};
+// Lift the boot loading screen — called at the FIRST bubble render (and the
+// empty/shrug state), never earlier: the circle stays centered until the
+// bubble box has real content, so it's never seen blank. One circle, no moves.
+function _hideBootLoader() {
+  var ls = document.getElementById('loadingScreen');
+  if (!ls) return;
+  ls.style.opacity = '0';
+  setTimeout(function() { ls.remove(); }, 400);
+}
 function showEmptyBubbleState() {
   var world = document.getElementById('bubbleWorld');
   if (!world) return;
+  _hideBootLoader();
   bubs = [];
   var label = _CHAIN_LABELS[currentChain] || currentChain || 'this chain';
   world.innerHTML = '<div class="bubble-empty-state">' +
@@ -4382,6 +4392,7 @@ var bubs = [];
     // Size the canvas to the world and reveal it (one fade-in for the whole layer)
     BubbleCanvas.resize(W, H);
     world.classList.add('ready');
+    _hideBootLoader();
 
     // Animation loop
     function tick(){
@@ -6956,10 +6967,11 @@ async function fetchLiveTokens() {
     if (!window._firstLoadDone) {
       var app = document.querySelector('.app');
       if (app && !app.classList.contains('ready')) {
-        loadData(); // renders skeleton rows
+        loadData(); // renders skeleton rows (behind the boot loader)
         app.classList.add('ready');
-        var ls = document.getElementById('loadingScreen');
-        if (ls) { ls.style.opacity = '0'; setTimeout(function() { ls.remove(); }, 400); }
+        // NOTE: the boot loading screen intentionally STAYS up here — it only
+        // lifts when the first bubbles actually render (or the empty state),
+        // so the bubble box is never seen blank. See _hideBootLoader().
       }
     }
     console.log('Memescopes: Fetching...');
@@ -7087,7 +7099,7 @@ async function fetchLiveTokens() {
               // instead of settling on raw data then re-settling/shrinking when verify
               // lands. (Filter changes feel clean for exactly this reason: pre-verified.)
               loadData();
-              if(!window._firstLoadDone) { window._firstLoadDone = true; window.scrollTo(0, 0); checkUrlForToken(); var ls=document.getElementById('loadingScreen'); if(ls) ls.remove(); var app=document.querySelector('.app'); if(app) app.classList.add('ready'); }
+              if(!window._firstLoadDone) { window._firstLoadDone = true; window.scrollTo(0, 0); checkUrlForToken(); var app=document.querySelector('.app'); if(app) app.classList.add('ready'); }
               window._bubbleBuildDeferred = true;   // hold off waitAndInit until verified
               var _builtOnce = false;
               var _buildFirst = 0;
@@ -7104,7 +7116,6 @@ async function fetchLiveTokens() {
                 _injectMissingBoostedTokens();
                 if(typeof init === 'function') init();   // builds gold from frame 0
                 if(typeof _reconcileBoosts === 'function') _reconcileBoosts();   // safety after build
-                var bl = document.getElementById('bubbleLoading'); if(bl) bl.classList.add('hidden');
               };
               verifyTopTokens(true).then(_buildBubblesOnce, _buildBubblesOnce);
               setTimeout(_buildBubblesOnce, 2200);   // fallback: never let the bubbles hang

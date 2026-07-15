@@ -7328,11 +7328,19 @@
   }
   .mob-menu-chains-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    /* 6 tracks with each chain spanning 2 = visually 3 columns, but lets the
+       LAST row recenter itself when it has 1 or 2 leftover chains instead of
+       leaving an ugly gap (chain count isn't a multiple of 3). */
+    grid-template-columns: repeat(6, 1fr);
     gap: 14px 0;
     padding: 4px 0;
     justify-items: center;
   }
+  .mob-menu-chain { grid-column: span 2; }
+  /* one leftover chain → park it in the middle column */
+  .mob-menu-chain:nth-child(3n+1):last-child { grid-column: 3 / span 2; }
+  /* two leftovers → start half a cell in; the second lands beside it, centered */
+  .mob-menu-chain:nth-child(3n+1):nth-last-child(2) { grid-column: 2 / span 2; }
   .mob-menu-chain {
     display: flex;
     flex-direction: column;
