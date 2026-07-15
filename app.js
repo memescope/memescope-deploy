@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.225';
+var APP_VERSION = '2.5.226';
 
 // Image proxy — shrinks token images so they load fast even on bad wifi.
 // DexScreener's CDN (98%+ of token images) natively resizes via query params,
@@ -5727,6 +5727,22 @@ function _initModalChart(t) {
         if (!pool) { _seedFromLivePrice(); return; }
         var url = 'https://api.geckoterminal.com/api/v2/networks/'+geckoNet+'/pools/'+pool+'/ohlcv/'+rc.agg+'?aggregate='+rc.mult+'&limit=1000&currency=usd';
         var attempt = 0;
+        var triedAltPool = false;
+        // Same alt-pool retry as the token-page chart: DexScreener's top pair may be a
+        // pool GeckoTerminal doesn't index (zero bars) even when it charts the token.
+        function _tryAltPool() {
+          if (triedAltPool) { _seedFromLivePrice(); return; }
+          triedAltPool = true;
+          geckoFetch('https://api.geckoterminal.com/api/v2/networks/'+geckoNet+'/tokens/'+t.ca+'/pools?page=1',{headers:{'Accept':'application/json'}}).then(function(r){return r.json()}).then(function(pd){
+            var alt = pd && pd.data && pd.data.length && pd.data[0].attributes && pd.data[0].attributes.address;
+            if (alt && alt !== pool) {
+              t._discoveredPool = alt;
+              url = 'https://api.geckoterminal.com/api/v2/networks/'+geckoNet+'/pools/'+alt+'/ohlcv/'+rc.agg+'?aggregate='+rc.mult+'&limit=1000&currency=usd';
+              attempt = 0;
+              tryFetch();
+            } else { _seedFromLivePrice(); }
+          }).catch(function(){ _seedFromLivePrice(); });
+        }
         function tryFetch() {
           attempt++;
           var ctrl = new AbortController();
@@ -5746,7 +5762,7 @@ function _initModalChart(t) {
             if (!d) return;
             var list = d && d.data && d.data.attributes && d.data.attributes.ohlcv_list;
             if (!list || !list.length) {
-              _seedFromLivePrice();
+              _tryAltPool(); // pool may be unindexed by Gecko — try its own top pool once
               return;
             }
             var seen = {};
@@ -6423,6 +6439,24 @@ function initTokenPageChart(t) {
         if (!pool) { _seedFromLivePrice2(); return; }
         var url = 'https://api.geckoterminal.com/api/v2/networks/'+geckoNet+'/pools/'+pool+'/ohlcv/'+rc.agg+'?aggregate='+rc.mult+'&limit=1000&currency=usd';
         var attempt = 0;
+        var triedAltPool = false;
+        // The discovered pool is usually DexScreener's top pair — GeckoTerminal may not
+        // index that exact pool (e.g. Robinhood Uniswap v4 pool ids), returning ZERO bars
+        // even though it charts the token's other pools fine. Before declaring "no data",
+        // retry once with GeckoTerminal's OWN top pool for this token.
+        function _tryAltPool() {
+          if (triedAltPool) { _seedFromLivePrice2(); return; }
+          triedAltPool = true;
+          geckoFetch('https://api.geckoterminal.com/api/v2/networks/'+geckoNet+'/tokens/'+t.ca+'/pools?page=1',{headers:{'Accept':'application/json'}}).then(function(r){return r.json()}).then(function(pd){
+            var alt = pd && pd.data && pd.data.length && pd.data[0].attributes && pd.data[0].attributes.address;
+            if (alt && alt !== pool) {
+              t._discoveredPool = alt;
+              url = 'https://api.geckoterminal.com/api/v2/networks/'+geckoNet+'/pools/'+alt+'/ohlcv/'+rc.agg+'?aggregate='+rc.mult+'&limit=1000&currency=usd';
+              attempt = 0;
+              tryFetch();
+            } else { _seedFromLivePrice2(); }
+          }).catch(function(){ _seedFromLivePrice2(); });
+        }
         function tryFetch() {
           attempt++;
           var ctrl = new AbortController();
@@ -6440,7 +6474,7 @@ function initTokenPageChart(t) {
             if (!d) return;
             var list = d && d.data && d.data.attributes && d.data.attributes.ohlcv_list;
             if (!list || !list.length) {
-              _seedFromLivePrice2();
+              _tryAltPool(); // pool may be unindexed by Gecko — try its own top pool once
               return;
             }
             var seen = {};
