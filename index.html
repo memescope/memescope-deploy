@@ -17,7 +17,7 @@
 window._earlyTokens = fetch('/api/tokens').then(function(r){return r.json()}).catch(function(){return null});
 </script>
 <meta charset="UTF-8">
-<meta name="version" content="2.5.226">
+<meta name="version" content="2.5.227">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -58,7 +58,7 @@ window._earlyTokens = fetch('/api/tokens').then(function(r){return r.json()}).ca
 </script>
 <link rel="preload" href="/inter-400.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/saira-stencil.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/styles.css?v=2.5.226">
+<link rel="stylesheet" href="/styles.css?v=2.5.227">
 </head>
 <body>
 <h1 style="position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0">Memescopes — Live Meme Coin Bubble Map &amp; Scanner for Solana, Ethereum, Base &amp; BSC</h1>
@@ -686,14 +686,14 @@ window._earlyTokens = fetch('/api/tokens').then(function(r){return r.json()}).ca
           <tr>
             <th data-col="token" style="text-align:left;padding-left:10px;font-size:13px;font-weight:500;text-transform:uppercase;letter-spacing:0.8px">Token</th>
             <th data-col="price" class="sortable" onclick="sortByColumn(window._priceColMode||'price')"><span id="priceColLabel">Price</span> <svg onclick="event.stopPropagation();togglePriceCol()" width="16" height="16" viewBox="0 -960 960 960" fill="#e3e3e3" style="cursor:pointer;vertical-align:middle;margin-left:3px" title="Swap Price/MCap"><path d="M280-120 80-320l200-200 57 56-104 104h607v80H233l104 104-57 56Zm400-320-57-56 104-104H120v-80h607L623-784l57-56 200 200-200 200Z"/></svg></th>
-            <th data-col="age" class="sortable" onclick="sortByColumn('age')"> Age <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" class="sort-icon"><path d="M7 10l5-5 5 5z"/><path d="M7 14l5 5 5-5z"/></svg></th>
+            <th data-col="age" class="sortable ms-tip" data-tip="Time since the token's trading pair was created" onclick="sortByColumn('age')"> Age<svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" class="sort-icon"><path d="M7 10l5-5 5 5z"/><path d="M7 14l5 5 5-5z"/></svg></th>
 
-            <th data-col="vol" class="sortable" onclick="sortByColumn('vol')"> Volume <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" class="sort-icon"><path d="M7 10l5-5 5 5z"/><path d="M7 14l5 5 5-5z"/></svg></th>
-            <th data-col="p5m" class="sortable" onclick="sortByColumn('p5m')"> 5M <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" class="sort-icon"><path d="M7 10l5-5 5 5z"/><path d="M7 14l5 5 5-5z"/></svg></th>
-            <th data-col="p1h" class="sortable" onclick="sortByColumn('p1h')"> 1H <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" class="sort-icon"><path d="M7 10l5-5 5 5z"/><path d="M7 14l5 5 5-5z"/></svg></th>
-        <th data-col="p6h" class="sortable" onclick="sortByColumn('p6h')"> 6H <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" class="sort-icon"><path d="M7 10l5-5 5 5z"/><path d="M7 14l5 5 5-5z"/></svg></th>
-            <th data-col="p24h" class="sortable" onclick="sortByColumn('p24h')"> 24H <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" class="sort-icon"><path d="M7 10l5-5 5 5z"/><path d="M7 14l5 5 5-5z"/></svg></th>
-            <th data-col="mcap" class="sortable" onclick="sortByColumn(window._priceColMode==='mcap'?'price':'mcap')"><span id="mcapColLabel">MCap</span></th>
+            <th data-col="vol" class="sortable ms-tip" data-tip="Buy + sell trading volume over the last 24 hours" onclick="sortByColumn('vol')"> Volume<svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" class="sort-icon"><path d="M7 10l5-5 5 5z"/><path d="M7 14l5 5 5-5z"/></svg></th>
+            <th data-col="p5m" class="sortable ms-tip" data-tip="Price change over the last 5 minutes" onclick="sortByColumn('p5m')"> 5M<svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" class="sort-icon"><path d="M7 10l5-5 5 5z"/><path d="M7 14l5 5 5-5z"/></svg></th>
+            <th data-col="p1h" class="sortable ms-tip" data-tip="Price change over the last hour" onclick="sortByColumn('p1h')"> 1H<svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" class="sort-icon"><path d="M7 10l5-5 5 5z"/><path d="M7 14l5 5 5-5z"/></svg></th>
+        <th data-col="p6h" class="sortable ms-tip" data-tip="Price change over the last 6 hours" onclick="sortByColumn('p6h')"> 6H<svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" class="sort-icon"><path d="M7 10l5-5 5 5z"/><path d="M7 14l5 5 5-5z"/></svg></th>
+            <th data-col="p24h" class="sortable ms-tip ms-tip-left" data-tip="Price change over the last 24 hours" onclick="sortByColumn('p24h')"> 24H<svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" class="sort-icon"><path d="M7 10l5-5 5 5z"/><path d="M7 14l5 5 5-5z"/></svg></th>
+            <th data-col="mcap" class="sortable ms-tip ms-tip-left" data-tip="Market cap — token price × total supply" onclick="sortByColumn(window._priceColMode==='mcap'?'price':'mcap')"><span id="mcapColLabel">MCap</span></th>
             <th data-col="dots" class="row-dots-col"><span class="table-edit-btn" onclick="openTableCustomizer()" style="cursor:pointer;position:relative;top:1px" title="Customize table"><svg class="table-edit-outline" width="16" height="16" viewBox="0 -960 960 960" fill="#EFEFEF"><path d="M200-440h240v-160H200v160Zm0-240h560v-80H200v80Zm0 560q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v252q-19-8-39.5-10.5t-40.5.5q-21 4-40.5 13.5T684-479l-39 39-205 204v116H200Zm0-80h240v-160H200v160Zm320-240h125l39-39q16-16 35.5-25.5T760-518v-82H520v160Zm0 360v-123l221-220q9-9 20-13t22-4q12 0 23 4.5t20 13.5l37 37q8 9 12.5 20t4.5 22q0 11-4 22.5T863-300L643-80H520Zm300-263-37-37 37 37ZM580-140h38l121-122-37-37-122 121v38Zm141-141-19-18 37 37-18-19Z"/></svg><svg class="table-edit-filled" width="16" height="16" viewBox="0 -960 960 960" fill="#EFEFEF" style="display:none"><path d="M120-400v-200h320v200H120Zm0-280v-80q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v80H120Zm80 560q-33 0-56.5-23.5T120-200v-120h320v200H200Zm320-280v-200h320v92q-38-17-81-10t-75 39l-79 79h-85Zm0 320v-123l221-220q9-9 20-13t22-4q12 0 23 4.5t20 13.5l37 37q8 9 12.5 20t4.5 22q0 11-4 22.5T863-300L643-80H520Zm263-224 37-39-37-37-38 38 38 38Z"/></svg></span></th>
           </tr>
         </thead>
@@ -710,7 +710,7 @@ window._earlyTokens = fetch('/api/tokens').then(function(r){return r.json()}).ca
     </div>
 
   <div style="text-align:center;padding:24px 16px 32px;border-top:1px solid rgba(255,255,255,0.04);margin-top:28px">
-    <div style="font-size:11px;color:rgba(255,255,255,0.25);font-family:'Inter',sans-serif;margin-bottom:6px">memescope.eth &middot; <span data-version>v2.5.226</span></div>
+    <div style="font-size:11px;color:rgba(255,255,255,0.25);font-family:'Inter',sans-serif;margin-bottom:6px">memescope.eth &middot; <span data-version>v2.5.227</span></div>
     <div style="font-size:11px;color:rgba(255,255,255,0.2);font-family:'Inter',sans-serif">&copy; 2026 Memescopes. All rights reserved.</div>
   </div>
 
@@ -804,10 +804,10 @@ window._earlyTokens = fetch('/api/tokens').then(function(r){return r.json()}).ca
         </div>
         <!-- Stats grid -->
         <div class="tp-r-grid">
-          <div class="tp-r-cell"><div class="tp-r-cell-label">Market Cap</div><div class="tp-r-cell-val" id="tpRMcap">—</div></div>
-          <div class="tp-r-cell"><div class="tp-r-cell-label">Liquidity</div><div class="tp-r-cell-val" id="tpRLiq">—</div></div>
-          <div class="tp-r-cell"><div class="tp-r-cell-label">FDV</div><div class="tp-r-cell-val" id="tpRFdv">—</div></div>
-          <div class="tp-r-cell"><div class="tp-r-cell-label">24H Volume</div><div class="tp-r-cell-val" id="tpRVol">—</div></div>
+          <div class="tp-r-cell"><div class="tp-r-cell-label ms-tip" data-tip="Market cap — token price × total supply">Market Cap</div><div class="tp-r-cell-val" id="tpRMcap">—</div></div>
+          <div class="tp-r-cell"><div class="tp-r-cell-label ms-tip" data-tip="Money in the pool backing trades — higher means easier to buy and sell">Liquidity</div><div class="tp-r-cell-val" id="tpRLiq">—</div></div>
+          <div class="tp-r-cell"><div class="tp-r-cell-label ms-tip" data-tip="Fully diluted value — price × max token supply">FDV</div><div class="tp-r-cell-val" id="tpRFdv">—</div></div>
+          <div class="tp-r-cell"><div class="tp-r-cell-label ms-tip" data-tip="Buy + sell trading volume over the last 24 hours">24H Volume</div><div class="tp-r-cell-val" id="tpRVol">—</div></div>
         </div>
         <!-- Timeframe changes -->
         <div class="tp-r-tfs">
@@ -1306,23 +1306,23 @@ window._earlyTokens = fetch('/api/tokens').then(function(r){return r.json()}).ca
     <!-- Stats bar -->
     <div class="bm-stats-bar">
       <div class="bm-stat-item">
-        <span class="bm-stat-label">MCap</span>
+        <span class="bm-stat-label ms-tip" data-tip="Market cap — token price × total supply">MCap</span>
         <span class="bm-stat-value" id="bmMcap"></span>
       </div>
       <div class="bm-stat-item">
-        <span class="bm-stat-label">Vol 24H</span>
+        <span class="bm-stat-label ms-tip" data-tip="Buy + sell trading volume over the last 24 hours">Vol 24H</span>
         <span class="bm-stat-value" id="bmVol"></span>
       </div>
       <div class="bm-stat-item">
-        <span class="bm-stat-label">Liq</span>
+        <span class="bm-stat-label ms-tip" data-tip="Money in the pool backing trades — higher means easier to buy and sell">Liq</span>
         <span class="bm-stat-value" id="bmLiq"></span>
       </div>
       <div class="bm-stat-item">
-        <span class="bm-stat-label">Age</span>
+        <span class="bm-stat-label ms-tip" data-tip="Time since the token's trading pair was created">Age</span>
         <span class="bm-stat-value" id="bmAge"></span>
       </div>
       <div class="bm-stat-item">
-        <span class="bm-stat-label">Supply</span>
+        <span class="bm-stat-label ms-tip" data-tip="Total number of tokens in existence">Supply</span>
         <span class="bm-stat-value" id="bmSupply"></span>
       </div>
     </div>
@@ -1496,13 +1496,13 @@ window._earlyTokens = fetch('/api/tokens').then(function(r){return r.json()}).ca
 
 
 <script>if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js')})}</script>
-<script src="/embed.js?v=2.5.226" defer></script>
-<script src="/app.js?v=2.5.226" defer></script>
-<script src="/wallet.js?v=2.5.226" defer></script>
-<script src="/boost.js?v=2.5.226" defer></script>
-<script src="/extras.js?v=2.5.226" defer></script>
-<script src="/multichart.js?v=2.5.226" defer></script>
-<script src="/ens.js?v=2.5.226" defer></script>
+<script src="/embed.js?v=2.5.227" defer></script>
+<script src="/app.js?v=2.5.227" defer></script>
+<script src="/wallet.js?v=2.5.227" defer></script>
+<script src="/boost.js?v=2.5.227" defer></script>
+<script src="/extras.js?v=2.5.227" defer></script>
+<script src="/multichart.js?v=2.5.227" defer></script>
+<script src="/ens.js?v=2.5.227" defer></script>
 <div class="wl-share-menu" id="wlShareMenu">
   <a class="wl-share-option" onclick="shareWatchlist('x')"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg> X (Twitter)</a>
   <a class="wl-share-option" onclick="shareWatchlist('telegram')"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.161c-.18 1.897-.962 6.502-1.359 8.627-.168.9-.5 1.201-.82 1.23-.697.064-1.226-.461-1.901-.903-1.056-.692-1.653-1.123-2.678-1.799-1.185-.781-.417-1.21.258-1.911.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.139-5.062 3.345-.479.329-.913.489-1.302.481-.428-.009-1.252-.242-1.865-.441-.751-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.831-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635.099-.002.321.023.465.141.12.098.153.229.168.327.016.098.036.322.02.496z"/></svg> Telegram</a>

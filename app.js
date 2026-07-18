@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.226';
+var APP_VERSION = '2.5.227';
 
 // Image proxy — shrinks token images so they load fast even on bad wifi.
 // DexScreener's CDN (98%+ of token images) natively resizes via query params,
@@ -5448,8 +5448,8 @@ function swapConverterV3() {
   _convFrom = _convTo;
   _convTo = tmp;
   input.value = _convFormatPlain(result);
-  document.getElementById('bmConvFromUnit').textContent = _convFrom;
-  document.getElementById('bmConvToUnit').textContent = _convTo;
+  _setConvUnit(document.getElementById('bmConvFromUnit'), _convFrom);
+  _setConvUnit(document.getElementById('bmConvToUnit'), _convTo);
   updateConverterV3();
 }
 
@@ -5476,8 +5476,8 @@ function toggleConvCurrency() {
     _convCurrency = 'native';
     _convFrom = nativeSym;
     _convTo = sym;
-    fromUnit.textContent = nativeSym;
-    document.getElementById('bmConvToUnit').textContent = sym;
+    _setConvUnit(fromUnit, nativeSym);
+    _setConvUnit(document.getElementById('bmConvToUnit'), sym);
     input.value = '1';
     presetsEl.innerHTML =
       '<button class="bm-conv-chip" onclick="convPreset(\'1\')">1</button>' +
@@ -5490,8 +5490,8 @@ function toggleConvCurrency() {
     _convCurrency = 'usd';
     _convFrom = 'USD';
     _convTo = sym;
-    fromUnit.textContent = 'USD';
-    document.getElementById('bmConvToUnit').textContent = sym;
+    _setConvUnit(fromUnit, 'USD');
+    _setConvUnit(document.getElementById('bmConvToUnit'), sym);
     input.value = '1';
     presetsEl.innerHTML =
       '<button class="bm-conv-chip" onclick="convPreset(\'10\')">10</button>' +
@@ -5503,6 +5503,23 @@ function toggleConvCurrency() {
   updateConverterV3();
 }
 
+// Converter unit pill content: if the unit is the modal coin itself (and it has an
+// image), show its round logo instead of the ticker; USD / native symbols stay text.
+// Falls back to the ticker text if the image fails to load.
+function _setConvUnit(el, unitSym) {
+  if (!el) return;
+  var t = window._modalToken;
+  var isCoin = !!(t && unitSym === (t.sym || 'TOKEN') && t.img);
+  el.classList.toggle('iconly', isCoin);
+  if (isCoin) {
+    var safeSym = String(t.sym || '').replace(/[<>"']/g, '');
+    var src = String(imgProxy(t.img, 52, 52)).replace(/"/g, '&quot;');
+    el.innerHTML = '<img class="bm-conv-unit-ic" src="' + src + '" alt="' + safeSym + '"' +
+      ' onerror="this.parentNode.classList.remove(\'iconly\');this.parentNode.textContent=this.alt">';
+  } else {
+    el.textContent = unitSym;
+  }
+}
 function initConverterV3() {
   var t = window._modalToken;
   if (!t) return;
@@ -5511,8 +5528,8 @@ function initConverterV3() {
   _convFrom = 'USD';
   _convTo = sym;
   document.getElementById('bmConvInput').value = '1';
-  document.getElementById('bmConvFromUnit').textContent = 'USD';
-  document.getElementById('bmConvToUnit').textContent = sym;
+  _setConvUnit(document.getElementById('bmConvFromUnit'), 'USD');
+  _setConvUnit(document.getElementById('bmConvToUnit'), sym);
   // Reset presets to USD mode
   var presetsEl = document.getElementById('bmConvPresets');
   if (presetsEl) presetsEl.innerHTML =

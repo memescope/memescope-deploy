@@ -35,7 +35,7 @@ const DEXSCREENER_API = 'https://api.dexscreener.com/latest/dex/tokens/';
 
 // Bumped on every deploy (with package.json/app.js/sw.js). Edge-cache keys for HTML
 // include this, so a new deploy = new key = old cached HTML is ignored instantly.
-const CACHE_VERSION = '2.5.226';
+const CACHE_VERSION = '2.5.227';
 
 const VALID_CHAINS = new Set([
   'solana', 'eth', 'ethereum', 'base', 'bsc', 'sui', 'tron',
@@ -1006,16 +1006,38 @@ export default {
       let cached = await cache.match(cacheKey);
       if (cached) return cached;
 
-      // 2. Try upstream
+      // 2. Try upstream — but never make users wait out a scraper cold start.
       try {
-        const apiResp = await fetch(SCRAPER_API);
-        if (!apiResp.ok) throw new Error('Upstream ' + apiResp.status);
-        const body = await apiResp.text();
-        const resp = new Response(body, { headers: corsJson });
-        ctx.waitUntil(cache.put(cacheKey, resp.clone()));
-        // 3. Save to KV as global fallback (non-blocking)
-        ctx.waitUntil(env.BOOSTS.put('_token_cache', body));
-        return resp;
+        const upstream = fetch(SCRAPER_API).then(async (r) => {
+          if (!r.ok) throw new Error('Upstream ' + r.status);
+          const body = await r.text();
+          const resp = new Response(body, { headers: corsJson });
+          ctx.waitUntil(cache.put(cacheKey, resp.clone()));
+          // 3. Save to KV as global fallback (non-blocking)
+          ctx.waitUntil(env.BOOSTS.put('_token_cache', body));
+          return resp;
+        });
+        // STALE-WHILE-SLOW: if the scraper worker hasn't answered within 1.5s
+        // (it aggregates upstream sources and can be slow on a cold cache),
+        // serve the KV snapshot immediately — it's refreshed on every successful
+        // fetch, so it's at most one cycle old. The upstream fetch keeps running
+        // (waitUntil) and refreshes edge+KV for the next hit.
+        const raced = await Promise.race([
+          upstream.catch(() => null),
+          new Promise((resolve) => setTimeout(() => resolve('slow'), 1500)),
+        ]);
+        if (raced === 'slow') {
+          const kvData = await env.BOOSTS.get('_token_cache');
+          if (kvData) {
+            ctx.waitUntil(upstream.then(() => {}, () => {}));
+            return new Response(kvData, { headers: { ...corsJson, 'X-Source': 'kv-stale-while-slow' } });
+          }
+          const resp = await upstream; // first-ever request: no snapshot, must wait
+          if (!resp) throw new Error('upstream failed');
+          return resp;
+        }
+        if (!raced) throw new Error('upstream failed');
+        return raced;
       } catch {
         // 4. KV fallback — globally replicated, survives upstream outages
         try {
