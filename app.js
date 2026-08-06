@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.227';
+var APP_VERSION = '2.5.228';
 
 // Image proxy — shrinks token images so they load fast even on bad wifi.
 // DexScreener's CDN (98%+ of token images) natively resizes via query params,
@@ -2484,7 +2484,14 @@ if (typeof ResizeObserver !== 'undefined') {
       var w = _bWorld.offsetWidth, h = _bWorld.offsetHeight;
       if (w <= 0 || h <= 0) return;                  // hidden — ignore
       if (w === _bwPrevW && h === _bwPrevH) return;  // no real change
+      var _dw = Math.abs(w - _bwPrevW), _dh = Math.abs(h - _bwPrevH);
       _bwPrevW = w; _bwPrevH = h;
+      // A scrollbar-sized width-only change (<=20px, same height) is a modal
+      // opening/closing toggling the page scrollbar — NOT a real resize. Ignore
+      // it so the field never re-packs on modal open/close (that resettle was the
+      // "fast refresh" flash). The canvas is CSS width:100%, so it just stretches
+      // ~15px imperceptibly until the next real resize.
+      if (_dh === 0 && _dw > 0 && _dw <= 20) return;
       if (typeof bubs !== 'undefined' && bubs && bubs.length && typeof resizeBubbles === 'function') {
         resizeBubbles();
         if (window.wakeBubbles) window.wakeBubbles();
@@ -4518,14 +4525,15 @@ var bubs = [];
       var _allIdle = true;
       for(var i = 0; i < bubs.length; i++){
         var b = bubs[i];
-        // M3 entrance: scale up with an eased decelerate over 420ms after the
-        // bubble's staggered start time. Keeps the loop awake until all are in.
+        // M3 entrance: an eased-decelerate grow from 0 up to full size over 560ms
+        // after the bubble's staggered start. Full opacity the whole time — no fade.
+        // Keeps the loop awake until all are in.
         if(b.entScale === undefined) b.entScale = 1;
         if(b.entScale < 1){
-          var ep = (_now - (b.entStart || 0)) / 420;
+          var ep = (_now - (b.entStart || 0)) / 560;
           if(ep <= 0){ b.entScale = 0; }
           else if(ep >= 1){ b.entScale = 1; }
-          else { var inv = 1 - ep; b.entScale = 1 - inv * inv * inv; } // easeOutCubic
+          else { var inv = 1 - ep; b.entScale = 1 - inv * inv * inv; } // grow from 0, easeOutCubic
           _allIdle = false;
         }
         // Smoothly interpolate radius toward target

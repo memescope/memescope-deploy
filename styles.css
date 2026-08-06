@@ -1940,7 +1940,7 @@
     background: var(--ms-bar-control);
     border: none;
     border-radius: var(--md-sys-shape-corner-full);
-    padding: 10px 18px;
+    padding: 12px 18px;
     width: 700px;
     max-width: 700px;
     flex-shrink: 1;
@@ -2052,13 +2052,16 @@
     align-items: center;
     gap: 6px;
     flex-shrink: 0;
-    padding: 7px 14px 7px 11px;
-    margin: -4px -12px -4px 0;
+    /* Negative vertical margin so the bigger pill sits INSIDE the search bar
+       without stretching its height — the bar's height stays driven by the input
+       row, not the pill. */
+    padding: 9px 15px 9px 12px;
+    margin: -8px -12px -8px 0;
     border-radius: 999px;
     background: rgba(255,255,255,0.08);
     color: var(--text-primary);
     font-family: 'Inter', sans-serif;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 600;
     letter-spacing: -0.1px;
     line-height: 1;
@@ -2088,8 +2091,8 @@
   }
   .search-ai-pill:hover::after { opacity: 1; animation: msAiSpin 2.6s linear infinite; }
   .search-ai-pill svg {
-    width: 16px;
-    height: 16px;
+    width: 18px;
+    height: 18px;
     flex-shrink: 0;
     color: var(--text-primary); /* exact same color value as the "AI Search" text */
     opacity: 1;                 /* full opacity — no dimming */
@@ -7015,8 +7018,8 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 40px;
-    height: 40px;
+    width: 42px;
+    height: 42px;
     background: var(--ms-bar-control);
     border: none;
     border-radius: 50%;
@@ -7058,7 +7061,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 10px 6px 10px 14px;
+    padding: 12px 6px 12px 14px;
     background: transparent;
     border: none;
     cursor: pointer;
@@ -7072,7 +7075,7 @@
   .connect-split-label {
     display: flex;
     align-items: center;
-    padding: 10px 14px 10px 0;
+    padding: 12px 14px 12px 0;
     background: transparent;
     border: none;
     cursor: pointer;
@@ -9427,7 +9430,8 @@
   }
 
 
-/* Desktop: restore the original darker modal scrim (mobile keeps the lighter 0.3 scrim). */
+/* Desktop modal scrim — a soft radial vignette, kept light enough that the page
+   still reads behind it (mobile keeps its own 0.3 scrim). */
 @media (min-width: 769px) {
   .search-overlay,
   .wc-overlay,
@@ -9438,7 +9442,7 @@
   .ms-mobile-overlay,
   .tc-overlay,
   .bf-overlay {
-    background: radial-gradient(ellipse at center, rgba(16,15,16,0.85) 0%, rgba(6,6,7,0.93) 100%);
+    background: radial-gradient(ellipse at center, rgba(16,15,16,0.55) 0%, rgba(6,6,7,0.7) 100%);
   }
 }
 
