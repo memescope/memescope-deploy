@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.231';
+var APP_VERSION = '2.5.232';
 
 // Image proxy — shrinks token images so they load fast even on bad wifi.
 // DexScreener's CDN (98%+ of token images) natively resizes via query params,
@@ -4343,6 +4343,18 @@ var bubs = [];
     // We have tokens — now safe to (re)create the canvas and render
     world.classList.remove('ready');
     BubbleCanvas.ensure();
+    // Snapshot the bubbles already on screen (by token) so a REBUILD — e.g. the
+    // boosted-token injection calling init() again after the field is already up —
+    // does NOT replay the entrance for existing bubbles. They keep their position +
+    // velocity and stay put (entScale 1); only genuinely-new tokens animate in. The
+    // FIRST build has an empty snapshot, so the whole field enters as normal. This is
+    // what actually kills the intermittent double-entrance (trace: _injectMissing...
+    // ->init after _buildBubblesOnce->init), independent of which order they fire.
+    var _prevBub = {};
+    for(var _pbi = 0; _pbi < bubs.length; _pbi++){
+      var _pbk = bubs[_pbi].token && (bubs[_pbi].token.ca || bubs[_pbi].token.sym);
+      if(_pbk) _prevBub[_pbk] = bubs[_pbi];
+    }
     bubs = [];
     if(rafId) cancelAnimationFrame(rafId);
 
@@ -4399,13 +4411,14 @@ var bubs = [];
       if(t.img) BubbleCanvas.img(imgProxy(t.img, 80, 80)); // preload logo for canvas
       var spd = 0.03 + Math.random() * 0.05;
       var ang = Math.random() * Math.PI * 2;
+      var _old = _prevBub[t.ca || t.sym];   // was this bubble already on screen?
       bubs.push({
-        x: p.x, y: p.y, r: r, targetR: r,
-        vx: Math.cos(ang) * spd,
-        vy: Math.sin(ang) * spd,
+        x: _old ? _old.x : p.x, y: _old ? _old.y : p.y, r: r, targetR: r,
+        vx: _old ? _old.vx : Math.cos(ang) * spd,
+        vy: _old ? _old.vy : Math.sin(ang) * spd,
         token: t,
-        entStart: _entBase + idx * 14,   // staggered M3 entrance (largest first)
-        entScale: 0
+        entStart: _old ? 0 : (_entBase + idx * 14),   // staggered M3 entrance (largest first)
+        entScale: _old ? 1 : 0                          // existing bubble: no re-entrance; new: animate in
       });
     });
 
