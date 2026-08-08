@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.229';
+var APP_VERSION = '2.5.230';
 
 // Image proxy — shrinks token images so they load fast even on bad wifi.
 // DexScreener's CDN (98%+ of token images) natively resizes via query params,
@@ -1338,6 +1338,13 @@ var SCANNER_URLS = {
 
 
 function updateBubblesSmooth() {
+  // The first-load bubble build is DEFERRED until the verify wave (see _buildBubblesOnce).
+  // If a refresh/verify trigger calls this during that window while bubs is still empty,
+  // it builds the whole field from scratch (entrance #1) only for the deferred init() to
+  // clear + rebuild it (entrance #2) — the intermittent double-entrance. It only bites on
+  // prod because the deferred window is long there (slow API/verify), never on localhost.
+  // Let the deferred build own the very first render.
+  if (window._bubbleBuildDeferred) return;
   var tfField = getTimeframeField();
   // During the brief window right after first load, refresh data but DON'T resize
   // or shove bubbles — otherwise the first background verify causes a 2nd settle
@@ -4280,6 +4287,7 @@ var bubs = [];
     W = hero.offsetWidth;
     H = hero.offsetHeight;
     if(W < 10 || H < 10){ setTimeout(init, 100); return; }
+    try { if(location.search.indexOf('bbdebug') !== -1) console.log('[bubble-build]', Math.round(performance.now()) + 'ms', 'bubs=' + (typeof bubs !== 'undefined' ? bubs.length : '?'), '\n' + new Error().stack); } catch(_e){}   // TEMP opt-in diagnostic (add ?bbdebug to URL) — remove after root cause found
 
     // Run ALL filtering BEFORE clearing the world so the shrug never flashes
     var tokens = (typeof getFilteredTokens === 'function') ? getFilteredTokens().slice(0, 200) : ((typeof LIVE_TOKENS !== 'undefined') ? LIVE_TOKENS.slice(0, 200) : []);
