@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.232';
+var APP_VERSION = '2.5.233';
 
 // Image proxy — shrinks token images so they load fast even on bad wifi.
 // DexScreener's CDN (98%+ of token images) natively resizes via query params,
@@ -4421,6 +4421,7 @@ var bubs = [];
         entScale: _old ? 1 : 0                          // existing bubble: no re-entrance; new: animate in
       });
     });
+    try { if(location.search.indexOf('bbdebug') !== -1){ var _entN=0; for(var _ebi=0;_ebi<bubs.length;_ebi++){ if(bubs[_ebi].entScale===0)_entN++; } console.log('[bubble-build] ENTERING=' + _entN + '/' + bubs.length + '  (many=real first build · 0-1=harmless boost-add · TWO builds both ENTERING~all = still doubling)'); } } catch(_e){}   // TEMP verify log
 
     // Size the canvas to the world and reveal it (one fade-in for the whole layer)
     BubbleCanvas.resize(W, H);
