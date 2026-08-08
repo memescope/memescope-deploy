@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.230';
+var APP_VERSION = '2.5.231';
 
 // Image proxy — shrinks token images so they load fast even on bad wifi.
 // DexScreener's CDN (98%+ of token images) natively resizes via query params,
@@ -359,7 +359,12 @@ function _injectMissingBoostedTokens() {
     if (injected > 0) {
       console.log('Memescopes: Injected ' + injected + ' boosted token(s)');
       if (typeof loadData === 'function') loadData();
-      if (typeof init === 'function') init();
+      // Don't rebuild the bubble field while the first-load build is still deferred:
+      // the deferred _buildBubblesOnce injects boosted tokens and builds once. Calling
+      // init() here builds the field early (entrance #1) only for the deferred build to
+      // rebuild it (entrance #2) — THE intermittent double-entrance (confirmed by trace).
+      // The token is already in LIVE_TOKENS + the table above, so nothing is lost.
+      if (typeof init === 'function' && !window._bubbleBuildDeferred) init();
     }
   });
 }
@@ -4590,7 +4595,12 @@ var bubs = [];
   // Wait for LIVE_TOKENS then init (only if init hasn't already been called by fetchLiveTokens)
   var _bubbleInitDone = false;
   var _origInit = init;
-  init = function(){ _bubbleInitDone = true; _origInit(); };
+  // Choke point that kills the intermittent double-entrance: while the first-load
+  // build is DEFERRED (waiting on the verify wave), no caller may build the field.
+  // _buildBubblesOnce clears _bubbleBuildDeferred immediately before it builds, so
+  // ONLY it renders the first frame — every other early init() (boost injection, a
+  // stray refresh/verify, etc.) is a no-op until then.
+  init = function(){ if(window._bubbleBuildDeferred) return; _bubbleInitDone = true; _origInit(); };
   window.init = init;
 
   var _waitAttempts = 0;
