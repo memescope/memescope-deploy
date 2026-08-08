@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.234';
+var APP_VERSION = '2.5.235';
 
 // Image proxy — shrinks token images so they load fast even on bad wifi.
 // DexScreener's CDN (98%+ of token images) natively resizes via query params,
@@ -4292,7 +4292,6 @@ var bubs = [];
     W = hero.offsetWidth;
     H = hero.offsetHeight;
     if(W < 10 || H < 10){ setTimeout(init, 100); return; }
-    try { if(location.search.indexOf('bbdebug') !== -1) console.log('[bubble-build]', Math.round(performance.now()) + 'ms', 'bubs=' + (typeof bubs !== 'undefined' ? bubs.length : '?'), '\n' + new Error().stack); } catch(_e){}   // TEMP opt-in diagnostic (add ?bbdebug to URL) — remove after root cause found
 
     // Run ALL filtering BEFORE clearing the world so the shrug never flashes
     var tokens = (typeof getFilteredTokens === 'function') ? getFilteredTokens().slice(0, 200) : ((typeof LIVE_TOKENS !== 'undefined') ? LIVE_TOKENS.slice(0, 200) : []);
@@ -4425,7 +4424,6 @@ var bubs = [];
         entScale: _old ? (_old.entScale === undefined ? 1 : _old.entScale) : 0
       });
     });
-    try { if(location.search.indexOf('bbdebug') !== -1){ var _entN=0; for(var _ebi=0;_ebi<bubs.length;_ebi++){ if(bubs[_ebi].entScale===0)_entN++; } console.log('[bubble-build] ENTERING=' + _entN + '/' + bubs.length + '  (many=real first build · 0-1=harmless boost-add · TWO builds both ENTERING~all = still doubling)'); } } catch(_e){}   // TEMP verify log
 
     // Size the canvas to the world and reveal it (one fade-in for the whole layer)
     BubbleCanvas.resize(W, H);
