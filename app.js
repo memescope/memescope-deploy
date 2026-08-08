@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.233';
+var APP_VERSION = '2.5.234';
 
 // Image proxy — shrinks token images so they load fast even on bad wifi.
 // DexScreener's CDN (98%+ of token images) natively resizes via query params,
@@ -4417,8 +4417,12 @@ var bubs = [];
         vx: _old ? _old.vx : Math.cos(ang) * spd,
         vy: _old ? _old.vy : Math.sin(ang) * spd,
         token: t,
-        entStart: _old ? 0 : (_entBase + idx * 14),   // staggered M3 entrance (largest first)
-        entScale: _old ? 1 : 0                          // existing bubble: no re-entrance; new: animate in
+        // Preserve the existing bubble's CURRENT entrance state so a rebuild that lands
+        // mid-animation doesn't snap it to full size (which cut the entrance off — the
+        // "sometimes no animation" bug). Finished bubbles keep entScale 1 (stay put),
+        // mid-entrance ones keep their scale+start and animate to completion, new ones enter.
+        entStart: _old ? _old.entStart : (_entBase + idx * 14),   // staggered M3 entrance (largest first)
+        entScale: _old ? (_old.entScale === undefined ? 1 : _old.entScale) : 0
       });
     });
     try { if(location.search.indexOf('bbdebug') !== -1){ var _entN=0; for(var _ebi=0;_ebi<bubs.length;_ebi++){ if(bubs[_ebi].entScale===0)_entN++; } console.log('[bubble-build] ENTERING=' + _entN + '/' + bubs.length + '  (many=real first build · 0-1=harmless boost-add · TWO builds both ENTERING~all = still doubling)'); } } catch(_e){}   // TEMP verify log
