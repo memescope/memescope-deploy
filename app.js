@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.237';
+var APP_VERSION = '2.5.238';
 
 // Image proxy — shrinks token images so they load fast even on bad wifi.
 // DexScreener's CDN (98%+ of token images) natively resizes via query params,
@@ -4278,9 +4278,16 @@ var BubbleCanvas = (function(){
 
   function draw(bubs, tfField){
     if(!ctx || !cv || !cv.isConnected){ if(!ensure()) return; }
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.clearRect(0, 0, cssW, cssH);
-    for(var i = 0; i < bubs.length; i++) drawOne(bubs[i], tfField);
+    // Never let a bad canvas state throw and blank the whole field. If setTransform
+    // fails (e.g. "Canvas exceeds max size" from an oversized buffer), swallow it and
+    // shrink the buffer to a guaranteed-safe size so the next frame paints again.
+    try {
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssW, cssH);
+      for(var i = 0; i < bubs.length; i++) drawOne(bubs[i], tfField);
+    } catch(e) {
+      try { cv.width = Math.min(cv.width, 2048); cv.height = Math.min(cv.height, 2048); dpr = 1; cssW = cv.width; cssH = cv.height; } catch(_e){}
+    }
   }
 
   return { ensure: ensure, resize: resize, draw: draw, img: img };
@@ -6142,14 +6149,15 @@ document.addEventListener("keydown", function(e) {
   function sizeBubbleHero(){
     var hero = document.getElementById("bubbleHero");
     if(!hero || window.innerWidth <= 768) return;
-    var topRel = 0, el = hero;
-    while(el){ topRel += el.offsetTop; el = el.offsetParent; }
-    // Clamp to the viewport height: the hero fills DOWN to the viewport bottom, so it
-    // can never legitimately be taller than the viewport. Without this, a bad topRel
-    // (e.g. measured mid-relayout on a timeframe switch) blew the height up on each
-    // switch until height×DPR exceeded the canvas max and setTransform threw → blank.
-    var _hh = Math.floor(window.innerHeight - topRel);
-    hero.style.height = Math.max(300, Math.min(_hh, window.innerHeight)) + "px";
+    // Use the viewport-relative top (getBoundingClientRect) — the old offsetTop-chain
+    // sum could go wrong mid-relayout on a timeframe switch and blow the height up until
+    // height×DPR exceeded the canvas max and setTransform threw → blank/blurry field.
+    var _top = hero.getBoundingClientRect().top;
+    var _hh = window.innerHeight - _top;
+    // Guard: NaN / non-positive / larger-than-viewport → fall back to the viewport height.
+    // The hero fills DOWN to the viewport bottom, so it can never legitimately exceed it.
+    if(!(_hh > 0) || _hh > window.innerHeight) _hh = window.innerHeight;
+    hero.style.height = Math.max(300, Math.floor(_hh)) + "px";
   }
   sizeBubbleHero();
   window.addEventListener("resize", function(){ sizeBubbleHero(); });
