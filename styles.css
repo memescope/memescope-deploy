@@ -1393,6 +1393,12 @@
     align-items: center;
     gap: 6px;
     letter-spacing: 0.2px;
+    /* Hard cap so a garbage/scam token whose "symbol" is thousands of characters
+       (e.g. every ticker concatenated) can't stretch the column → table → .main →
+       bubble hero → canvas and blank the whole field. */
+    max-width: 150px;
+    overflow: hidden;
+    white-space: nowrap;
   }
 
   .token-name {
