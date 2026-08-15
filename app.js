@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.235';
+var APP_VERSION = '2.5.236';
 
 // Image proxy — shrinks token images so they load fast even on bad wifi.
 // DexScreener's CDN (98%+ of token images) natively resizes via query params,
@@ -364,7 +364,7 @@ function _injectMissingBoostedTokens() {
       // init() here builds the field early (entrance #1) only for the deferred build to
       // rebuild it (entrance #2) — THE intermittent double-entrance (confirmed by trace).
       // The token is already in LIVE_TOKENS + the table above, so nothing is lost.
-      if (typeof init === 'function' && !window._bubbleBuildDeferred) init();
+      if (typeof init === 'function') init(true);   // preserve existing bubbles — only the new boosted one animates in
     }
   });
 }
@@ -4052,6 +4052,12 @@ var BubbleCanvas = (function(){
     // Render at the device's TRUE pixel ratio (cap 3). Confirmed on-screen that phones
     // report dpr 3 while we rendered only a 2x buffer → the browser upscaled it → blurry.
     var d = Math.min(window.devicePixelRatio || 1, 3);
+    // Hard cap so the buffer can never exceed the browser's canvas limit — otherwise
+    // setTransform throws "Canvas exceeds max size" and the whole field goes blank.
+    // Drop effective DPR for an oversized layout instead of crashing.
+    var _MAXDIM = 8192;
+    if(w * d > _MAXDIM) d = _MAXDIM / w;
+    if(h * d > _MAXDIM) d = _MAXDIM / h;
     var bw = Math.round(w * d), bh = Math.round(h * d);
     // Skip only when the ACTUAL buffer already matches. cv.width can be a stale 300x150
     // default right after the canvas was recreated (e.g. showEmptyBubbleState() wiped the
@@ -4284,7 +4290,7 @@ var bubs = [];
   var world, W, H, rafId, mouseX = -1000, mouseY = -1000, mouseActive = false, mousePrevX = -1000, mousePrevY = -1000, mouseVX = 0, mouseVY = 0, mouseSpeed = 0;
   var _idleFrames = 0, _sleeping = false, _tick = null;
 
-  function init(){
+  function init(preserve){
     world = document.getElementById("bubbleWorld");
     var hero = document.getElementById("bubbleHero");
     if(!world || !hero) return;
@@ -4410,7 +4416,11 @@ var bubs = [];
       if(t.img) BubbleCanvas.img(imgProxy(t.img, 80, 80)); // preload logo for canvas
       var spd = 0.03 + Math.random() * 0.05;
       var ang = Math.random() * Math.PI * 2;
-      var _old = _prevBub[t.ca || t.sym];   // was this bubble already on screen?
+      // Only preserve existing bubbles on a boost-injection rebuild (init(true)), so
+      // that add doesn't re-animate the field. User switches (timeframe / Top-Gainers-
+      // Losers / chain) call init() with no flag → _old is null → the WHOLE field
+      // re-enters with the M3 animation, exactly like a refresh.
+      var _old = preserve ? _prevBub[t.ca || t.sym] : null;
       bubs.push({
         x: _old ? _old.x : p.x, y: _old ? _old.y : p.y, r: r, targetR: r,
         vx: _old ? _old.vx : Math.cos(ang) * spd,
@@ -4616,7 +4626,7 @@ var bubs = [];
   // _buildBubblesOnce clears _bubbleBuildDeferred immediately before it builds, so
   // ONLY it renders the first frame — every other early init() (boost injection, a
   // stray refresh/verify, etc.) is a no-op until then.
-  init = function(){ if(window._bubbleBuildDeferred) return; _bubbleInitDone = true; _origInit(); };
+  init = function(preserve){ if(window._bubbleBuildDeferred) return; _bubbleInitDone = true; _origInit(preserve); };
   window.init = init;
 
   var _waitAttempts = 0;
@@ -6132,7 +6142,12 @@ document.addEventListener("keydown", function(e) {
     if(!hero || window.innerWidth <= 768) return;
     var topRel = 0, el = hero;
     while(el){ topRel += el.offsetTop; el = el.offsetParent; }
-    hero.style.height = Math.max(300, Math.floor(window.innerHeight - topRel)) + "px";
+    // Clamp to the viewport height: the hero fills DOWN to the viewport bottom, so it
+    // can never legitimately be taller than the viewport. Without this, a bad topRel
+    // (e.g. measured mid-relayout on a timeframe switch) blew the height up on each
+    // switch until height×DPR exceeded the canvas max and setTransform threw → blank.
+    var _hh = Math.floor(window.innerHeight - topRel);
+    hero.style.height = Math.max(300, Math.min(_hh, window.innerHeight)) + "px";
   }
   sizeBubbleHero();
   window.addEventListener("resize", function(){ sizeBubbleHero(); });
