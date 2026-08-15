@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.236';
+var APP_VERSION = '2.5.237';
 
 // Image proxy — shrinks token images so they load fast even on bad wifi.
 // DexScreener's CDN (98%+ of token images) natively resizes via query params,
@@ -4059,6 +4059,7 @@ var BubbleCanvas = (function(){
     if(w * d > _MAXDIM) d = _MAXDIM / w;
     if(h * d > _MAXDIM) d = _MAXDIM / h;
     var bw = Math.round(w * d), bh = Math.round(h * d);
+    try { if(location.search.indexOf('bbdebug')!==-1) console.log('[bb-canvas] w='+w+' h='+h+' d='+d.toFixed(3)+' bw='+bw+' bh='+bh+' cvW='+cv.width+' cvH='+cv.height); } catch(_e){}   // TEMP
     // Skip only when the ACTUAL buffer already matches. cv.width can be a stale 300x150
     // default right after the canvas was recreated (e.g. showEmptyBubbleState() wiped the
     // world's innerHTML), so we check the real buffer — not the cached cssW/H — which is
@@ -4434,6 +4435,7 @@ var bubs = [];
         entScale: _old ? (_old.entScale === undefined ? 1 : _old.entScale) : 0
       });
     });
+    try { if(location.search.indexOf('bbdebug')!==-1) console.log('[bb-size] innerH='+window.innerHeight+' heroW='+W+' heroH='+H+' tokens='+tokens.length+' bubs='+bubs.length+' dpr='+window.devicePixelRatio+' preserve='+!!preserve); } catch(_e){}   // TEMP
 
     // Size the canvas to the world and reveal it (one fade-in for the whole layer)
     BubbleCanvas.resize(W, H);
