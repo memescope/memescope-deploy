@@ -35,7 +35,7 @@ const DEXSCREENER_API = 'https://api.dexscreener.com/latest/dex/tokens/';
 
 // Bumped on every deploy (with package.json/app.js/sw.js). Edge-cache keys for HTML
 // include this, so a new deploy = new key = old cached HTML is ignored instantly.
-const CACHE_VERSION = '2.5.239';
+const CACHE_VERSION = '2.5.240';
 
 const VALID_CHAINS = new Set([
   'solana', 'eth', 'ethereum', 'base', 'bsc', 'sui', 'tron',
@@ -780,7 +780,7 @@ export default {
       // Smart cache TTLs by endpoint type to save API credits
       let cacheTtl = 30; // default 30s
       if (geckoPath.includes('/ohlcv/')) {
-        cacheTtl = 180;  // OHLCV: 180s — the chart overlays a live price tip from DexScreener, so stale history is invisible; doubling the window halves upstream calls and eases the free-tier limit
+        cacheTtl = 300;  // OHLCV: 300s — the chart overlays a live DexScreener price tip, so stale history is invisible; a wider window collapses more repeat views into ONE upstream call, which is the main defense against the free tier's ~30 req/min limit
       } else if (geckoPath.includes('/trades')) {
         cacheTtl = 20;   // Trades: 20s — slightly longer to cut calls under the free-tier limit
       } else if (geckoPath.includes('/pools/') && !geckoPath.includes('/ohlcv/')) {
@@ -817,11 +817,11 @@ export default {
               ...corsHeaders,
             },
           });
-          // Cache for the TTL window (dedup) + keep a 30-min "last good" copy for the 429 fallback,
+          // Cache for the TTL window (dedup) + keep a 60-min "last good" copy for the 429 fallback,
           // so a throttled coin shows slightly-stale candles instead of a hidden/empty chart.
           ctx.waitUntil(cache.put(cacheKey, resp.clone()));
           ctx.waitUntil(cache.put(staleKey, new Response(body, {
-            headers: { 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=1800' },
+            headers: { 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=3600' },
           })));
           return resp;
         }

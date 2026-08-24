@@ -1,5 +1,5 @@
 
-var APP_VERSION = '2.5.239';
+var APP_VERSION = '2.5.240';
 
 // Image proxy — shrinks token images so they load fast even on bad wifi.
 // DexScreener's CDN (98%+ of token images) natively resizes via query params,
@@ -407,7 +407,7 @@ try {
 // --- GeckoTerminal Pro API via server proxy (key stays server-side) ---
 var _geckoQueue = [];
 var _geckoRunning = 0;
-var _geckoMaxConcurrent = 8; // Pro plan: 300 req/min — safe to run 8 concurrent
+var _geckoMaxConcurrent = 4; // GeckoTerminal FREE tier (~30 req/min, no key) — keep concurrency low to avoid self-throttling. NOTE: OHLCV retries are also capped at 4 in the chart datafeed; over-retrying a 429 just spams the shared quota and keeps every user throttled, so the coin never caches. Fewer retries = more calls actually succeed.
 function geckoFetch(url, opts) {
   // Rewrite api.geckoterminal.com/api/v2/ → /api/gecko/ (our proxy)
   var proxyUrl = url.replace('https://api.geckoterminal.com/api/v2/', '/api/gecko/');
@@ -5830,7 +5830,7 @@ function _initModalChart(t) {
               // throttled this request. Keep the chart in its loading state and retry with
               // backoff so it fills in once a slot frees (or the proxy serves a stale copy),
               // instead of flashing the empty/no-data overlay.
-              if (attempt < 20) { setTimeout(tryFetch, Math.min(attempt * 800, 4000)); return; }
+              if (attempt < 4) { setTimeout(tryFetch, Math.min(attempt * 800, 4000)); return; }
               _seedFromLivePrice(); return;
             }
             return r.json();
@@ -5885,7 +5885,7 @@ function _initModalChart(t) {
             // (throttle). Fall back to the same-origin proxy (reads the 429, serves stale/
             // cached) so a throttle shows a chart instead of flashing false "no data".
             if (url.indexOf('/api/gecko/') === -1) { url = url.replace('https://api.geckoterminal.com/api/v2/', '/api/gecko/'); setTimeout(tryFetch, 300); return; }
-            if (attempt < 20) { setTimeout(tryFetch, Math.min(attempt * 800, 4000)); return; }
+            if (attempt < 4) { setTimeout(tryFetch, Math.min(attempt * 800, 4000)); return; }
             _seedFromLivePrice();
           });
         }
@@ -6548,7 +6548,7 @@ function initTokenPageChart(t) {
             if (r.status === 429 || r.status === 403) {
               // Rate-limited is NOT "no data": keep retrying with backoff and leave the chart
               // in its loading state instead of hiding it / showing the empty overlay.
-              if (attempt < 20) { setTimeout(tryFetch, Math.min(attempt * 800, 4000)); return; }
+              if (attempt < 4) { setTimeout(tryFetch, Math.min(attempt * 800, 4000)); return; }
               _seedFromLivePrice2(); return;
             }
             return r.json();
@@ -6603,7 +6603,7 @@ function initTokenPageChart(t) {
             // (throttle). Fall back to the same-origin proxy (reads the 429, serves stale/
             // cached) so a throttle shows a chart instead of flashing false "no data".
             if (url.indexOf('/api/gecko/') === -1) { url = url.replace('https://api.geckoterminal.com/api/v2/', '/api/gecko/'); setTimeout(tryFetch, 300); return; }
-            if (attempt < 20) { setTimeout(tryFetch, Math.min(attempt * 800, 4000)); return; }
+            if (attempt < 4) { setTimeout(tryFetch, Math.min(attempt * 800, 4000)); return; }
             _seedFromLivePrice2();
           });
         }
